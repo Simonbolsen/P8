@@ -101,11 +101,21 @@ class Convnet(nn.Module):
 #     loss = torch.mean((output-target*2)**3)
 #     return loss
 
+def simple_dist_loss(output, target, num_of_classes, target_class_map):
+    acc_loss = 0
+
+    for i, output_embedding in enumerate(output[:-num_of_classes]):
+        actual_embedding = output[target_class_map[target[i].item()]-num_of_classes]
+        squared_dist = (actual_embedding - output_embedding).pow(2).sum(0)
+        acc_loss += squared_dist
+
+    return torch.tensor(acc_loss, requires_grad=True)
+
 
 def main():
     model = Convnet()
-    optimiser = optim.Adam(model.parameters(), lr=0.001)
-    loss_func = nn.CrossEntropyLoss()
+    optimiser = optim.Adam(model.parameters(), lr=0.0001)
+    loss_func = simple_dist_loss
 
     train_data = datasets.MNIST(
         root = 'data',
@@ -130,7 +140,7 @@ def main():
 
         for i, (images, labels) in enumerate(loaders["train"]):
             res = model(images)
-            loss = loss_func(res, labels)
+            loss = loss_func(res, labels, model.num_of_classes, { i:i for i in range(model.num_of_classes) })
             optimiser.zero_grad()
             loss.backward()
             optimiser.step()
