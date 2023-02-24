@@ -90,9 +90,14 @@ def simple_dist_loss(output, target, num_of_classes, target_class_map):
     return acc_loss
 
 
-def main():    
+def main():
+    if (device.type == 'cuda'):
+        print('Using GPU')
+    else:
+        print('Using CPU')
+
     model = Convnet().to(device)
-    optimiser = optim.Adam(model.parameters(), lr=0.0001)
+    optimiser = optim.Adam(model.parameters(), lr=0.01)
     loss_func = simple_dist_loss
     target_class_map = { i:i for i in range(model.num_of_classes) }
 
@@ -108,11 +113,14 @@ def main():
         train = False, 
         transform = ToTensor()
     )
+
     loaders = {
         "train": torch.utils.data.DataLoader(train_data, batch_size=100, shuffle=True, num_workers=1),
         "test": torch.utils.data.DataLoader(test_data, batch_size=100, shuffle=True, num_workers=1)
     }
-      
+
+    print("Training data size: ", len(train_data))
+    print("Test data size: ", len(test_data))
 
     total_step = len(loaders['train'])
     for epoch in range(num_epochs):
@@ -133,7 +141,7 @@ def main():
                 pass
     
 
-
+    
     # Test the model
     model.eval()    
     with torch.no_grad():
