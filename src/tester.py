@@ -7,35 +7,15 @@ from torchvision import datasets
 from torchvision.transforms import ToTensor
 import math as Math
 
-class CNN(nn.Module):
-    def __init__(self):
-        super(CNN, self).__init__()        
-        self.conv1 = nn.Sequential(         
-            nn.Conv2d(
-                in_channels=1,              
-                out_channels=16,            
-                kernel_size=5,              
-                stride=1,                   
-                padding=2,                  
-            ),                              
-            nn.ReLU(),                      
-            nn.MaxPool2d(kernel_size=2),    
-        )
-        self.conv2 = nn.Sequential(         
-            nn.Conv2d(16, 32, 5, 1, 2),     
-            nn.ReLU(),                      
-            nn.MaxPool2d(2),                
-        )        # fully connected layer, output 10 classes
-        self.out = nn.Linear(32 * 7 * 7, 10)    
-        
-    def forward(self, x):
-        x = self.conv1(x)
-        x = self.conv2(x)        # flatten the output of conv2 to (batch_size, 32 * 7 * 7)
-        x = x.view(x.size(0), -1)       
-        output = self.out(x)
-        return output   # return x for visualization
+ngpu = 1
+device = torch.device("cuda:0" if (torch.cuda.is_available() and ngpu > 0) else "cpu")
 
-num_epochs = 10
+# if (device.type == 'cuda'):
+#     print('Using GPU')
+# else:
+#     print('Using CPU')
+    
+num_epochs = 5
 
 def conv_layer(input, output, kernel_size, stride):
     return nn.Sequential(
@@ -43,10 +23,9 @@ def conv_layer(input, output, kernel_size, stride):
         nn.ReLU()
     )
 
-def set_gpu(x):
-    os.environ['CUDA_VISIBLE_DEVICES'] = x
-    print('using gpu:', x)
-
+# def set_gpu(x):
+#     os.environ['CUDA_VISIBLE_DEVICES'] = x
+#     print('using gpu:', x)
 
 def conv_out_size(kernel_size, stride, padding, input_size):
     return Math.floor((input_size + 2 * padding - kernel_size) / stride) + 1
@@ -60,8 +39,6 @@ def get_final_layers_size(picture_size, previous_layer_size):
     return picture_size * picture_size * previous_layer_size
 
 class Convnet(nn.Module):
-
-
     def __init__(self):
         super(Convnet, self).__init__()
         self.k_size = 4
@@ -93,7 +70,7 @@ class Convnet(nn.Module):
 
     def forward(self, x):
         x = self.model(x)
-        y = self.embeddings(torch.tensor(range(self.num_of_classes)))
+        y = self.embeddings(torch.tensor(range(self.num_of_classes), device=device))
         return torch.cat((x, y), dim=0)
 
 
@@ -102,20 +79,22 @@ class Convnet(nn.Module):
 #     return loss
 
 def simple_dist_loss(output, target, num_of_classes, target_class_map):
-    acc_loss = 0
+    acc_loss = torch.tensor(0.0, requires_grad=True, device=device)
 
     for i, output_embedding in enumerate(output[:-num_of_classes]):
         actual_embedding = output[target_class_map[target[i].item()]-num_of_classes]
         squared_dist = (actual_embedding - output_embedding).pow(2).sum(0)
-        acc_loss += squared_dist
+        acc_loss = acc_loss + squared_dist
 
-    return torch.tensor(acc_loss, requires_grad=True)
+    # return torch.tensor(acc_loss, requires_grad=True, device=device)
+    return acc_loss
 
 
-def main():
-    model = Convnet()
+def main():    
+    model = Convnet().to(device)
     optimiser = optim.Adam(model.parameters(), lr=0.0001)
     loss_func = simple_dist_loss
+    target_class_map = { i:i for i in range(model.num_of_classes) }
 
     train_data = datasets.MNIST(
         root = 'data',
@@ -139,6 +118,9 @@ def main():
     for epoch in range(num_epochs):
 
         for i, (images, labels) in enumerate(loaders["train"]):
+            images = images.to(device)
+            labels = labels.to(device)
+
             res = model(images)
             loss = loss_func(res, labels, model.num_of_classes, { i:i for i in range(model.num_of_classes) })
             optimiser.zero_grad()
@@ -149,11 +131,7 @@ def main():
                 print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}' 
                        .format(epoch + 1, num_epochs, i + 1, total_step, loss.item()))               
                 pass
-        
-
-
     
-
 
 
     # Test the model
@@ -162,14 +140,28 @@ def main():
         correct = 0
         total = 0
         for images, labels in loaders['test']:
-            test_output = model(images)
-            pred_y = torch.max(test_output, 1)[1].data.squeeze()
-            accuracy = (pred_y == labels).sum().item() / float(labels.size(0))
-            pass
-        print('Test Accuracy of the model on the 10000 test images: %.4f' % accuracy)
-    
-    pass
+            images = images.to(device)
+            labels = labels.to(device)
 
+            test_output = model(images)
+
+            for i, output_embedding in enumerate(test_output[:-model.num_of_classes]):
+                smallest_sqr_dist = 100000000
+                smallest_k = 0
+                for k in range(model.num_of_classes):
+                    actual_class_embedding = test_output[k - model.num_of_classes]
+                    squared_dist = (actual_class_embedding - output_embedding).pow(2).sum(0)
+                    
+                    if squared_dist < smallest_sqr_dist:
+                        smallest_sqr_dist = squared_dist
+                        smallest_k = k
+
+                if smallest_k == target_class_map[labels[i].item()]:
+                    correct += 1
+                total += 1
+
+        accuracy = correct / total
+        print('Test Accuracy of the model on the 10000 test images: %.4f' % accuracy)    
 
     return
 
