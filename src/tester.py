@@ -41,6 +41,7 @@ def get_final_layers_size(picture_size, previous_layer_size):
 class Convnet(nn.Module):
     def __init__(self):
         super(Convnet, self).__init__()
+        self.lr = 0.001
         self.k_size = 4
         self.stride = 1
         self.padding = 0
@@ -80,14 +81,23 @@ class Convnet(nn.Module):
 
 def simple_dist_loss(output, target, num_of_classes, target_class_map):
     acc_loss = torch.tensor(0.0, requires_grad=True, device=device)
+    acc_loss_div = torch.zeros(output.shape, device=device, dtype=torch.float)
 
     for i, output_embedding in enumerate(output[:-num_of_classes]):
-        actual_embedding = output[target_class_map[target[i].item()]-num_of_classes]
-        squared_dist = (actual_embedding - output_embedding).pow(2).sum(0)
+        actual_index = target_class_map[target[i].item()] - num_of_classes
+        actual_embedding = output[actual_index]
+
+        diff = output_embedding - actual_embedding
+        squared_dist = (diff).pow(2).sum(0)
+        squared_dist_div = diff
+
+        acc_loss_div[i] = squared_dist_div
+        acc_loss_div[actual_index] = acc_loss_div[actual_index] - squared_dist_div
+
         acc_loss = acc_loss + squared_dist
 
     # return torch.tensor(acc_loss, requires_grad=True, device=device)
-    return acc_loss
+    return acc_loss, acc_loss_div
 
 
 def main():
@@ -97,7 +107,7 @@ def main():
         print('Using CPU')
 
     model = Convnet().to(device)
-    optimiser = optim.Adam(model.parameters(), lr=0.01)
+    optimiser = optim.Adam(model.parameters(), lr=model.lr)
     loss_func = simple_dist_loss
     target_class_map = { i:i for i in range(model.num_of_classes) }
 
@@ -130,9 +140,9 @@ def main():
             labels = labels.to(device)
 
             res = model(images)
-            loss = loss_func(res, labels, model.num_of_classes, { i:i for i in range(model.num_of_classes) })
+            loss, loss_div = loss_func(res, labels, model.num_of_classes, { i:i for i in range(model.num_of_classes) })
             optimiser.zero_grad()
-            loss.backward()
+            res.backward(gradient = loss_div)
             optimiser.step()
 
             if (i+1) % 100 == 0:
@@ -169,7 +179,7 @@ def main():
                 total += 1
 
         accuracy = correct / total
-        print('Test Accuracy of the model on the 10000 test images: %.4f' % accuracy)    
+        print('Test Accuracy of the model on the 10000 test images: %.3f%' % accuracy * 100)    
 
     return
 
