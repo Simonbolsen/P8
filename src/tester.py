@@ -6,56 +6,18 @@ import numpy as np
 from torchvision import datasets
 from torchvision.transforms import ToTensor
 import nn_util
+import embedding_model as emb_model
+import plotting_util as plot
+import math
 
 ngpu = 1
 device = torch.device("cuda:0" if (torch.cuda.is_available() and ngpu > 0) else "cpu")
-
-class Convnet(nn.Module):
-    def __init__(self, lr = 0.001, d = 17, num_of_classes = 10, channels = 64):
-        super(Convnet, self).__init__()
-        self.lr = lr
-        self.d = d
-        self.num_of_classes = num_of_classes
-        self.channels = channels
-        self.k_size = 4
-        self.stride = 1
-        self.padding = 0
-        self.in_size = 1
-        self.pic_size = 28
-        self.middle_layers = [self.channels, self.channels, self.channels, self.channels]
-        self.model = nn.Sequential(
-            # 1 x 28 x 28 --> 4 x 13 x 13
-            nn_util.conv_layer(self.in_size, self.middle_layers[0], self.k_size, self.stride),
-            nn_util.conv_layer(self.middle_layers[0], self.middle_layers[1], self.k_size, self.stride),
-            nn_util.conv_layer(self.middle_layers[1], self.middle_layers[2], self.k_size, self.stride),
-            # 4 x 13 x 13 --> 8 x 5 x 5 
-           nn_util. conv_layer(self.middle_layers[2], self.middle_layers[3], self.k_size, self.stride),
-            # 8 x 5 x 5 --> 10 x 1 x 1 
-            #conv_layer(self.middle_layers[3], self.d, self.k_size, self.stride),
-            nn.Flatten(),
-            nn.Linear(nn_util.get_final_layers_size(
-                nn_util.conv_final_out_size(len(self.middle_layers), self.k_size, self.stride, self.padding, self.pic_size), 
-                self.middle_layers[-1]), self.d)
-        )
-
-        self.embeddings = nn.Embedding(self.num_of_classes, self.d)
-
-    def forward(self, x):
-        x = self.model(x)
-        y = self.embeddings(torch.tensor(range(self.num_of_classes), device=device))
-        return torch.cat((x, y), dim=0)
 
 def main():
     if (device.type == 'cuda'):
         print('Using GPU')
     else:
         print('Using CPU')
-
-    num_epochs = 1
-    model = Convnet().to(device)
-    optimiser = optim.Adam(model.parameters(), lr=model.lr)
-    loss_func = nn_util.simple_dist_loss
-    target_class_map = { i:i for i in range(model.num_of_classes) }
 
     train_data = datasets.MNIST(
         root = 'data',
@@ -78,11 +40,51 @@ def main():
     print("Training data size: ", len(train_data))
     print("Test data size: ", len(test_data))
 
-    train(model, num_epochs, loaders, optimiser, loss_func)
+    param1_func = lambda p1 : 0.0001 * (p1 + 1)
+    param2_func = lambda p2 : 5 * p2 + 5
     
-    accuracy = eval(model, loaders, target_class_map)
-    print(f'Test Accuracy of the model on the 10000 test images: {(accuracy * 100):.2f}%')    
+    param1_num = 1
+    param2_num = 1
+
+    labels = ["Learning Rate lr",  "Dimensions d"]
+
+    param1_axis = [param1_func(i) for i in range(param1_num)]
+    param2_axis = [param2_func(i) for i in range(param2_num)]
+
+    config_func = lambda p1, p2 : {"lr":p1, "d":p2, "num_of_classes":10, "channels":64, "num_of_epochs":3}
+
+    results = two_param_experiment(config_func, labels, 
+                                                param1_axis, param2_axis, loaders)
+    
+    for i in range(param1_num):
+        for ii in range(param2_num):
+            results[i][ii] = math.exp(results[i][ii])
+
+    plot.plotSurface([results], "Accuracy", param1_axis, labels[0], param2_axis, labels[1], surfaceLabels=["Accuracy"], num_of_surfaces=1)
     return
+
+def two_param_experiment(config_func, labels, param1_axis, param2_axis, loaders):
+    results = []
+
+    for p1 in param1_axis:
+        results.append([])
+        for p2 in param2_axis:
+            print(f'{labels[0]}: {p1}, {labels[1]}: {p2}')
+            setup_and_train(config_func, loaders, results, p1, p2)
+    return results
+
+def setup_and_train(config_func, loaders, results, p1, p2):
+    config = config_func(p1, p2)
+    model = emb_model.Convnet(device, lr = config["lr"], d = config["d"], num_of_classes=config["num_of_classes"], channels=config["channels"]).to(device)
+    optimiser = optim.Adam(model.parameters(), lr=model.lr)
+    loss_func = nn_util.simple_dist_loss
+    target_class_map = { i:i for i in range(model.num_of_classes) }
+
+    train(model, config["num_of_epochs"], loaders, optimiser, loss_func)
+
+    accuracy = eval(model, loaders, target_class_map)
+    results[-1].append(accuracy)
+    print(f'Test Accuracy of the model on the 10000 test images: {(accuracy * 100):.2f}%')   
 
 def train(model, num_epochs, loaders, optimiser, loss_func): 
     total_step = len(loaders['train'])
