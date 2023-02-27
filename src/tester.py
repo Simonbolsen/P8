@@ -40,18 +40,18 @@ def main():
     print("Training data size: ", len(train_data))
     print("Test data size: ", len(test_data))
 
-    param1_func = lambda p1 : 0.0001 * (p1 + 1)
-    param2_func = lambda p2 : 5 * p2 + 5
+    param1_func = lambda p1 : 0.0002 * p1 + 0.0001
+    param2_func = lambda p2 : p2 + 3
     
-    param1_num = 1
-    param2_num = 1
+    param1_num = 5
+    param2_num = 30
 
     labels = ["Learning Rate lr",  "Dimensions d"]
 
     param1_axis = [param1_func(i) for i in range(param1_num)]
     param2_axis = [param2_func(i) for i in range(param2_num)]
 
-    config_func = lambda p1, p2 : {"lr":p1, "d":p2, "num_of_classes":10, "channels":64, "num_of_epochs":3}
+    config_func = lambda p1, p2 : {"lr":p1, "d":15, "num_of_classes":10, "channels":64, "num_of_epochs":p2}
 
     results = two_param_experiment(config_func, labels, 
                                                 param1_axis, param2_axis, loaders)
