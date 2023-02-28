@@ -12,70 +12,57 @@ import plotting_util as plot
 import math
 from ray import air, tune
 from ray.tune.schedulers import AsyncHyperBandScheduler
+from datahandling_util import get_data, load_data
 
 ngpu = 1
+
 device = torch.device("cuda:0" if (torch.cuda.is_available() and ngpu > 0) else "cpu")
 
-def get_data(dir="./data"):
-    train_data = datasets.MNIST(
-        root = dir,
-        train = True,                         
-        transform = ToTensor(), 
-        download = True,            
-    )
-
-    test_data = datasets.MNIST(
-        root = dir, 
-        train = False, 
-        transform = ToTensor()
-    )
-
-    return train_data, test_data
-
-def load_data(train_data, test_data, batch_size=100):
-    loaders = {
-        "train": torch.utils.data.DataLoader(train_data, batch_size=batch_size, shuffle=True, num_workers=1),
-        "test": torch.utils.data.DataLoader(test_data, batch_size=batch_size, shuffle=True, num_workers=1)
-    }
-
-    return loaders
+if (device.type == 'cuda'):
+    print('Using GPU')
+else:
+    print('Using CPU')
 
 def main():
-    if (device.type == 'cuda'):
-        print('Using GPU')
-    else:
-        print('Using CPU')
-
     train_data, test_data = get_data()
-    loaders = load_data(train_data, test_data)
 
     print("Training data size: ", len(train_data))
     print("Test data size: ", len(test_data))
 
     resources = {"cpu": 4, "gpu": 1}
     scheduler = AsyncHyperBandScheduler()
+    reporter = tune.CLIReporter(
+        metric_columns=["accuracy", "training_iteration"]
+    )
 
     smoke_test_space = {
-            "lr": 0.0001,
+            "lr": tune.grid_search([0.0001, 0.0002, 0.0003]),
             "d": 10,
             "num_of_classes": 10,
             "channels": 10,
             "batch_size": 100,
-            "num_of_epochs": 1
+            "num_of_epochs": 5
         }
-
-    tuner = tune.Tuner(
-        tune.with_resources(partial(setup_and_train, train_data=train_data, test_data=test_data), resources=resources),
-        tune_config=tune.TuneConfig(
+    
+    training_function = partial(setup_and_train, train_data=train_data, test_data=test_data)
+    tuner_config = tune.TuneConfig(
             metric="accuracy",
             mode="max",
             scheduler=scheduler,
             # num_samples=1
-        ),
-        run_config=air.RunConfig(
+    )
+
+    run_config = air.RunConfig(
             name="test",
-            stop={"training_iteration": 10}
-        ),
+            progress_reporter=reporter,
+            # stop={"training_iteration": 10}
+    )
+
+    tuner = tune.Tuner(
+        tune.with_resources(training_function, resources=resources),
+        tune_config=tuner_config,
+        run_config=run_config,
+        param_space=smoke_test_space
         # param_space={
         #     "lr": tune.grid_search([0.0001, 0.0002, 0.0003]),
         #     "d": tune.grid_search([10, 15, 20]),
@@ -84,13 +71,12 @@ def main():
         #     "batch_size": tune.choice([25, 50, 100]),
         #     "num_of_epochs": 1
         # }
-        param_space=smoke_test_space
     )
 
     results = tuner.fit()
-    for i in range(len(results)):
-        result = results[i]
-        print(result.metrics)
+    # for i in range(len(results)):
+    #     result = results[i]
+    #     print(result.metrics)
 
     # param1_func = lambda p1 : 0.0002 * p1 + 0.0001
     # param2_func = lambda p2 : p2 + 3
@@ -126,6 +112,8 @@ def two_param_experiment(config_func, labels, param1_axis, param2_axis, loaders)
 
 # def setup_and_train(config_func, loaders, results, p1, p2):
 def setup_and_train(config, train_data, test_data):
+    
+
     # config = config_func(p1, p2)
     # train_data, test_data = get_data()
     loaders = load_data(train_data, test_data, config["batch_size"])
@@ -133,18 +121,20 @@ def setup_and_train(config, train_data, test_data):
     optimiser = optim.Adam(model.parameters(), lr=model.lr)
     loss_func = nn_util.simple_dist_loss
     target_class_map = { i:i for i in range(model.num_of_classes) }
+    max_epochs = config["num_of_epochs"]
 
-    for epoch in range(config["num_of_epochs"]):
-        train(model, loaders, optimiser, loss_func)
+    for epoch in range(max_epochs):
+        train(model, loaders, optimiser, loss_func, max_epochs, current_epoch=epoch, device=device)
+        accuracy = eval(model, loaders, target_class_map, device=device)
+        tune.report(accuracy=accuracy)
+
     # train(model, config["num_of_epochs"], loaders, optimiser, loss_func)
 
-    accuracy = eval(model, loaders, target_class_map)
-    tune.report(accuracy=accuracy)
     # results[-1].append(accuracy)
     # print(f'Test Accuracy of the model on the 10000 test images: {(accuracy * 100):.2f}%')   
 
-def train(model, loaders, optimiser, loss_func): 
-    # total_step = len(loaders['train'])
+def train(model, loaders, optimiser, loss_func, num_epochs, current_epoch, device): 
+    total_step = len(loaders['train'])
     # for epoch in range(num_epochs):
 
     for i, (images, labels) in enumerate(loaders["train"]):
@@ -155,13 +145,12 @@ def train(model, loaders, optimiser, loss_func):
         loss, loss_div = loss_func(res, labels, model.num_of_classes, { i:i for i in range(model.num_of_classes) }, device)
         optimiser.zero_grad()
         res.backward(gradient = loss_div)
-        optimiser.step()
-            # if (i+1) % 100 == 0:
-            #     print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.2f}' 
-            #            .format(epoch + 1, num_epochs, i + 1, total_step, loss.item()))               
-            #     pass
+        optimiser.step()    
+        if (i+1) % 100 == 0:
+            print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.2f}' 
+                .format(current_epoch + 1, num_epochs, i + 1, total_step, loss.item()))               
 
-def eval(model, loaders, target_class_map):
+def eval(model, loaders, target_class_map, device):
      # Test the model
     model.eval()    
     correct = 0
