@@ -52,3 +52,17 @@ def split_data(train_data, test_data, targets):
 
     return train_data, test_data, support_data
 
+# Create k loaders for each class in support data 
+# with batch size of shots
+def k_shot_loaders(support_data, k, shots):
+    loaders = []
+    targets = set(support_data.targets)
+
+    for i in range(k):
+        target = targets[i]
+        idx_targets = [j for j, x in enumerate(support_data.targets) if x == target]
+        subset_data = Subset(support_data.data, idx_targets)
+        loaders.append(torch.utils.data.DataLoader(subset_data, batch_size=shots, shuffle=True, num_workers=1))
+
+    return loaders
+
