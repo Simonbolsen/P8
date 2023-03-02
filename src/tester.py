@@ -136,5 +136,51 @@ def eval(model, loaders, target_class_map):
                 total += 1
         return correct / total
 
+def few_shot_eval(model, loaders, target_class_map):
+     # Test the model
+    model.eval()    
+    with torch.no_grad():
+        correct = 0
+        total = 0
+        num_of_new_classes = len(target_class_map)
+        new_class_embeddings = [[] for _ in range(num_of_new_classes)]
+        class_image_nums = [0 for _ in range(num_of_new_classes)]
+
+        for images, labels in loaders['few_shot']: #TODO proper loader
+            images = images.to(device)
+            labels = labels.to(device)
+
+            few_shot_output = model(images)
+
+            for i, output_embedding in enumerate(few_shot_output[:-model.num_of_classes]):
+                class_index = target_class_map[labels[i].item()]
+                class_image_nums[class_index] += 1
+                new_class_embeddings[class_index].append(output_embedding)
+
+        new_class_embeddings = [sum(item) / class_image_nums[i] for i, item in enumerate(new_class_embeddings)]    
+
+        for images, labels in loaders['test']:
+            images = images.to(device)
+            labels = labels.to(device)
+
+            test_output = model(images)
+
+            for i, output_embedding in enumerate(test_output[:-model.num_of_classes]):
+                smallest_sqr_dist = 100000000
+                smallest_k = 0
+                for k in range(num_of_new_classes):
+                    actual_class_embedding = new_class_embeddings[k]
+                    squared_dist = (actual_class_embedding - output_embedding).pow(2).sum(0)
+                    
+                    if squared_dist < smallest_sqr_dist:
+                        smallest_sqr_dist = squared_dist
+                        smallest_k = k
+
+                if smallest_k == target_class_map[labels[i].item()]:
+                    correct += 1
+                total += 1
+        return correct / total
+
+
 if __name__ == '__main__':
     main()
