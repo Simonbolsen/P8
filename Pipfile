@@ -9,6 +9,7 @@ torch = "*"
 numpy = "*"
 torchvision = "*"
 matplotlib = "*"
+ray = {extras = ["tune"], version = "*"}
 
 [dev-packages]
 

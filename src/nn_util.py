@@ -1,6 +1,8 @@
 from torch import nn
 import math as Math
 import torch
+import numpy as np
+import random
 
 def conv_layer(input, output, kernel_size, stride):
     return nn.Sequential(
@@ -37,3 +39,6 @@ def simple_dist_loss(output, target, num_of_classes, target_class_map, device):
         acc_loss = acc_loss + squared_dist
 
     return acc_loss, acc_loss_div
+
+
+
