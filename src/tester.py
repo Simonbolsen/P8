@@ -64,7 +64,6 @@ def main():
             results[i][ii] = visualization_func(results[i][ii])
 
     plot.plotSurface([results], "Accuracy", param1_axis, labels[0], param2_axis, labels[1], surfaceLabels=["Accuracy"], num_of_surfaces=1)
-    return
 
 def two_param_experiment(config_func, labels, param1_axis, param2_axis, loaders):
     results = []
@@ -136,51 +135,52 @@ def eval(model, loaders, target_class_map):
                 total += 1
         return correct / total
 
-def few_shot_eval(model, loaders, target_class_map):
+def few_shot_eval(model, loaders):
      # Test the model
     model.eval()    
     with torch.no_grad():
-        correct = 0
-        total = 0
-        num_of_new_classes = len(target_class_map)
-        new_class_embeddings = [[] for _ in range(num_of_new_classes)]
-        class_image_nums = [0 for _ in range(num_of_new_classes)]
+        num_of_new_classes = len(loaders)
+        new_class_embeddings = []
+        correct = []
+        total = []
 
-        for images, labels in loaders['few_shot']: #TODO proper loader
-            images = images.to(device)
-            labels = labels.to(device)
+        # create average embeddings
+        for loader in loaders:
+            for images, labels in loader: #TODO proper loader
+                images = images.to(device)
+                labels = labels.to(device)
 
-            few_shot_output = model(images)
+                few_shot_output = model(images)
+            
+                new_class_embeddings.append(few_shot_output[:-model.num_of_classes])
+                break
 
-            for i, output_embedding in enumerate(few_shot_output[:-model.num_of_classes]):
-                class_index = target_class_map[labels[i].item()]
-                class_image_nums[class_index] += 1
-                new_class_embeddings[class_index].append(output_embedding)
+        new_class_embeddings = [sum(item) / len(item) for item in new_class_embeddings]    
 
-        new_class_embeddings = [sum(item) / class_image_nums[i] for i, item in enumerate(new_class_embeddings)]    
+        # do evaluation
+        for i, loader in enumerate(loaders):
+            for images, labels in loader[1:]:
+                images = images.to(device)
+                labels = labels.to(device)
 
-        for images, labels in loaders['test']:
-            images = images.to(device)
-            labels = labels.to(device)
+                test_output = model(images)
 
-            test_output = model(images)
+                for output_embedding in test_output[:-model.num_of_classes]:
+                    smallest_sqr_dist = 100000000
+                    smallest_k = 0
+                    for k in range(num_of_new_classes):
+                        actual_class_embedding = new_class_embeddings[k]
+                        squared_dist = (actual_class_embedding - output_embedding).pow(2).sum(0)
+                        
+                        if squared_dist < smallest_sqr_dist:
+                            smallest_sqr_dist = squared_dist
+                            smallest_k = k
 
-            for i, output_embedding in enumerate(test_output[:-model.num_of_classes]):
-                smallest_sqr_dist = 100000000
-                smallest_k = 0
-                for k in range(num_of_new_classes):
-                    actual_class_embedding = new_class_embeddings[k]
-                    squared_dist = (actual_class_embedding - output_embedding).pow(2).sum(0)
-                    
-                    if squared_dist < smallest_sqr_dist:
-                        smallest_sqr_dist = squared_dist
-                        smallest_k = k
-
-                if smallest_k == target_class_map[labels[i].item()]:
-                    correct += 1
-                total += 1
-        return correct / total
-
+                    if smallest_k == labels[0].item():
+                        correct[i] += 1
+                    total[i] += 1
+        
+        return correct, total
 
 if __name__ == '__main__':
     main()
