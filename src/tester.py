@@ -40,18 +40,18 @@ def main():
     print("Training data size: ", len(train_data))
     print("Test data size: ", len(test_data))
 
-    param1_func = lambda p1 : 0.0002 * p1 + 0.0001
-    param2_func = lambda p2 : 2 * p2 + 3
+    param1_func = lambda p1 : (p1 + 3) * 0.0001
+    param2_func = lambda p2 : 2 * p2**2 + 50
     
     param1_num = 5
-    param2_num = 10
+    param2_num = 11
 
     labels = ["Learning Rate lr",  "Dimensions d"]
 
     param1_axis = [param1_func(i) for i in range(param1_num)]
     param2_axis = [param2_func(i) for i in range(param2_num)]
-
-    config_func = lambda p1, p2 : {"lr":p1, "d":15, "num_of_classes":10, "channels":64, "num_of_epochs":p2}
+ 
+    config_func = lambda p1, p2 : {"lr":p1, "d":p2, "num_of_classes":10, "channels":64, "num_of_epochs":10}
 
     results = two_param_experiment(config_func, labels, 
                                                 param1_axis, param2_axis, loaders)
@@ -63,16 +63,16 @@ def main():
         for ii in range(param2_num):
             results[i][ii] = visualization_func(results[i][ii])
 
-    plot.plotSurface([results], "Accuracy", param1_axis, labels[0], param2_axis, labels[1], surfaceLabels=["Accuracy"], num_of_surfaces=1)
+    plot.plotSurface([results], "Accuracy v(a)", param1_axis, labels[0], param2_axis, labels[1], surfaceLabels=["Accuracy"], num_of_surfaces=1)
     return
 
 def two_param_experiment(config_func, labels, param1_axis, param2_axis, loaders):
     results = []
 
-    for p1 in param1_axis:
+    for i, p1 in enumerate(param1_axis):
         results.append([])
-        for p2 in param2_axis:
-            print(f'{labels[0]}: {p1}, {labels[1]}: {p2}')
+        for ii, p2 in enumerate(param2_axis):
+            print(f'\n{labels[0]}: {p1}, {labels[1]}: {p2}, run {i * len(param1_axis) + ii}/{len(param1_axis) * len(param2_axis)}')
             setup_and_train(config_func, loaders, results, p1, p2)
     return results
 
@@ -135,6 +135,6 @@ def eval(model, loaders, target_class_map):
                     correct += 1
                 total += 1
         return correct / total
-
+    
 if __name__ == '__main__':
     main()
