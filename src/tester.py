@@ -33,20 +33,25 @@ def main():
     print("Test data size: ", len(test_data))
 
     resources = {"cpu": 6, "gpu": 0.5}
-    scheduler = AsyncHyperBandScheduler(grace_period=4, reduction_factor=2)
+    scheduler = AsyncHyperBandScheduler(grace_period=5)
     reporter = tune.CLIReporter(
         metric_columns=["accuracy", "training_iteration"]
     )
 
     smoke_test_space = {
-            "lr": hp.uniform("lr", 0.0001, 0.001),
-            "d": hp.uniformint("d", 10, 20),
+            "lr": hp.loguniform("lr", 1e-5, 1e-1),
+            "d": hp.uniformint("d", 10, 100),
             "num_of_classes": 10,
-            "channels": hp.uniformint("channels", 10, 20),
+            "channels": hp.choice("channels", [16, 32, 64, 128, 256]),
             "batch_size": 100,
-            "num_of_epochs": hp.uniformint("num_of_epochs", 1, 4)
+            "num_of_epochs": hp.uniformint("num_of_epochs", 5, 30)
         }
     
+    good_start = {"num_of_epochs": 10, 
+                  "lr": 0.0005,
+                  "d" : 60,
+                  "channels" : 64}
+
     training_function = partial(setup_and_train, 
                                 train_data=train_data, 
                                 test_data=test_data)
@@ -54,27 +59,19 @@ def main():
     hyper_opt_search = HyperOptSearch(smoke_test_space, 
                                       metric="accuracy", 
                                       mode="max", 
-                                      n_initial_points=2, 
-                                      points_to_evaluate=[{"num_of_epochs": 1, 
-                                                           "lr": 0.0001,
-                                                           "d" : 10,
-                                                           "channels" : 10},
-                                                           {"num_of_epochs": 1, 
-                                                           "lr": 0.0005,
-                                                           "d" : 60,
-                                                           "channels" : 64}
-                                                           ])
+                                    #   n_initial_points=2, 
+                                      points_to_evaluate=[good_start])
 
     tuner_config = tune.TuneConfig(
             metric="accuracy",
             mode="max",
             scheduler=scheduler,
             search_alg=hyper_opt_search,
-            num_samples=4
+            num_samples=1000
     )
 
     run_config = air.RunConfig(
-            name="test",
+            name="mnist_initial_test",
             progress_reporter=reporter,
             # stop={"training_iteration": 10}
     )
@@ -82,36 +79,27 @@ def main():
     tuner = tune.Tuner(
         tune.with_resources(training_function, resources=resources),
         tune_config=tuner_config,
-        run_config=run_config,
-        # param_space=smoke_test_space
-        # param_space={
-        #     "lr": tune.grid_search([0.0001, 0.0002, 0.0003]),
-        #     "d": tune.grid_search([10, 15, 20]),
-        #     "num_of_classes": 10,
-        #     "channels": 64,
-        #     "batch_size": tune.choice([25, 50, 100]),
-        #     "num_of_epochs": 1
-        # }
+        run_config=run_config
     )
 
     results = tuner.fit()
     print(results.get_best_result().metrics)
 
-    lrs = []
-    dims = []
-    accuracies = []
-    epochs = []
+    # lrs = []
+    # dims = []
+    # accuracies = []
+    # epochs = []
 
-    for result in results:
-        lrs.append(result.config["lr"])
-        dims.append(result.config["d"])
-        epochs.append(result.metrics["training_iteration"])
-        accuracies.append(result.metrics["accuracy"])
+    # for result in results:
+    #     lrs.append(result.config["lr"])
+    #     dims.append(result.config["d"])
+    #     epochs.append(result.metrics["training_iteration"])
+    #     accuracies.append(result.metrics["accuracy"])
 
-    print(lrs)
-    print(dims)
-    print(accuracies)
-    print(epochs)
+    # print(lrs)
+    # print(dims)
+    # print(accuracies)
+    # print(epochs)
 
     # visualize_hyperparameters(lrs, dims, "learning_rate", "dimensions", accuracies)
 
