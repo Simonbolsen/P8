@@ -2,7 +2,6 @@ import torch
 from functools import partial
 from torch import nn
 from torch import optim
-import os
 import numpy as np
 from torchvision import datasets
 from torchvision.transforms import ToTensor
@@ -12,10 +11,9 @@ import plotting_util as plot
 import math
 from ray import air, tune
 from ray.tune.schedulers import AsyncHyperBandScheduler
-from datahandling_util import get_data, load_data
+from datahandling_util import get_data, load_data, split_data, k_shot_loaders
 from ray.tune.search.hyperopt import HyperOptSearch
 from hyperopt import hp
-import datetime
 
 ngpu = 1
 
@@ -27,42 +25,45 @@ else:
     print('Using CPU')
 
 def main():
+    few_shot_targets = [7,8,9]
+    num_of_classes = 10 - len(few_shot_targets)
     train_data, test_data = get_data()
+    train_data, test_data, support_data = split_data(train_data, test_data, few_shot_targets)
 
     print("Training data size: ", len(train_data))
     print("Test data size: ", len(test_data))
+    print("Support data size: ", len(support_data))
 
-    resources = {"cpu": 6, "gpu": 0.5}
+    resources = {"cpu": 2, "gpu": 1}
     scheduler = AsyncHyperBandScheduler(grace_period=4, reduction_factor=2)
     reporter = tune.CLIReporter(
         metric_columns=["accuracy", "training_iteration"]
     )
 
     smoke_test_space = {
-            "lr": hp.uniform("lr", 0.0001, 0.001),
-            "d": hp.uniformint("d", 10, 20),
-            "num_of_classes": 10,
-            "channels": hp.uniformint("channels", 10, 20),
+            "lr": hp.loguniform("lr", 1e-5, 1e-1),
+            "d": hp.uniformint("d", 10, 100),
+            "num_of_classes": num_of_classes,
+            "channels": hp.uniformint("channels", 10, 100),
             "batch_size": 100,
-            "num_of_epochs": hp.uniformint("num_of_epochs", 1, 4)
+            "num_of_epochs": hp.uniformint("num_of_epochs", 5, 15),
+            "shots": hp.choice("shots", [5, 10, 20]),
         }
     
     training_function = partial(setup_and_train, 
                                 train_data=train_data, 
-                                test_data=test_data)
+                                test_data=test_data,
+                                support_data=support_data)
     
     hyper_opt_search = HyperOptSearch(smoke_test_space, 
                                       metric="accuracy", 
                                       mode="max", 
                                       n_initial_points=2, 
-                                      points_to_evaluate=[{"num_of_epochs": 1, 
-                                                           "lr": 0.0001,
-                                                           "d" : 10,
-                                                           "channels" : 10},
-                                                           {"num_of_epochs": 1, 
+                                      points_to_evaluate=[ {"num_of_epochs": 10, 
                                                            "lr": 0.0005,
                                                            "d" : 60,
-                                                           "channels" : 64}
+                                                           "channels" : 64,
+                                                           "shots" : 5,}
                                                            ])
 
     tuner_config = tune.TuneConfig(
@@ -70,7 +71,7 @@ def main():
             mode="max",
             scheduler=scheduler,
             search_alg=hyper_opt_search,
-            num_samples=4
+            num_samples=10
     )
 
     run_config = air.RunConfig(
@@ -83,35 +84,26 @@ def main():
         tune.with_resources(training_function, resources=resources),
         tune_config=tuner_config,
         run_config=run_config,
-        # param_space=smoke_test_space
-        # param_space={
-        #     "lr": tune.grid_search([0.0001, 0.0002, 0.0003]),
-        #     "d": tune.grid_search([10, 15, 20]),
-        #     "num_of_classes": 10,
-        #     "channels": 64,
-        #     "batch_size": tune.choice([25, 50, 100]),
-        #     "num_of_epochs": 1
-        # }
     )
 
     results = tuner.fit()
     print(results.get_best_result().metrics)
 
-    lrs = []
-    dims = []
-    accuracies = []
-    epochs = []
+    # lrs = []
+    # dims = []
+    # accuracies = []
+    # epochs = []
 
-    for result in results:
-        lrs.append(result.config["lr"])
-        dims.append(result.config["d"])
-        epochs.append(result.metrics["training_iteration"])
-        accuracies.append(result.metrics["accuracy"])
+    # for result in results:
+    #     lrs.append(result.config["lr"])
+    #     dims.append(result.config["d"])
+    #     epochs.append(result.metrics["training_iteration"])
+    #     accuracies.append(result.metrics["accuracy"])
 
-    print(lrs)
-    print(dims)
-    print(accuracies)
-    print(epochs)
+    # print(lrs)
+    # print(dims)
+    # print(accuracies)
+    # print(epochs)
 
     # visualize_hyperparameters(lrs, dims, "learning_rate", "dimensions", accuracies)
 
@@ -141,22 +133,24 @@ def two_param_experiment(config_func, labels, param1_axis, param2_axis, loaders)
     return results
 
 # def setup_and_train(config_func, loaders, results, p1, p2):
-def setup_and_train(config, train_data, test_data):
+def setup_and_train(config, train_data, test_data, support_data):
     # config = config_func(p1, p2)
     # train_data, test_data = get_data()
     loaders = load_data(train_data, test_data, config["batch_size"])
+    support_loaders, query_loader  = k_shot_loaders(support_data, config["shots"])
+
     model = emb_model.Convnet(device, lr = config["lr"], d = config["d"], num_of_classes=config["num_of_classes"], channels=config["channels"]).to(device)
     optimiser = optim.Adam(model.parameters(), lr=model.lr)
     loss_func = nn_util.simple_dist_loss
-    target_class_map = { i:i for i in range(model.num_of_classes) }
     max_epochs = config["num_of_epochs"]
 
     for epoch in range(max_epochs):
         train(model, loaders, optimiser, loss_func, max_epochs, current_epoch=epoch, device=device)
-        accuracy = eval(model, loaders, target_class_map, device=device)
+        # accuracy = eval(model, loaders, device=device)
+        correct, total = few_shot_eval(model, support_loaders, query_loader)
+        accuracy = sum(correct) / sum(total)
         tune.report(accuracy=accuracy)
-        
-
+    
     # train(model, config["num_of_epochs"], loaders, optimiser, loss_func)
 
     # results[-1].append(accuracy)
@@ -170,15 +164,15 @@ def train(model, loaders, optimiser, loss_func, num_epochs, current_epoch, devic
         labels = labels.to(device)
 
         res = model(images)
-        loss, loss_div = loss_func(res, labels, model.num_of_classes, { i:i for i in range(model.num_of_classes) }, device)
+        loss, loss_div = loss_func(res, labels, model.num_of_classes, device)
         optimiser.zero_grad()
         res.backward(gradient = loss_div)
         optimiser.step()    
         if (i+1) % 100 == 0:
             print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.2f}' 
                 .format(current_epoch + 1, num_epochs, i + 1, total_step, loss.item()))   
-
-def eval(model, loaders, target_class_map, device):
+            
+def eval(model, loaders, device):
      # Test the model
     model.eval()    
     correct = 0
@@ -201,57 +195,62 @@ def eval(model, loaders, target_class_map, device):
                         smallest_sqr_dist = squared_dist
                         smallest_k = k
 
-                if smallest_k == target_class_map[labels[i].item()]:
+                if smallest_k == labels[i].item():
                     correct += 1
                 total += 1
         return correct / total
     
 
-def few_shot_eval(model, loaders):
+def few_shot_eval(model, support_loaders, query_loader):
      # Test the model
     model.eval()    
     with torch.no_grad():
-        num_of_new_classes = len(loaders)
-        new_class_embeddings = []
-        correct = []
-        total = []
+        # Get targets we have not seen before
+        few_shot_targets = []
+        for loader in support_loaders:
+            for _, labels in loader:
+                few_shot_targets.append(labels[0].item())
+                break
 
-        # create average embeddings
-        for loader in loaders:
-            for images, labels in loader: #TODO proper loader
-                images = images.to(device)
+        num_of_new_classes = len(few_shot_targets)
+        new_class_embeddings = []
+        correct = [0] * num_of_new_classes
+        total = [0] * num_of_new_classes
+       
+        # get all images from support loaders
+        for loader in support_loaders:
+            for images, labels in loader:
+                images = images.view(-1, 1, 28, 28).float().to(device)
                 labels = labels.to(device)
 
                 few_shot_output = model(images)
             
                 new_class_embeddings.append(few_shot_output[:-model.num_of_classes])
-                break
 
-        new_class_embeddings = [sum(item) / len(item) for item in new_class_embeddings]    
+        # calculate all average embeddings
+        new_class_embeddings = [sum(item) / len(item) for item in new_class_embeddings]
+        
 
         # do evaluation
-        for i, loader in enumerate(loaders):
-            for images, labels in loader[1:]:
-                images = images.to(device)
-                labels = labels.to(device)
+        for images, labels in query_loader:
+            images = images.view(-1, 1, 28, 28).float().to(device)
+            test_output = model(images)
 
-                test_output = model(images)
-
-                for output_embedding in test_output[:-model.num_of_classes]:
-                    smallest_sqr_dist = 100000000
-                    smallest_k = 0
-                    for k in range(num_of_new_classes):
-                        actual_class_embedding = new_class_embeddings[k]
-                        squared_dist = (actual_class_embedding - output_embedding).pow(2).sum(0)
-                        
-                        if squared_dist < smallest_sqr_dist:
-                            smallest_sqr_dist = squared_dist
-                            smallest_k = k
-
-                    if smallest_k == labels[0].item():
-                        correct[i] += 1
-                    total[i] += 1
-        
+            for output_embedding in test_output[:-model.num_of_classes]:
+                smallest_sqr_dist = 100000000
+                closest_target = 0
+                for k, target in enumerate(few_shot_targets):
+                    actual_class_embedding = new_class_embeddings[k]
+                    squared_dist = (actual_class_embedding - output_embedding).pow(2).sum(0)
+                    
+                    if squared_dist < smallest_sqr_dist:
+                        smallest_sqr_dist = squared_dist
+                        closest_target = target
+                
+                if closest_target == labels[0].item():
+                    correct[k] += 1
+                total[k] += 1
+                
         return correct, total
 
 if __name__ == '__main__':
