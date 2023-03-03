@@ -69,7 +69,7 @@ def k_shot_loaders(support_data, shots):
     loaders = []
     targets = torch.unique(support_data.targets)
     
-    for i in range(k):
+    for i in range():
         target = targets[i]
         idx_targets = [j for j, x in enumerate(support_data.targets) if x == target]
         subset_data = Subset(support_data, idx_targets)

@@ -13,6 +13,9 @@ import math
 from ray import air, tune
 from ray.tune.schedulers import AsyncHyperBandScheduler
 from datahandling_util import get_data, load_data
+from ray.tune.search.hyperopt import HyperOptSearch
+from hyperopt import hp
+import datetime
 
 ngpu = 1
 
@@ -29,27 +32,45 @@ def main():
     print("Training data size: ", len(train_data))
     print("Test data size: ", len(test_data))
 
-    resources = {"cpu": 4, "gpu": 1}
-    scheduler = AsyncHyperBandScheduler()
+    resources = {"cpu": 6, "gpu": 0.5}
+    scheduler = AsyncHyperBandScheduler(grace_period=4, reduction_factor=2)
     reporter = tune.CLIReporter(
         metric_columns=["accuracy", "training_iteration"]
     )
 
     smoke_test_space = {
-            "lr": tune.grid_search([0.0001, 0.0002, 0.0003]),
-            "d": 10,
+            "lr": hp.uniform("lr", 0.0001, 0.001),
+            "d": hp.uniformint("d", 10, 20),
             "num_of_classes": 10,
-            "channels": 10,
+            "channels": hp.uniformint("channels", 10, 20),
             "batch_size": 100,
-            "num_of_epochs": 5
+            "num_of_epochs": hp.uniformint("num_of_epochs", 1, 4)
         }
     
-    training_function = partial(setup_and_train, train_data=train_data, test_data=test_data)
+    training_function = partial(setup_and_train, 
+                                train_data=train_data, 
+                                test_data=test_data)
+    
+    hyper_opt_search = HyperOptSearch(smoke_test_space, 
+                                      metric="accuracy", 
+                                      mode="max", 
+                                      n_initial_points=2, 
+                                      points_to_evaluate=[{"num_of_epochs": 1, 
+                                                           "lr": 0.0001,
+                                                           "d" : 10,
+                                                           "channels" : 10},
+                                                           {"num_of_epochs": 1, 
+                                                           "lr": 0.0005,
+                                                           "d" : 60,
+                                                           "channels" : 64}
+                                                           ])
+
     tuner_config = tune.TuneConfig(
             metric="accuracy",
             mode="max",
             scheduler=scheduler,
-            # num_samples=1
+            search_alg=hyper_opt_search,
+            num_samples=4
     )
 
     run_config = air.RunConfig(
@@ -62,7 +83,7 @@ def main():
         tune.with_resources(training_function, resources=resources),
         tune_config=tuner_config,
         run_config=run_config,
-        param_space=smoke_test_space
+        # param_space=smoke_test_space
         # param_space={
         #     "lr": tune.grid_search([0.0001, 0.0002, 0.0003]),
         #     "d": tune.grid_search([10, 15, 20]),
@@ -74,21 +95,31 @@ def main():
     )
 
     results = tuner.fit()
+    print(results.get_best_result().metrics)
 
-    labels = ["Learning Rate lr",  "Dimensions d"]
+    lrs = []
+    dims = []
+    accuracies = []
+    epochs = []
 
-    param1_axis = [param1_func(i) for i in range(param1_num)]
-    param2_axis = [param2_func(i) for i in range(param2_num)]
- 
-    config_func = lambda p1, p2 : {"lr":p1, "d":p2, "num_of_classes":10, "channels":64, "num_of_epochs":10}
+    for result in results:
+        lrs.append(result.config["lr"])
+        dims.append(result.config["d"])
+        epochs.append(result.metrics["training_iteration"])
+        accuracies.append(result.metrics["accuracy"])
 
-    results = two_param_experiment(config_func, labels, param1_axis, param2_axis, loaders)
+    print(lrs)
+    print(dims)
+    print(accuracies)
+    print(epochs)
 
-    visualize_hyperparameters(param1_axis, param2_axis, labels[0], labels[1], results)
+    # visualize_hyperparameters(lrs, dims, "learning_rate", "dimensions", accuracies)
 
+# Probably not needed
 def visualize_hyperparameters(param1_axis, param2_axis, param1_name, param2_name, results, 
                             visualization_func = lambda x : 1 - math.sqrt(1 - x**2)):
     visual_results = [[visualization_func(i) for i in r] for r in results]
+    # visual_results = [[visualization_func(r)] for r in results]
     plot.plotSurface([visual_results], 
                      "Accuracy", 
                      param1_axis, 
@@ -98,6 +129,7 @@ def visualize_hyperparameters(param1_axis, param2_axis, param1_name, param2_name
                      surfaceLabels=["Accuracy"], 
                      num_of_surfaces=1)
 
+# Probably not needed
 def two_param_experiment(config_func, labels, param1_axis, param2_axis, loaders):
     results = []
 
@@ -110,8 +142,6 @@ def two_param_experiment(config_func, labels, param1_axis, param2_axis, loaders)
 
 # def setup_and_train(config_func, loaders, results, p1, p2):
 def setup_and_train(config, train_data, test_data):
-    
-
     # config = config_func(p1, p2)
     # train_data, test_data = get_data()
     loaders = load_data(train_data, test_data, config["batch_size"])
@@ -125,6 +155,7 @@ def setup_and_train(config, train_data, test_data):
         train(model, loaders, optimiser, loss_func, max_epochs, current_epoch=epoch, device=device)
         accuracy = eval(model, loaders, target_class_map, device=device)
         tune.report(accuracy=accuracy)
+        
 
     # train(model, config["num_of_epochs"], loaders, optimiser, loss_func)
 
@@ -133,7 +164,6 @@ def setup_and_train(config, train_data, test_data):
 
 def train(model, loaders, optimiser, loss_func, num_epochs, current_epoch, device): 
     total_step = len(loaders['train'])
-    # for epoch in range(num_epochs):
 
     for i, (images, labels) in enumerate(loaders["train"]):
         images = images.to(device)
@@ -146,7 +176,7 @@ def train(model, loaders, optimiser, loss_func, num_epochs, current_epoch, devic
         optimiser.step()    
         if (i+1) % 100 == 0:
             print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.2f}' 
-                .format(current_epoch + 1, num_epochs, i + 1, total_step, loss.item()))               
+                .format(current_epoch + 1, num_epochs, i + 1, total_step, loss.item()))   
 
 def eval(model, loaders, target_class_map, device):
      # Test the model
