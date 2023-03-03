@@ -155,7 +155,6 @@ def setup_and_train(config, train_data, test_data):
         train(model, loaders, optimiser, loss_func, max_epochs, current_epoch=epoch, device=device)
         accuracy = eval(model, loaders, target_class_map, device=device)
         tune.report(accuracy=accuracy)
-        break
         
 
     # train(model, config["num_of_epochs"], loaders, optimiser, loss_func)
@@ -178,7 +177,6 @@ def train(model, loaders, optimiser, loss_func, num_epochs, current_epoch, devic
         if (i+1) % 100 == 0:
             print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.2f}' 
                 .format(current_epoch + 1, num_epochs, i + 1, total_step, loss.item()))   
-        break            
 
 def eval(model, loaders, target_class_map, device):
      # Test the model
