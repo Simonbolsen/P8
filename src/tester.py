@@ -74,39 +74,37 @@ def main():
     )
 
     results = tuner.fit()
-    # for i in range(len(results)):
-    #     result = results[i]
-    #     print(result.metrics)
 
-    # param1_func = lambda p1 : 0.0002 * p1 + 0.0001
-    # param2_func = lambda p2 : p2 + 3
-    
-    # param1_num = 5
-    # param2_num = 30
+    labels = ["Learning Rate lr",  "Dimensions d"]
 
-    # labels = ["Learning Rate lr",  "Dimensions d"]
+    param1_axis = [param1_func(i) for i in range(param1_num)]
+    param2_axis = [param2_func(i) for i in range(param2_num)]
+ 
+    config_func = lambda p1, p2 : {"lr":p1, "d":p2, "num_of_classes":10, "channels":64, "num_of_epochs":10}
 
-    # param1_axis = [param1_func(i) for i in range(param1_num)]
-    # param2_axis = [param2_func(i) for i in range(param2_num)]
+    results = two_param_experiment(config_func, labels, param1_axis, param2_axis, loaders)
 
-    # config_func = lambda p1, p2 : {"lr":p1, "d":15, "num_of_classes":10, "channels":64, "num_of_epochs":p2}
+    visualize_hyperparameters(param1_axis, param2_axis, labels[0], labels[1], results)
 
-    # results = two_param_experiment(config_func, labels, 
-    #                                             param1_axis, param2_axis, loaders)
-    
-    # for i in range(param1_num):
-    #     for ii in range(param2_num):
-    #         results[i][ii] = math.exp(results[i][ii])
-
-    # plot.plotSurface([results], "Accuracy", param1_axis, labels[0], param2_axis, labels[1], surfaceLabels=["Accuracy"], num_of_surfaces=1)
+def visualize_hyperparameters(param1_axis, param2_axis, param1_name, param2_name, results, 
+                            visualization_func = lambda x : 1 - math.sqrt(1 - x**2)):
+    visual_results = [[visualization_func(i) for i in r] for r in results]
+    plot.plotSurface([visual_results], 
+                     "Accuracy", 
+                     param1_axis, 
+                     param1_name, 
+                     param2_axis, 
+                     param2_name, 
+                     surfaceLabels=["Accuracy"], 
+                     num_of_surfaces=1)
 
 def two_param_experiment(config_func, labels, param1_axis, param2_axis, loaders):
     results = []
 
-    for p1 in param1_axis:
+    for i, p1 in enumerate(param1_axis):
         results.append([])
-        for p2 in param2_axis:
-            print(f'{labels[0]}: {p1}, {labels[1]}: {p2}')
+        for ii, p2 in enumerate(param2_axis):
+            print(f'\n{labels[0]}: {p1}, {labels[1]}: {p2}, run {i * len(param1_axis) + ii}/{len(param1_axis) * len(param2_axis)}')
             setup_and_train(config_func, loaders, results, p1, p2)
     return results
 
@@ -176,8 +174,55 @@ def eval(model, loaders, target_class_map, device):
                 if smallest_k == target_class_map[labels[i].item()]:
                     correct += 1
                 total += 1
+        return correct / total
     
-    return correct / total
+
+def few_shot_eval(model, loaders):
+     # Test the model
+    model.eval()    
+    with torch.no_grad():
+        num_of_new_classes = len(loaders)
+        new_class_embeddings = []
+        correct = []
+        total = []
+
+        # create average embeddings
+        for loader in loaders:
+            for images, labels in loader: #TODO proper loader
+                images = images.to(device)
+                labels = labels.to(device)
+
+                few_shot_output = model(images)
+            
+                new_class_embeddings.append(few_shot_output[:-model.num_of_classes])
+                break
+
+        new_class_embeddings = [sum(item) / len(item) for item in new_class_embeddings]    
+
+        # do evaluation
+        for i, loader in enumerate(loaders):
+            for images, labels in loader[1:]:
+                images = images.to(device)
+                labels = labels.to(device)
+
+                test_output = model(images)
+
+                for output_embedding in test_output[:-model.num_of_classes]:
+                    smallest_sqr_dist = 100000000
+                    smallest_k = 0
+                    for k in range(num_of_new_classes):
+                        actual_class_embedding = new_class_embeddings[k]
+                        squared_dist = (actual_class_embedding - output_embedding).pow(2).sum(0)
+                        
+                        if squared_dist < smallest_sqr_dist:
+                            smallest_sqr_dist = squared_dist
+                            smallest_k = k
+
+                    if smallest_k == labels[0].item():
+                        correct[i] += 1
+                    total[i] += 1
+        
+        return correct, total
 
 if __name__ == '__main__':
     main()
