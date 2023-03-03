@@ -41,10 +41,10 @@ def main():
     print("Test data size: ", len(test_data))
 
     param1_func = lambda p1 : 0.0002 * p1 + 0.0001
-    param2_func = lambda p2 : 2 * p2 + 3
+    param2_func = lambda p2 : 1 # 2 * p2 + 3
     
-    param1_num = 5
-    param2_num = 10
+    param1_num = 2
+    param2_num = 2
 
     labels = ["Learning Rate lr",  "Dimensions d"]
 
@@ -53,17 +53,22 @@ def main():
 
     config_func = lambda p1, p2 : {"lr":p1, "d":15, "num_of_classes":10, "channels":64, "num_of_epochs":p2}
 
-    results = two_param_experiment(config_func, labels, 
-                                                param1_axis, param2_axis, loaders)
+    results = two_param_experiment(config_func, labels, param1_axis, param2_axis, loaders)
+
+    visualize_hyperparameters(param1_axis, param2_axis, labels[0], labels[1], results)
     
-    visualization_func = lambda x : 1 - math.sqrt(1 - x**2) #math.exp(results[i][ii])
 
-
-    for i in range(param1_num):
-        for ii in range(param2_num):
-            results[i][ii] = visualization_func(results[i][ii])
-
-    plot.plotSurface([results], "Accuracy", param1_axis, labels[0], param2_axis, labels[1], surfaceLabels=["Accuracy"], num_of_surfaces=1)
+def visualize_hyperparameters(param1_axis, param2_axis, param1_name, param2_name, results, 
+                            visualization_func = lambda x : 1 - math.sqrt(1 - x**2)):
+    visual_results = [[visualization_func(i) for i in r] for r in results]
+    plot.plotSurface([visual_results], 
+                     "Accuracy", 
+                     param1_axis, 
+                     param1_name, 
+                     param2_axis, 
+                     param2_name, 
+                     surfaceLabels=["Accuracy"], 
+                     num_of_surfaces=1)
 
 def two_param_experiment(config_func, labels, param1_axis, param2_axis, loaders):
     results = []
