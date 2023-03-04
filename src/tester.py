@@ -14,6 +14,7 @@ from ray.tune.schedulers import AsyncHyperBandScheduler
 from datahandling_util import get_data, load_data, split_data, k_shot_loaders
 from ray.tune.search.hyperopt import HyperOptSearch
 from hyperopt import hp
+import sys
 
 ngpu = 1
 
@@ -72,7 +73,7 @@ def main():
         mode="max",
         scheduler=scheduler,
         search_alg=hyper_opt_search,
-        num_samples=10
+        num_samples=3
     )
 
     run_config = air.RunConfig(
@@ -137,10 +138,7 @@ def two_param_experiment(config_func, labels, param1_axis, param2_axis, loaders)
     return results
 
 
-# def setup_and_train(config_func, loaders, results, p1, p2):
 def setup_and_train(config, train_data, test_data, support_data):
-    # config = config_func(p1, p2)
-    # train_data, test_data = get_data()
     loaders = load_data(train_data, test_data, config["batch_size"])
     support_loaders, query_loader = k_shot_loaders(support_data, config["shots"])
 
@@ -156,12 +154,6 @@ def setup_and_train(config, train_data, test_data, support_data):
         correct, total = few_shot_eval(model, support_loaders, query_loader)
         accuracy = sum(correct) / sum(total)
         tune.report(accuracy=accuracy)
-
-    # train(model, config["num_of_epochs"], loaders, optimiser, loss_func)
-
-    # results[-1].append(accuracy)
-    # print(f'Test Accuracy of the model on the 10000 test images: {(accuracy * 100):.2f}%')   
-
 
 def train(model, loaders, optimiser, loss_func, num_epochs, current_epoch, device):
     total_step = len(loaders['train'])
@@ -208,55 +200,68 @@ def eval(model, loaders, device):
                 total += 1
         return correct / total
 
+def find_few_shot_targets(support_loaders):
+    few_shot_targets = []
+    for loader in support_loaders:
+        for _, labels in loader:
+            few_shot_targets.append(labels[0].item())
+            break
+    return few_shot_targets
+
+def get_few_shot_embeddings(support_loaders, model, device):
+    new_class_embeddings = []
+
+    for loaders in support_loaders:
+        for images, _ in loaders:
+            # todo: remove hardcode shape
+            # ensure correct shape
+            images = images.view(-1, 1, 28, 28).float().to(device)
+            few_shot_output = model(images)
+            new_class_embeddings.append(few_shot_output[:-model.num_of_classes])
+    
+    return new_class_embeddings
+
+def find_closest_embedding(query, class_embeddings):
+    smallest_sqr_dist = sys.maxsize
+    closest_target_index = 0
+    for i, embedding in enumerate(class_embeddings):
+        squared_dist = (embedding - query).pow(2).sum(0)
+        if squared_dist < smallest_sqr_dist:
+            smallest_sqr_dist = squared_dist
+            closest_target_index = i
+    
+    return closest_target_index
+
 
 def few_shot_eval(model, support_loaders, query_loader):
     # Test the model
     model.eval()
     with torch.no_grad():
-        # Get targets we have not seen before
-        few_shot_targets = []
-        for loader in support_loaders:
-            for _, labels in loader:
-                few_shot_targets.append(labels[0].item())
-                break
-
+        # Get the targets we have not seen before
+        few_shot_targets = find_few_shot_targets(support_loaders)
         num_of_new_classes = len(few_shot_targets)
+
         new_class_embeddings = []
         correct = [0] * num_of_new_classes
         total = [0] * num_of_new_classes
 
-        # get all images from support loaders
-        for loader in support_loaders:
-            for images, labels in loader:
-                images = images.view(-1, 1, 28, 28).float().to(device)
-                labels = labels.to(device)
-
-                few_shot_output = model(images)
-
-                new_class_embeddings.append(few_shot_output[:-model.num_of_classes])
-
-        # calculate all average embeddings
+        new_class_embeddings = get_few_shot_embeddings(support_loaders, model, device)
         new_class_embeddings = [sum(item) / len(item) for item in new_class_embeddings]
+
+        # ensure lengths but assume the order is preserved
+        assert len(new_class_embeddings) == len(few_shot_targets)
 
         # do evaluation
         for images, labels in query_loader:
+            # todo: remove hardcoded shape
             images = images.view(-1, 1, 28, 28).float().to(device)
             test_output = model(images)
 
             for i, output_embedding in enumerate(test_output[:-model.num_of_classes]):
-                smallest_sqr_dist = 100000000
-                closest_target = 0
-                closest_target_index = 0
-                for k, target in enumerate(few_shot_targets):
-                    actual_class_embedding = new_class_embeddings[k]
-                    squared_dist = (actual_class_embedding - output_embedding).pow(2).sum(0)
+                closest_target_index = find_closest_embedding(output_embedding, new_class_embeddings)
+                predicted_target = few_shot_targets[closest_target_index]
 
-                    if squared_dist < smallest_sqr_dist:
-                        smallest_sqr_dist = squared_dist
-                        closest_target = target
-                        closest_target_index = k
-
-                if closest_target == labels[i].item():
+                if predicted_target == labels[i].item():
                     correct[closest_target_index] += 1
                 total[closest_target_index] += 1
 
