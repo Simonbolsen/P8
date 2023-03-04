@@ -32,14 +32,14 @@ def main():
     print("Training data size: ", len(train_data))
     print("Test data size: ", len(test_data))
 
-    resources = {"cpu": 6, "gpu": 0.5}
-    scheduler = AsyncHyperBandScheduler(grace_period=5)
+    resources = {"cpu": 3, "gpu": 0.25}
+    scheduler = AsyncHyperBandScheduler(grace_period=2)
     reporter = tune.CLIReporter(
         metric_columns=["accuracy", "training_iteration"]
     )
 
     smoke_test_space = {
-            "lr": hp.loguniform("lr", 1e-5, 1e-1),
+            "lr": hp.uniform("lr", 0.00001, 0.0001),
             "d": hp.uniformint("d", 10, 100),
             "num_of_classes": 10,
             "channels": hp.choice("channels", [16, 32, 64, 128, 256]),
@@ -47,7 +47,7 @@ def main():
             "num_of_epochs": hp.uniformint("num_of_epochs", 5, 30)
         }
     
-    good_start = {"num_of_epochs": 10, 
+    good_start = {"num_of_epochs": 10,
                   "lr": 0.0005,
                   "d" : 60,
                   "channels" : 64}
