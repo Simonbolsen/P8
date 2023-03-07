@@ -45,33 +45,27 @@ def plotSurface(heights, zTitle, xAxis, xTitle, yAxis, yTitle, num_of_surfaces, 
     plt.show()
 
 
-def plotPoints(xs, ys, zs, axis_names, num_of_series = 1, series_labels=[]):
+def get_min_max(xs): 
+    x_max = -math.inf
+    x_min = math.inf
+    for x in xs:
+        if len(x) > 0:
+            x_max = max(x_max, max(x))
+            x_min = min(x_min, min(x))
+    return x_min, x_max
+
+def inv(x):
+    return math.sqrt(1 - (1 - x)**2)
+
+def plotPoints(xs, ys, zs, axis_names, num_of_series = 1, series_labels=[], function = inv):
     mpl.rcParams['legend.fontsize'] = 10
 
     if series_labels == []: 
         series_labels = [axis_names[2] for _ in range(num_of_series)]
 
-    x_max = -math.inf
-    x_min = math.inf
-    y_max = -math.inf
-    y_min = math.inf
-    z_max = -math.inf
-    z_min = math.inf
-
-    for x in xs:
-        if len(x) > 0:
-            x_max = max(x_max, max(x))
-            x_min = min(x_min, min(x))
-
-    for y in ys:
-        if len(y) > 0:
-            y_max = max(y_max, max(y))
-            y_min = min(y_min, min(y))
-
-    for z in zs:
-        if len(z) > 0:
-            z_max = max(z_max, max(z))
-            z_min = min(z_min, min(z))
+    x_min, x_max = get_min_max(xs)
+    y_min, y_max = get_min_max(ys)
+    z_min, z_max = get_min_max(zs)
 
     if(not isinstance(xs[0], list)):
         xs = [xs]
@@ -90,10 +84,10 @@ def plotPoints(xs, ys, zs, axis_names, num_of_series = 1, series_labels=[]):
     axe.set_ylabel(axis_names[1])
     axe.set_zlabel(axis_names[2])
 
-    axe.set_autoscale_on(False)
     axe.set_xbound(x_min, x_max)
     axe.set_ybound(y_min, y_max)
     axe.set_zbound(z_min, z_max)
+    axe.w_zaxis.set_major_formatter(plt.FuncFormatter(lambda x, pos: f"{function(x):.2f}"))
 
     axe.legend()
 

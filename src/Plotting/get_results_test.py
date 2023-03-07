@@ -1,6 +1,6 @@
-from Plotting.plotting_util import plotPoints
+from plotting_util import plotPoints
 from ray import tune
-import Plotting.plotting_util as plot
+import plotting_util as plot
 import results_analysis_util as analysis
 import math
 
@@ -19,6 +19,7 @@ param2 = [[] for _ in range(num_of_bins)]
 accuracies = [[] for _ in range(num_of_bins)]
 
 visual_func = lambda x: (1 - math.sqrt(1 - x**2))
+inv_visual_func = lambda x: math.sqrt(1 - (1 -  x)**2)
 failures = 0
 total = 0
 
@@ -49,4 +50,5 @@ print(f"Failures: {failures}/{total}")
 
 # print(results.results)
 plot.plotPoints(param1, param2, accuracies, ["Learning Rate", "Dimensions", "Accuracy v(a)"], 
-                num_of_series=num_of_bins, series_labels=[f"{i * max_value / num_of_bins}" for i in range(num_of_bins)])
+                num_of_series=num_of_bins, series_labels=[f"{i * max_value / num_of_bins}" for i in range(num_of_bins)],
+                functions=(visual_func, inv_visual_func))
