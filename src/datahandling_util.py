@@ -64,16 +64,25 @@ def split_data(train_data, test_data, targets):
     return train_data, test_data, support_dataset
 
 # Create loaders for each class in support data 
-# with batch size of shots
+# with batch size of shots.
+# Creates loader for queries
 def k_shot_loaders(support_data, shots):
-    loaders = []
+    all_indexs_to_remove = []
+    support_loaders = []
     targets = torch.unique(support_data.targets)
     
-    for i in range():
-        target = targets[i]
-        idx_targets = [j for j, x in enumerate(support_data.targets) if x == target]
-        subset_data = Subset(support_data, idx_targets)
-        loaders.append(torch.utils.data.DataLoader(subset_data, batch_size=shots, shuffle=True, num_workers=1))
+    for target in targets:
+        subset_indexs = [j for j, x in enumerate(support_data.targets) if x == target][:shots]
+        all_indexs_to_remove.extend(subset_indexs)
+        subset_data = Subset(support_data, subset_indexs)
+        support_loaders.append(torch.utils.data.DataLoader(subset_data, batch_size=shots, shuffle=True, num_workers=1))
 
-    return loaders
+    indexs_to_keep = [i for i in range(len(support_data.data)) if i not in all_indexs_to_remove]
+    # support_data.data = support_data.data[indexs_to_keep]
+    # support_data.targets = support_data.targets[indexs_to_keep]
+    query_data = Subset(support_data, indexs_to_keep)
+    
+    query_loader = torch.utils.data.DataLoader(query_data, batch_size=100, shuffle=True, num_workers=1)
+
+    return support_loaders, query_loader
 

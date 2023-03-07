@@ -23,7 +23,7 @@ class Convnet(nn.Module):
             nn_util.conv_layer(self.middle_layers[0], self.middle_layers[1], self.k_size, self.stride),
             nn_util.conv_layer(self.middle_layers[1], self.middle_layers[2], self.k_size, self.stride),
             # 4 x 13 x 13 --> 8 x 5 x 5 
-           nn_util. conv_layer(self.middle_layers[2], self.middle_layers[3], self.k_size, self.stride),
+            nn_util. conv_layer(self.middle_layers[2], self.middle_layers[3], self.k_size, self.stride),
             # 8 x 5 x 5 --> 10 x 1 x 1 
             #conv_layer(self.middle_layers[3], self.d, self.k_size, self.stride),
             nn.Flatten(),

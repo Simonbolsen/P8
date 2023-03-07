@@ -21,12 +21,13 @@ def conv_final_out_size(conv_layers, kernel_size, stride, padding, input_size):
 def get_final_layers_size(picture_size, previous_layer_size):
     return picture_size * picture_size * previous_layer_size
 
-def simple_dist_loss(output, target, num_of_classes, target_class_map, device):
+def simple_dist_loss(output, target, num_of_classes, device):
     acc_loss = torch.tensor(0.0, requires_grad=True, device=device)
     acc_loss_div = torch.zeros(output.shape, device=device, dtype=torch.float)
 
     for i, output_embedding in enumerate(output[:-num_of_classes]):
-        actual_index = target_class_map[target[i].item()] - num_of_classes
+        # actual_index = target_class_map[target[i].item()] - num_of_classes
+        actual_index = target[i].item() - num_of_classes
         actual_embedding = output[actual_index]
 
         diff = output_embedding - actual_embedding
