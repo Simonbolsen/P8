@@ -38,15 +38,17 @@ def main():
 
     train_data, test_data = get_data()
 
-    train_data.transform = train_transforms
-    test_data.transform = test_transform
+    #train_data.transform = train_transforms
+    #test_data.transform = test_transform
 
     loaders = load_data(train_data, test_data)
 
+    #Original: model.conv1 = nn.Conv2d(3, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False). 1 is for grayscale instead of 3 for RGB
+    model.conv1 = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
 
     optimiser = optim.Adam(model.parameters(), lr=0.001)
-    loss_func = nn_util.simple_dist_loss
     target_class_map = { i:i for i in range(10) }
+    loss_func = nn.CrossEntropyLoss()
     epochs = 10
 
     train_model(model, loaders, loss_func, optimiser, epochs)
