@@ -28,7 +28,12 @@
             "program": "src/main.py",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "args": ["--dataset", "omniglot"],
+            "args": ["--dataset", "omniglot",
+                "--epochs","20 100",
+                "--batch","100",
+                "--dims","15",
+                "--channels","64"
+            ],
             
         },
     ]
