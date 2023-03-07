@@ -7,10 +7,12 @@ import torch
 def train_model(model, dataloaders, loss_func, optimizer, num_epochs):
     since = time.time()
     device = torch.device("cuda:0" if (torch.cuda.is_available()) else "cpu")
-
+    print(torch.cuda.is_available())
     for epoch in range(num_epochs):
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
         print('-' * 10)
+
+        
 
         #Set the mode
         for phase in ['train', 'test']:
@@ -18,7 +20,10 @@ def train_model(model, dataloaders, loss_func, optimizer, num_epochs):
                 model.train()
             else:
                 model.eval()
-            
+
+            running_loss = 0.0
+            running_corrects = 0
+
             for inputs, labels in dataloaders[phase]:
                 inputs = inputs.to(device)
                 labels = labels.to(device)
