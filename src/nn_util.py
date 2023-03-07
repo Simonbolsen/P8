@@ -5,6 +5,18 @@ import numpy as np
 import random
 
 def create_n_linear_layers(n, first_in, size):
+    """Create a set of linear layers.
+    All layers have the same amount of input and output
+    features except the first layer.
+    
+    Args:
+        n (int): amount of layers
+        first_in (int): input features for the first layer
+        size (int): input and output features for the remaining (n - 1) layers
+
+    Returns:
+        List: the linear layers
+    """
     layers = []
     
     layers.append(nn.Linear(first_in, size))
@@ -17,6 +29,17 @@ def create_n_linear_layers(n, first_in, size):
     
 
 def conv_layer(input, output, kernel_size, stride):
+    """Create a 2D convolution layer
+
+    Args:
+        input (int): in dimensions
+        output (int): out dimensions
+        kernel_size (int): kernel size
+        stride (int): stride
+
+    Returns:
+        nn.Sequential: the 2D convolutional layer
+    """
     return nn.Sequential(
         nn.Conv2d(input, output, kernel_size=kernel_size, stride=stride, bias=False),
         nn.BatchNorm2d(output),
