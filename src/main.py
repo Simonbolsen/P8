@@ -11,7 +11,7 @@ from torchvision import datasets
 from torchvision.transforms import ToTensor
 import nn_util
 import embedding_model as emb_model
-import plotting_util as plot
+import Plotting.plotting_util as plot
 import math
 from ray import air, tune
 from ray.tune.schedulers import AsyncHyperBandScheduler
