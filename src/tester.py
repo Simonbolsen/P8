@@ -37,24 +37,24 @@ def main():
     print("Support data size: ", len(support_data))
 
     resources = {"cpu": 1, "gpu": 1}
-    scheduler = AsyncHyperBandScheduler(grace_period=2)
+    scheduler = AsyncHyperBandScheduler(grace_period=3)
 
     reporter = tune.CLIReporter(
         metric_columns=["accuracy", "training_iteration"]
     )
 
     smoke_test_space = {
-        "lr": hp.loguniform("lr", np.log(1e-5), np.log(1e-2)),
-        "d": hp.uniformint("d", 10, 100),
+        "lr": hp.loguniform("lr", np.log(1e-9), np.log(1e-4)),
+        "d": hp.uniformint("d", 10, 250),
         "num_of_classes": num_of_classes,
         "channels": hp.uniformint("channels", 10, 100),
         "batch_size": hp.choice("batch_size", [2, 4, 8, 16, 32, 64, 128, 256]),
-        "num_of_epochs": hp.uniformint("num_of_epochs", 5, 10),
+        "num_of_epochs": hp.uniformint("num_of_epochs", 3, 30),
         "k_size": 4,
         "stride": 1,
-        "linear_n" : 1,
-        "linear_size" : 100,
-        "shots": hp.choice("shots", [5, 10, 20])
+        "linear_n" : hp.uniformint("linear_n", 1, 10),
+        "linear_size" : hp.uniformint("linear_size", 2 ** 8, 2 ** 13),
+        "shots": 5
     }
     
     good_start = {"num_of_epochs": 2,
@@ -66,7 +66,7 @@ def main():
                   "k_size": 4,
                   "stride": 1,
                   "linear_n" : 1,
-                  "linear_size" : 100,
+                  "linear_size" : 128,
                   "shots": 5, 
                   }
 
@@ -81,20 +81,18 @@ def main():
     hyper_opt_search = HyperOptSearch(smoke_test_space,
                                       metric="accuracy",
                                       mode="max",
-                                      n_initial_points=2,
-                                      points_to_evaluate=[good_start
-                                                          ])
+                                      points_to_evaluate=[good_start])
 
     tuner_config = tune.TuneConfig(
         metric="accuracy",
         mode="max",
         scheduler=scheduler,
         search_alg=hyper_opt_search,
-        num_samples=1
+        num_samples=250
     )
 
     run_config = air.RunConfig(
-        name="test",
+        name="mnist_initial_few_shot_test",
         progress_reporter=reporter,
     )
 
@@ -140,8 +138,6 @@ def setup_and_train(config, train_data, test_data, support_data, loss_func):
     loaders = load_data(train_data, test_data, config["batch_size"])
     support_loaders, query_loader = k_shot_loaders(support_data, config["shots"])
 
-    # model = emb_model.Convnet(device, lr=config["lr"], d=config["d"], num_of_classes=config["num_of_classes"],
-    #                           channels=config["channels"]).to(device)
     model = emb_model.Convnet(device, config["lr"], 
                               config["d"], 
                               config["num_of_classes"], 
@@ -252,6 +248,8 @@ def few_shot_eval(model, support_loaders, query_loader):
         total = [0] * num_of_new_classes
 
         new_class_embeddings = get_few_shot_embeddings(support_loaders, model, device)
+        
+        # average embeddings for class
         new_class_embeddings = [sum(item) / len(item) for item in new_class_embeddings]
 
         # ensure lengths but 
