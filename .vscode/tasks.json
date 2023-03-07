@@ -1,0 +1,29 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "MNIST Experiment 1",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "${file}",
+                "--dataset=omniglot",
+                "--epochs=20",
+                "--batch=100",
+                "--dims=15",
+                "--channels=64"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        }
+    ]
+}
