@@ -4,9 +4,22 @@ import torch
 import numpy as np
 import random
 
+def create_n_linear_layers(n, first_in, size):
+    layers = []
+    
+    layers.append(nn.Linear(first_in, size))
+    
+    for _ in range(1, n):
+        layer = nn.Linear(size, size)
+        layers.append(layer)
+        
+    return nn.Sequential(*layers)
+    
+
 def conv_layer(input, output, kernel_size, stride):
     return nn.Sequential(
-        nn.Conv2d(input, output, kernel_size=kernel_size, stride=stride),
+        nn.Conv2d(input, output, kernel_size=kernel_size, stride=stride, bias=False),
+        nn.BatchNorm2d(output),
         nn.ReLU()
     )
 
@@ -26,7 +39,6 @@ def simple_dist_loss(output, target, num_of_classes, device):
     acc_loss_div = torch.zeros(output.shape, device=device, dtype=torch.float)
 
     for i, output_embedding in enumerate(output[:-num_of_classes]):
-        # actual_index = target_class_map[target[i].item()] - num_of_classes
         actual_index = target[i].item() - num_of_classes
         actual_embedding = output[actual_index]
 
