@@ -57,10 +57,9 @@ def move_away_from_other_near_classes_class_loss(predicted_embeddings:list[list[
     def get_push_from_other_classes(self_label):
         self_embedding = class_embeddings[self_label]
         push_amount = 0
-        for other_label in range(class_embeddings):
+        for (other_label, other_embedding) in enumerate(class_embeddings):
             if self_label == other_label:
                 continue
-            other_embedding = class_embeddings[other_label]
 
             push_amount = push_amount + transform(torch.linalg.norm(self_embedding - other_embedding))
         
