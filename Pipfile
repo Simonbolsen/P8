@@ -10,6 +10,7 @@ numpy = "*"
 torchvision = "*"
 matplotlib = "*"
 ray = {extras = ["tune"], version = "*"}
+hyperopt = "*"
 
 [dev-packages]
 

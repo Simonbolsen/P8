@@ -36,8 +36,9 @@ def main():
     print("Test data size: ", len(test_data))
     print("Support data size: ", len(support_data))
 
-    resources = {"cpu": 2, "gpu": 1}
-    scheduler = AsyncHyperBandScheduler(grace_period=2, reduction_factor=2)
+    resources = {"cpu": 3, "gpu": 0.25}
+    scheduler = AsyncHyperBandScheduler(grace_period=2)
+
     reporter = tune.CLIReporter(
         metric_columns=["accuracy", "training_iteration"]
     )
@@ -85,7 +86,7 @@ def main():
     tuner = tune.Tuner(
         tune.with_resources(training_function, resources=resources),
         tune_config=tuner_config,
-        run_config=run_config,
+        run_config=run_config
     )
 
     results = tuner.fit()
