@@ -11,8 +11,9 @@ torchvision = "*"
 matplotlib = "*"
 ray = {extras = ["tune"], version = "*"}
 hyperopt = "*"
+importlib-resources = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.9"
+python_version = "3.9.0"
