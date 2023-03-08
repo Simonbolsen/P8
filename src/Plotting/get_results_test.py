@@ -34,6 +34,7 @@ for k, result in best_results.items():
             accuracy = result["data"]["accuracy"]
             linear_n = result["config"]["linear_n"]
             linear_size = result["config"]["linear_size"]
+            batch_size = math.log(result["config"]["batch_size"],2)
 
             if accuracy < 0.2:
                 failures += 1
@@ -44,8 +45,8 @@ for k, result in best_results.items():
 
             index = int((epochs / max_value) * num_of_bins)
             index = num_of_bins - 1 if index >= num_of_bins else index
-            param1[index].append(linear_n)
-            param2[index].append(linear_size)
+            param1[index].append(lr)
+            param2[index].append(batch_size)
             accuracies[index].append(accuracy)
 
 print(f"Failures: {failures}/{total}")
