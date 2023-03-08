@@ -49,7 +49,9 @@ if (device.type == 'cuda'):
 else:
     print('Using CPU')
 
-datasets = {"mnist": 0, "omniglot": 1}
+datasets = {"mnist": 0, 
+            "omniglot": 1, 
+            "cifar10": 2}
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument('--dataset', dest="dataset", type=str, default="mnist", choices=datasets.keys(),
@@ -105,7 +107,10 @@ def run_tune(args):
     good_start = {"num_of_epochs": 10,
                   "lr": 0.0005,
                   "d" : 60,
-                  "channels" : 64}
+                  "channels" : 64,
+                  "num_of_classes": 964,
+                  "batch_size": 100,
+                  }
 
     training_function = partial(setup_and_train, 
                                 loader=loader)
@@ -135,9 +140,11 @@ def run_tune(args):
         tune_config=tuner_config,
         run_config=run_config
     )
+    
+    setup_and_train(good_start, loader)
 
-    results = tuner.fit()
-    print(results.get_best_result().metrics)
+    # results = tuner.fit()
+    # print(results.get_best_result().metrics)
 
 
 def setup_and_train(config, loader):
