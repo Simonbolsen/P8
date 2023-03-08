@@ -26,12 +26,14 @@ total = 0
 for k, result in best_results.items():
     if "config" in result.keys():
         lr = math.log(result["config"]["lr"],10)
-        if True: #lr > -11 and lr < -6:
+        if lr < -2 and lr > -6:
             iterations = result["data"]["training_iteration"]
             epochs = result["config"]["num_of_epochs"]
             channels = result["config"]["channels"]
             dimension = result["config"]["d"]
             accuracy = result["data"]["accuracy"]
+            linear_n = result["config"]["linear_n"]
+            linear_size = result["config"]["linear_size"]
 
             if accuracy < 0.2:
                 failures += 1
@@ -42,8 +44,8 @@ for k, result in best_results.items():
 
             index = int((epochs / max_value) * num_of_bins)
             index = num_of_bins - 1 if index >= num_of_bins else index
-            param1[index].append(lr)
-            param2[index].append(dimension)
+            param1[index].append(linear_n)
+            param2[index].append(linear_size)
             accuracies[index].append(accuracy)
 
 print(f"Failures: {failures}/{total}")
