@@ -4,7 +4,7 @@ import plotting_util as plot
 import results_analysis_util as analysis
 import math
 
-results = tune.ExperimentAnalysis("C:/Users/simon/OneDrive/Desktop/Projekter/P8/mnist_initial_test", 
+results = tune.ExperimentAnalysis("~/ray_results/mnist_initial_few_shot_test2", 
                                   default_metric="accuracy", 
                                   default_mode="max")
 best_results = analysis.best_iterations_per_trial(results)
@@ -25,7 +25,7 @@ total = 0
 
 for k, result in best_results.items():
     if "config" in result.keys():
-        lr = math.log(result["config"]["lr"])
+        lr = math.log(result["config"]["lr"],10)
         if True: #lr > -11 and lr < -6:
             iterations = result["data"]["training_iteration"]
             epochs = result["config"]["num_of_epochs"]
@@ -50,5 +50,4 @@ print(f"Failures: {failures}/{total}")
 
 # print(results.results)
 plot.plotPoints(param1, param2, accuracies, ["Learning Rate", "Dimensions", "Accuracy v(a)"], 
-                num_of_series=num_of_bins, series_labels=[f"{i * max_value / num_of_bins}" for i in range(num_of_bins)],
-                functions=(visual_func, inv_visual_func))
+                num_of_series=num_of_bins, series_labels=[f"{i * max_value / num_of_bins}" for i in range(num_of_bins)])
