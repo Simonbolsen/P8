@@ -19,7 +19,7 @@ from datahandling_util import get_data
 from ray.tune.search.hyperopt import HyperOptSearch
 from hyperopt import hp
 import datetime
-from tester import train
+
 
 def gtzero_int(x):
     x = int(x)
@@ -112,8 +112,7 @@ def run_tune(args):
                   "batch_size": 100,
                   }
 
-    training_function = partial(setup_and_train, 
-                                loader=loader)
+    training_function = partial(setup_and_train)
     
     hyper_opt_search = HyperOptSearch(smoke_test_space, 
                                       metric="accuracy", 
@@ -136,18 +135,18 @@ def run_tune(args):
     )
 
     tuner = tune.Tuner(
-        tune.with_resources(training_function, resources=resources),
+        tune.with_parameters(training_function, train_data=loader["train"], test_data=loader["test"]),
         tune_config=tuner_config,
         run_config=run_config
     )
     
-    setup_and_train(good_start, loader)
+    #setup_and_train(good_start, loader)
 
-    # results = tuner.fit()
-    # print(results.get_best_result().metrics)
+    results = tuner.fit()
+    print(results.get_best_result().metrics)
 
 
-def setup_and_train(config, loader):
+def setup_and_train(config, train_data=None, test_data=None):
     model = emb_model.Convnet(device, lr = config["lr"], d = config["d"], num_of_classes=config["num_of_classes"], channels=config["channels"]).to(device)
     optimiser = optim.Adam(model.parameters(), lr=model.lr)
     loss_func = nn_util.simple_dist_loss
@@ -155,10 +154,54 @@ def setup_and_train(config, loader):
     max_epochs = config["num_of_epochs"]
 
     for epoch in range(max_epochs):
-        train(model, loader, optimiser, loss_func, max_epochs, current_epoch=epoch, device=device)
-        accuracy = eval(model, loader, target_class_map, device=device)
+        train(model, train_data, optimiser, loss_func, max_epochs, current_epoch=epoch, device=device)
+        accuracy = eval(model, test_data, target_class_map, device=device)
         tune.report(accuracy=accuracy)
 
+
+def train(model, data, optimiser, loss_func, num_epochs, current_epoch, device): 
+    total_step = len(data)
+
+    for i, (images, labels) in enumerate(data):
+        images = images.to(device)
+        labels = labels.to(device)
+
+        res = model(images)
+        loss, loss_div = loss_func(res, labels, model.num_of_classes, { i:i for i in range(model.num_of_classes) }, device)
+        optimiser.zero_grad()
+        res.backward(gradient = loss_div)
+        optimiser.step()    
+        if (i+1) % 100 == 0:
+            print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.2f}' 
+                .format(current_epoch + 1, num_epochs, i + 1, total_step, loss.item()))   
+
+def eval(model, data, target_class_map, device):
+     # Test the model
+    model.eval()    
+    correct = 0
+    total = 0
+    with torch.no_grad():
+        for images, labels in data:
+            images = images.to(device)
+            labels = labels.to(device)
+
+            test_output = model(images)
+
+            for i, output_embedding in enumerate(test_output[:-model.num_of_classes]):
+                smallest_sqr_dist = 100000000
+                smallest_k = 0
+                for k in range(model.num_of_classes):
+                    actual_class_embedding = test_output[k - model.num_of_classes]
+                    squared_dist = (actual_class_embedding - output_embedding).pow(2).sum(0)
+                    
+                    if squared_dist < smallest_sqr_dist:
+                        smallest_sqr_dist = squared_dist
+                        smallest_k = k
+
+                if smallest_k == target_class_map[labels[i].item()]:
+                    correct += 1
+                total += 1
+        return correct / total
 
 if __name__ == '__main__':
     args = argparser.parse_args()
