@@ -4,7 +4,7 @@ import plotting_util as plot
 import results_analysis_util as analysis
 import math
 
-results = tune.ExperimentAnalysis("~/ray_results/mnist_initial_few_shot_test2", 
+results = tune.ExperimentAnalysis("~/ray_results/mnist_initial_few_shot_test3", 
                                   default_metric="accuracy", 
                                   default_mode="max")
 best_results = analysis.best_iterations_per_trial(results)
@@ -26,7 +26,7 @@ total = 0
 for k, result in best_results.items():
     if "config" in result.keys():
         lr = math.log(result["config"]["lr"],10)
-        if lr < -2 and lr > -6:
+        if lr < -3 and lr > -5:
             iterations = result["data"]["training_iteration"]
             epochs = result["config"]["num_of_epochs"]
             channels = result["config"]["channels"]
@@ -45,8 +45,8 @@ for k, result in best_results.items():
 
             index = int((epochs / max_value) * num_of_bins)
             index = num_of_bins - 1 if index >= num_of_bins else index
-            param1[index].append(lr)
-            param2[index].append(batch_size)
+            param1[index].append(batch_size)
+            param2[index].append(channels)
             accuracies[index].append(accuracy)
 
 print(f"Failures: {failures}/{total}")
