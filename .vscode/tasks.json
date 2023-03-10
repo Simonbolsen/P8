@@ -14,6 +14,7 @@
             "args": [
                 "./src/main.py",
                 "--dataset", "cifar10",
+                "--datadir", "'./data'",
                 "--epochs", "20", "100",
                 "--classes", "10",
                 "--batch","100",

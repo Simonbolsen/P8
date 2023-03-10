@@ -1,6 +1,6 @@
 
 import argparse
-from loader.loader import load_data
+from loader.loader import load_data, get_data
 import torch
 from functools import partial
 from torch import nn
@@ -15,7 +15,6 @@ import Plotting.plotting_util as plot
 import math
 from ray import air, tune
 from ray.tune.schedulers import AsyncHyperBandScheduler
-from datahandling_util import get_data
 from ray.tune.search.hyperopt import HyperOptSearch
 from hyperopt import hp
 import datetime
@@ -56,7 +55,7 @@ datasets = {"mnist": 0,
 argparser = argparse.ArgumentParser()
 argparser.add_argument('--dataset', dest="dataset", type=str, default="mnist", choices=datasets.keys(),
                         help="Determines the dataset on which training occurs. Choose between: ".format(datasets.keys()))
-
+argparser.add_argument('--datadir', dest="data_dir", type=str, default="./data", help="Path to the data relative to current path")
 
 # Training arguments
 argparser.add_argument('--epochs', dest="epochs", nargs="+", type=gtzero_int, default=[5,30], help="Epochs must be > 0. Can be multiple values")
@@ -82,9 +81,7 @@ def legal_args(args):
     return True
 
 def run_tune(args):
-    loader = load_data(args)
-    train_data = loader["train"]
-    test_data = loader["test"]
+    train_data, test_data = get_data(args)
 
     print("Training data size: ", len(train_data))
     print("Test data size: ", len(test_data))
@@ -135,7 +132,7 @@ def run_tune(args):
     )
 
     tuner = tune.Tuner(
-        tune.with_parameters(training_function, train_data=loader["train"], test_data=loader["test"]),
+        tune.with_parameters(training_function, train_data=train_data, test_data=test_data),
         tune_config=tuner_config,
         run_config=run_config
     )
@@ -147,6 +144,7 @@ def run_tune(args):
 
 
 def setup_and_train(config, train_data=None, test_data=None):
+    loaders = load_data(train_data=train_data, test_data=test_data, batch_size=config["batch_size"])
     model = emb_model.Convnet(device, lr = config["lr"], d = config["d"], num_of_classes=config["num_of_classes"], channels=config["channels"]).to(device)
     optimiser = optim.Adam(model.parameters(), lr=model.lr)
     loss_func = nn_util.simple_dist_loss
@@ -154,15 +152,15 @@ def setup_and_train(config, train_data=None, test_data=None):
     max_epochs = config["num_of_epochs"]
 
     for epoch in range(max_epochs):
-        train(model, train_data, optimiser, loss_func, max_epochs, current_epoch=epoch, device=device)
-        accuracy = eval(model, test_data, target_class_map, device=device)
+        train(model, loaders, optimiser, loss_func, max_epochs, current_epoch=epoch, device=device)
+        accuracy = eval(model, loaders, target_class_map, device=device)
         tune.report(accuracy=accuracy)
 
 
-def train(model, data, optimiser, loss_func, num_epochs, current_epoch, device): 
-    total_step = len(data)
+def train(model, loader, optimiser, loss_func, num_epochs, current_epoch, device): 
+    total_step = len(loader["train"])
 
-    for i, (images, labels) in enumerate(data):
+    for i, (images, labels) in enumerate(loader["train"]):
         images = images.to(device)
         labels = labels.to(device)
 
@@ -175,13 +173,13 @@ def train(model, data, optimiser, loss_func, num_epochs, current_epoch, device):
             print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.2f}' 
                 .format(current_epoch + 1, num_epochs, i + 1, total_step, loss.item()))   
 
-def eval(model, data, target_class_map, device):
+def eval(model, loader, target_class_map, device):
      # Test the model
     model.eval()    
     correct = 0
     total = 0
     with torch.no_grad():
-        for images, labels in data:
+        for images, labels in loader["test"]:
             images = images.to(device)
             labels = labels.to(device)
 
