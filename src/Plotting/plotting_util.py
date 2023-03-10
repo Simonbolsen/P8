@@ -57,7 +57,7 @@ def get_min_max(xs):
 def inv(x):
     return math.sqrt(1 - (1 - x)**2)
 
-def plotPoints(xs, ys, zs, axis_names, num_of_series = 1, series_labels=[], function = inv):
+def plotPoints(xs, ys, zs, axis_names, legend = True, num_of_series = 1, series_labels=[], function = inv):
     mpl.rcParams['legend.fontsize'] = 10
 
     if series_labels == []: 
@@ -89,7 +89,8 @@ def plotPoints(xs, ys, zs, axis_names, num_of_series = 1, series_labels=[], func
     axe.set_zbound(z_min, z_max)
     axe.w_zaxis.set_major_formatter(plt.FuncFormatter(lambda x, pos: f"{function(x):.2f}"))
 
-    axe.legend()
+    if legend:
+        axe.legend()
 
     plt.show()
 
