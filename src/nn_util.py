@@ -83,28 +83,30 @@ def move_away_from_other_near_classes_output_loss(predicted_embeddings:list[list
 
 
 def move_away_from_other_near_classes_class_loss(predicted_embeddings:list[list[float]], target_labels:list[int], class_embeddings:list[list[float]], device: torch.device):
-    def transform(x): return 1/x
+    def proximity(x): return 1 / (x + 0.0001)
     def get_push_from_other_classes(self_label):
         self_embedding = class_embeddings[self_label]
-        push_amount = 0
-        for other_label in range(class_embeddings):
-            if self_label == other_label:
-                continue
-            other_embedding = class_embeddings[other_label]
-
-            push_amount = push_amount + transform(torch.linalg.norm(self_embedding - other_embedding))
+        other_embeddings = class_embeddings[torch.arange(len(class_embeddings), device=device) != self_label]
         
+        distances = torch.cdist(self_embedding.unsqueeze(0), other_embeddings)
+        transformed_distances = torch.tensor([proximity(distance) for distance in distances.flatten()], device=device)
+        push_amount = transformed_distances.sum()
+
         return push_amount
 
-
-
+    unique_labels = torch.unique(target_labels)
+    push_from_other_classes = {}
     loss = torch.tensor(0.0, requires_grad=True, device=device)
+
+    for label in unique_labels:
+        label = label.item()
+        push_from_other_classes[label] = get_push_from_other_classes(label)
 
     for predicted_embedding, target_label in zip(predicted_embeddings, target_labels):
         dist = torch.linalg.norm(predicted_embedding - class_embeddings[target_label]).pow(2)
-        push_from_other_classes = get_push_from_other_classes(target_label)
+        push_from_class = push_from_other_classes[target_label.item()]
 
-        loss = loss + dist + push_from_other_classes
+        loss = loss + dist + push_from_class
 
     return loss
 

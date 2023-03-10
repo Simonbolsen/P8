@@ -135,7 +135,7 @@ def setup_and_train(config, train_data, test_data):
     loaders = load_data(train_data, test_data, config["batch_size"])
     model = emb_model.Convnet(device, lr = config["lr"], d = config["d"], num_of_classes=config["num_of_classes"], channels=config["channels"]).to(device)
     optimiser = optim.Adam(model.parameters(), lr=model.lr)
-    loss_func = nn_util.simple_dist_loss
+    loss_func = nn_util.move_away_from_other_near_classes_class_loss
     target_class_map = { i:i for i in range(model.num_of_classes) }
     max_epochs = config["num_of_epochs"]
 
@@ -150,7 +150,7 @@ def setup_and_train(config, train_data, test_data):
     # results[-1].append(accuracy)
     # print(f'Test Accuracy of the model on the 10000 test images: {(accuracy * 100):.2f}%')   
 
-def train(model, loaders, optimiser, loss_func, num_epochs, current_epoch, device): 
+def train(model:emb_model.Convnet, loaders, optimiser, loss_func, num_epochs, current_epoch, device): 
     total_step = len(loaders['train'])
 
     for i, (images, labels) in enumerate(loaders["train"]):
@@ -158,13 +158,17 @@ def train(model, loaders, optimiser, loss_func, num_epochs, current_epoch, devic
         labels = labels.to(device)
 
         res = model(images)
-        loss, loss_div = loss_func(res, labels, model.num_of_classes, { i:i for i in range(model.num_of_classes) }, device)
+        #(predicted_embeddings, target_labels, class_embeddings, device):
+        loss = loss_func(res[0:-model.num_of_classes], labels, res[-model.num_of_classes:], device)
+        #loss, loss_div = loss_func(res, labels, model.num_of_classes, { i:i for i in range(model.num_of_classes) }, device)
         optimiser.zero_grad()
-        res.backward(gradient = loss_div)
+        loss.backward()
+        #res.backward(gradient = loss_div)
         optimiser.step()    
         if (i+1) % 100 == 0:
             print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.2f}' 
                 .format(current_epoch + 1, num_epochs, i + 1, total_step, loss.item()))   
+
 
 def eval(model, loaders, target_class_map, device):
      # Test the model
