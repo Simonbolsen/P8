@@ -54,14 +54,12 @@ def comparison_dist_loss(output, target, num_of_classes, target_class_map, devic
         diff_actual = output_embedding - actual_class_embedding
         squared_dist_actual = (diff_actual).pow(2).sum(0)
 
-        transform = lambda x: torch.exp(squared_dist_actual / (x + squared_dist_actual))
-
         other_embeddings = class_embeddings[torch.arange(num_of_classes) != num_of_classes + actual_index]
 
         diff = output_embedding.unsqueeze(0) - other_embeddings
         squared_distances = torch.sum(diff**2, dim=1)
-        losses = [transform(distance) for distance in squared_distances.flatten()]
-        loss = loss + torch.tensor(losses, requires_grad=True, device=device).sum(0)
+        losses = [torch.exp(squared_dist_actual / (distance + squared_dist_actual)) for distance in squared_distances.flatten()]
+        loss = loss + sum(losses)
 
         #for ii, class_embedding in enumerate(class_embeddings):
             #if actual_index != ii:

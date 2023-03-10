@@ -47,8 +47,8 @@ def main():
             "num_of_epochs": hp.uniformint("num_of_epochs", 3, 30)
         }
     
-    good_start = {"num_of_epochs": 10,
-                  "lr": 10000000.0,
+    good_start = {"num_of_epochs": 3,
+                  "lr": 0.0001,
                   "d" : 60,
                   "channels" : 64,
                   "num_of_classes" : 10,
@@ -69,7 +69,7 @@ def main():
             mode="max",
             scheduler=scheduler,
             search_alg=hyper_opt_search,
-            num_samples=400
+            num_samples=100
     )
 
     run_config = air.RunConfig(
@@ -84,9 +84,9 @@ def main():
         run_config=run_config
     )
 
-    #results = tuner.fit()
-    #print(results.get_best_result().metrics)
-    setup_and_train(good_start, train_data, test_data)
+    results = tuner.fit()
+    print(results.get_best_result().metrics)
+    #setup_and_train(good_start, train_data, test_data)
 
     # lrs = []
     # dims = []
