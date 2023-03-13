@@ -42,34 +42,44 @@ def simple_dist_loss(output, target, num_of_classes, target_class_map, device):
 
 def comparison_dist_loss(output, target, num_of_classes, target_class_map, device):
     loss = torch.tensor(0.0, requires_grad=True, device=device)
-    ddx_loss = torch.zeros(output.shape, device=device, dtype=torch.float)
+    #ddx_loss = torch.zeros(output.shape, device=device, dtype=torch.float)
+    output_embeddings = output[:-num_of_classes]
+    class_embeddings = output[-num_of_classes:]
 
-    for i, output_embedding in enumerate(output[:-num_of_classes]):
+
+    for i, output_embedding in enumerate(output_embeddings):
         actual_index = target_class_map[target[i].item()] - num_of_classes#abusing negative indecies
         actual_class_embedding = output[actual_index]
 
         diff_actual = output_embedding - actual_class_embedding
         squared_dist_actual = (diff_actual).pow(2).sum(0)
 
-        for ii, class_embedding in enumerate(output[-num_of_classes:]):
-            if i != ii:
-                diff_class = output_embedding - class_embedding
-                squared_dist_class = (diff_class).pow(2).sum(0)
+        other_embeddings = class_embeddings[torch.arange(num_of_classes) != num_of_classes + actual_index]
 
-                total_squared_dist = squared_dist_actual + squared_dist_class                
-                loss_value = np.exp(squared_dist_actual / total_squared_dist)
-                scale_value = loss_value / (total_squared_dist * total_squared_dist)
+        diff = output_embedding.unsqueeze(0) - other_embeddings
+        squared_distances = torch.sum(diff**2, dim=1)
+        losses = [torch.exp(squared_dist_actual / (distance + squared_dist_actual)) for distance in squared_distances.flatten()]
+        loss = loss + sum(losses)
 
-                actual_ddx_loss = diff_actual * squared_dist_class * scale_value
-                class_ddx_loss = diff_class * squared_dist_actual * scale_value
+        #for ii, class_embedding in enumerate(class_embeddings):
+            #if actual_index != ii:
+                #diff_class = output_embedding - class_embedding
+                #squared_dist_class = (diff_class).pow(2).sum(0)
 
-                ddx_loss[i] = ddx_loss[i] + (actual_ddx_loss - class_ddx_loss)
-                ddx_loss[actual_index] = ddx_loss[actual_index] - actual_class_embedding
-                ddx_loss[ii] = ddx_loss[ii] + class_ddx_loss
+                #total_squared_dist = squared_dist_actual + squared_dist_class                
+                #loss = loss + torch.exp(squared_dist_actual / total_squared_dist)
+                #scale_value = loss_value / (total_squared_dist * total_squared_dist)
 
-                loss = loss + loss_value
+                #actual_ddx_loss = diff_actual * squared_dist_class * scale_value
+                #class_ddx_loss = diff_class * squared_dist_actual * scale_value
 
-    return loss, ddx_loss
+                #ddx_loss[i] = ddx_loss[i] + (actual_ddx_loss - class_ddx_loss)
+                #ddx_loss[actual_index] = ddx_loss[actual_index] - actual_class_embedding
+                #ddx_loss[ii-num_of_classes] = ddx_loss[ii-num_of_classes] + class_ddx_loss
+
+                #loss = loss + loss_value
+
+    return loss #, ddx_loss
 
 
 def move_away_from_other_near_classes_output_loss(predicted_embeddings:list[list[float]], target_labels:list[int], class_embeddings:list[list[float]], device: torch.device):

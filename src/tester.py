@@ -32,7 +32,7 @@ def main():
     print("Training data size: ", len(train_data))
     print("Test data size: ", len(test_data))
 
-    resources = {"cpu": 4, "gpu": 0.25}
+    resources = {"cpu": 1, "gpu": 0.5}
     scheduler = AsyncHyperBandScheduler(grace_period=3)
     reporter = tune.CLIReporter(
         metric_columns=["accuracy", "training_iteration"]
@@ -47,10 +47,12 @@ def main():
             "num_of_epochs": hp.uniformint("num_of_epochs", 3, 30)
         }
     
-    good_start = {"num_of_epochs": 10,
-                  "lr": 0.0005,
+    good_start = {"num_of_epochs": 3,
+                  "lr": 0.0001,
                   "d" : 60,
-                  "channels" : 64}
+                  "channels" : 64,
+                  "num_of_classes" : 10,
+                  "batch_size" : 100}
 
     training_function = partial(setup_and_train, 
                                 train_data=train_data, 
@@ -67,11 +69,11 @@ def main():
             mode="max",
             scheduler=scheduler,
             search_alg=hyper_opt_search,
-            num_samples=500
+            num_samples=100
     )
 
     run_config = air.RunConfig(
-            name="mnist_classification_test_henrik_loss",
+            name="mnist_classification_test_comparison_loss",
             progress_reporter=reporter,
             # stop={"training_iteration": 10}
     )
@@ -84,6 +86,7 @@ def main():
 
     results = tuner.fit()
     print(results.get_best_result().metrics)
+    #setup_and_train(good_start, train_data, test_data)
 
     # lrs = []
     # dims = []
@@ -135,7 +138,7 @@ def setup_and_train(config, train_data, test_data):
     loaders = load_data(train_data, test_data, config["batch_size"])
     model = emb_model.Convnet(device, lr = config["lr"], d = config["d"], num_of_classes=config["num_of_classes"], channels=config["channels"]).to(device)
     optimiser = optim.Adam(model.parameters(), lr=model.lr)
-    loss_func = nn_util.move_away_from_other_near_classes_class_loss
+    loss_func = nn_util.comparison_dist_loss
     target_class_map = { i:i for i in range(model.num_of_classes) }
     max_epochs = config["num_of_epochs"]
 
@@ -159,8 +162,9 @@ def train(model:emb_model.Convnet, loaders, optimiser, loss_func, num_epochs, cu
 
         res = model(images)
         #(predicted_embeddings, target_labels, class_embeddings, device):
-        loss = loss_func(res[0:-model.num_of_classes], labels, res[-model.num_of_classes:], device)
+        #loss = loss_func(res[0:-model.num_of_classes], labels, res[-model.num_of_classes:], device)
         #loss, loss_div = loss_func(res, labels, model.num_of_classes, { i:i for i in range(model.num_of_classes) }, device)
+        loss = loss_func(res, labels, model.num_of_classes, { i:i for i in range(model.num_of_classes) }, device)
         optimiser.zero_grad()
         loss.backward()
         #res.backward(gradient = loss_div)

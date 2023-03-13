@@ -3,17 +3,33 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[[source]]
+url = "https://download.pytorch.org/whl/cu117"
+verify_ssl = true
+name = "downloadpytorch"
+
+[[source]]
+url = "https://download.pytorch.org/whl/cu117"
+verify_ssl = true
+name = "downloadpytorch"
+
+[[source]]
+url = "https://download.pytorch.org/whl/cu117"
+verify_ssl = true
+name = "downloadpytorch"
+
 [packages]
 pandas = "*"
-torch = "*"
 numpy = "*"
-torchvision = "*"
 matplotlib = "*"
 ray = {extras = ["tune"], version = "*"}
 hyperopt = "*"
 importlib-resources = "*"
+torch = {version = "*", index = "downloadpytorch"}
+torchvision = {version = "*", index = "downloadpytorch"}
+torchaudio = {version = "*", index = "downloadpytorch"}
 
 [dev-packages]
 
 [requires]
-python_version = "3.9.0"
+python_full_version = "3.9.0"
