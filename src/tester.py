@@ -39,12 +39,12 @@ def main():
     )
 
     smoke_test_space = {
-            "lr": hp.uniform("lr", 0.00001, 0.01),
+            "lr": hp.loguniform("lr", np.log(0.00001), np.log(0.01)),
             "d": hp.uniformint("d", 16, 256),
             "num_of_classes": 10,
             "channels": hp.uniformint("channels", 16, 256),
             "batch_size": 100,
-            "num_of_epochs": hp.uniformint("num_of_epochs", 5, 30)
+            "num_of_epochs": hp.uniformint("num_of_epochs", 3, 30)
         }
     
     good_start = {"num_of_epochs": 10,
@@ -67,11 +67,11 @@ def main():
             mode="max",
             scheduler=scheduler,
             search_alg=hyper_opt_search,
-            num_samples=1000
+            num_samples=500
     )
 
     run_config = air.RunConfig(
-            name="mnist_initial_test",
+            name="mnist_classification_test_henrik_loss",
             progress_reporter=reporter,
             # stop={"training_iteration": 10}
     )
