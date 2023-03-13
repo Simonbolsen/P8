@@ -5,47 +5,86 @@ from torch.utils.data import ConcatDataset, Subset, TensorDataset
 
 
 dataset_dict = {
-    "omniglot": lambda c: load_omniglot(config=c, target_alphabets=["Arcadian", "Armenian"]),
-    "mnist": lambda c: load_mnist(config=c),
-    "cifar10": lambda c: load_cifar10(config=c)
+    "omniglot": lambda c: get_omniglot(config=c),
+    "mnist": lambda c: get_mnist(config=c),
+    "cifar10": lambda c: get_cifar10(config=c)
 }
 
-def load_data(config):
+def load_data(train_data, test_data, batch_size=100):
+    loaders = {
+        "train": torch.utils.data.DataLoader(train_data, batch_size=batch_size, shuffle=True, num_workers=1),
+        "test": torch.utils.data.DataLoader(test_data, batch_size=batch_size, shuffle=True, num_workers=1)
+    }
+
+    return loaders
+
+
+def get_data(config):
     return dataset_dict[config.dataset](config)
 
 
 
-def load_mnist(config):
-    pass
+def get_mnist(config):
+    train_data = datasets.MNIST(
+        root = config.data_dir,
+        train = True,                         
+        transform = ToTensor(), 
+        download = True,            
+    )
 
-def load_cifar10(config):
-    pass
+    test_data = datasets.MNIST(
+        root = config.data_dir, 
+        train = False, 
+        transform = ToTensor()
+    )
+    
+    train_data = Subset(train_data, range(len(train_data)))
 
-def load_omniglot(config, target_alphabets=[]):
+    return train_data, test_data
+
+
+def get_cifar10(config):
+    training_set = datasets.CIFAR10(
+        root=config.data_dir,
+        train=True,
+        transform=ToTensor(),
+        download=True
+    )       
+    
+    testing_set = datasets.CIFAR10(
+        root=config.data_dir,
+        train=False,
+        transform=ToTensor(),
+        download=True
+    )       
+    
+    return training_set, testing_set
+
+def get_omniglot(config, target_alphabets=[]):
     background_set = datasets.Omniglot(
-        root = "./data", #config.data_dir,
+        root = config.data_dir,
         background = True,                         
         transform = ToTensor(), 
         download = True,            
     )
 
     evaluation_set = datasets.Omniglot(
-        root = "./data", #config.data_dir,
+        root = config.data_dir,
         background = False, 
         transform = ToTensor(),
         download=True,
     )
 
-    if (len(target_alphabets) > 0):
+    if target_alphabets:
         characters = [k for (k, v) in enumerate(background_set._characters) if string_contains(v, target_alphabets)]
 
-        background_loader = torch.utils.data.DataLoader(Subset(background_set, characters), batch_size=config.batch_size, shuffle=True, num_workers=1)
-        evaluation_loader = torch.utils.data.DataLoader(Subset(evaluation_set, characters), batch_size=config.batch_size, shuffle=True, num_workers=1)
+        background_data = Subset(background_set, characters)
+        evaluation_data = Subset(evaluation_set, characters)
     else:
-        background_loader = torch.utils.data.DataLoader(background_set, characters, batch_size=config.batch_size, shuffle=True, num_workers=1)
-        evaluation_loader = torch.utils.data.DataLoader(evaluation_set, characters, batch_size=config.batch_size, shuffle=True, num_workers=1)
+        background_data = background_set
+        evaluation_data = evaluation_set
 
-    return {"train": background_loader, "test": evaluation_loader}
+    return background_data, evaluation_data
 
 def string_contains(string, set):
     contains = False
@@ -57,7 +96,7 @@ def string_contains(string, set):
 
 
 if __name__ == '__main__':
-    train, test = load_omniglot(0, ["Arcadian", "Armenian"])
+    train, test = get_omniglot(0, ["Arcadian", "Armenian"])
     print(0)
 
 
