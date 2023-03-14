@@ -14,6 +14,7 @@ from datahandling_util import get_data, load_data, split_data, k_shot_loaders
 from ray.tune.search.hyperopt import HyperOptSearch
 from hyperopt import hp
 import sys
+from torch.utils.data import Dataset
 
 ngpu = 1
 
@@ -107,32 +108,40 @@ def main():
     results = tuner.fit()
     print(results.get_best_result().metrics)
 
-# Probably not needed
-# def visualize_hyperparameters(param1_axis, param2_axis, param1_name, param2_name, results,
-#                               visualization_func=lambda x: 1 - math.sqrt(1 - x ** 2)):
-#     visual_results = [[visualization_func(i) for i in r] for r in results]
-#     # visual_results = [[visualization_func(r)] for r in results]
-#     plot.plotSurface([visual_results],
-#                      "Accuracy",
-#                      param1_axis,
-#                      param1_name,
-#                      param2_axis,
-#                      param2_name,
-#                      surfaceLabels=["Accuracy"],
-#                      num_of_surfaces=1)
-
-
-# Probably not needed
-# def two_param_experiment(config_func, labels, param1_axis, param2_axis, loaders):
-#     results = []
-# 
-#     for i, p1 in enumerate(param1_axis):
-#         results.append([])
-#         for ii, p2 in enumerate(param2_axis):
-#             print(
-#                 f'\n{labels[0]}: {p1}, {labels[1]}: {p2}, run {i * len(param1_axis) + ii}/{len(param1_axis) * len(param2_axis)}')
-#             setup_and_train(config_func, loaders, results, p1, p2)
-#     return results
+def train_few_shot(config, 
+                   train_data, 
+                   few_shot_data, 
+                   validation_data, 
+                   loss_func):
+    train_loader = get_data_loader(train_data, config["batch_size"])
+    fs_sup_loader, fs_query_load = k_shot_loaders(few_shot_data, config["shots"])
+    val_sup_load, val_query_load = k_shot_loaders(validation_data, config["shots"])     
+    
+    img_size = train_loader.image_size
+    img_channels = train_loader.image_channels
+    
+    model = emb_model.Convnet(device, config["lr"], 
+                              config["d"], 
+                              config["num_of_classes"], 
+                              config["channels"],
+                              config["k_size"],
+                              config["stride"],
+                              img_channels, img_size, config["linear_n"], config["linear_size"]).to(device)
+    
+    optimiser = optim.Adam(model.parameters(), lr=config["lr"])
+    
+    max_epochs = config["num_of_epochs"]
+    
+    for epoch in range(max_epochs):
+        train(model, train_loader, optimiser, loss_func, max_epochs, epoch, device)
+        correct, total = few_shot_eval(model, fs_sup_loader, fs_query_load)
+        accuracy = sum(correct) / sum(total)
+        tune.report(accuracy = accuracy)
+    
+    print("doing final evaluation...")
+    val_acc = few_shot_eval(model, val_sup_load, val_query_load)
+    # todo : report final acc
+    # tune.report(val_acc = val_acc)
 
 def setup_and_train(config, train_data, test_data, support_data, loss_func):
     loaders = load_data(train_data, test_data, config["batch_size"])
