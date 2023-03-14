@@ -12,12 +12,17 @@ from ray.tune.schedulers import AsyncHyperBandScheduler
 from datahandling_util import get_data, load_data, split_data, k_shot_loaders
 from ray.tune.search.hyperopt import HyperOptSearch
 from hyperopt import hp
+import datetime
+import json
 import sys
 from torch.utils.data import Dataset
+
 
 ngpu = 1
 
 device = torch.device("cuda:0" if (torch.cuda.is_available() and ngpu > 0) else "cpu")
+run_raytune = True
+
 
 if device.type == 'cuda':
     print('Using GPU')
