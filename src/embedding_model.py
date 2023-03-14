@@ -34,7 +34,8 @@ class Convnet(nn.Module):
 
         self.embeddings = nn.Embedding(self.num_of_classes, self.d)
 
+    def get_embeddings(self):
+        return self.embeddings(torch.tensor(range(self.num_of_classes), device=self.device))
+
     def forward(self, x):
-        x = self.model(x)
-        y = self.embeddings(torch.tensor(range(self.num_of_classes), device=self.device))
-        return torch.cat((x, y), dim=0)
+        return torch.cat((self.model(x), self.get_embeddings()), dim=0)
