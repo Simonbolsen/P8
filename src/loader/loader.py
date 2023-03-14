@@ -18,6 +18,13 @@ def load_data(train_data, test_data, batch_size=100):
 
     return loaders
 
+def get_data_loader(data, batch_size=100):
+    loader = torch.utils.data.DataLoader(data, batch_size=batch_size, shuffle=True, num_workers=1),
+    loader.image_size = data[0][0].size()[1]
+    loader.channels = data[0][0].size()[0]
+
+    return loader
+
 
 def get_data(config):
     return dataset_dict[config.dataset](config)
