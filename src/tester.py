@@ -37,7 +37,7 @@ def main():
     print("Test data size: ", len(test_data))
     print("Support data size: ", len(support_data))
 
-    resources = {"cpu": 1, "gpu": 1}
+    resources = {"cpu": 5, "gpu": 0.33}
     scheduler = AsyncHyperBandScheduler(grace_period=3)
 
     reporter = tune.CLIReporter(
@@ -54,11 +54,11 @@ def main():
         "k_size": 4,
         "stride": 1,
         "linear_n" : hp.uniformint("linear_n", 1, 10),
-        "linear_size" : hp.uniformint("linear_size", 2 ** 8, 2 ** 13),
+        "linear_size" : hp.uniformint("linear_size", 2 ** 4, 2 ** 7),
         "shots": 5
     }
     
-    good_start = {"num_of_epochs": 2,
+    good_start = {"num_of_epochs": 10,
                   "lr": 0.0005,
                   "d": 60,
                   "num_of_classes" : num_of_classes,
@@ -93,7 +93,7 @@ def main():
     )
 
     run_config = air.RunConfig(
-        name="mnist_initial_few_shot_test",
+        name="mnist_initial_few_shot_test2",
         progress_reporter=reporter,
     )
 
@@ -151,7 +151,7 @@ def setup_and_train(config, train_data, test_data, support_data, loss_func):
                               config["d"], 
                               config["num_of_classes"], 
                               config["channels"],
-                              config["k_size"],
+                              config["k_size"], 
                               config["stride"],
                               1, 28, config["linear_n"], config["linear_size"]).to(device)
     
