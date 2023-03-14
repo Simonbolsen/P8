@@ -15,10 +15,10 @@ class Convnet(nn.Module):
         self.stride = 1
         self.padding = 0
         self.in_size = 1
-        self.pic_size = 28
+        self.pic_size = 105
         self.middle_layers = [self.channels, self.channels, self.channels, self.channels]
         self.model = nn.Sequential(
-            # 1 x 28 x 28 --> 4 x 13 x 13
+            # 1 x 32 x 32 --> 16 x 29 x 29
             nn_util.conv_layer(self.in_size, self.middle_layers[0], self.k_size, self.stride),
             nn_util.conv_layer(self.middle_layers[0], self.middle_layers[1], self.k_size, self.stride),
             nn_util.conv_layer(self.middle_layers[1], self.middle_layers[2], self.k_size, self.stride),

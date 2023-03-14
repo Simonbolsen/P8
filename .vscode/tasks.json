@@ -12,8 +12,9 @@
                 "isDefault": true
             },
             "args": [
-                "${file}",
-                "--dataset", "omniglot",
+                "./src/main.py",
+                "--dataset", "cifar10",
+                "--datadir", "'./data'",
                 "--epochs", "20", "100",
                 "--classes", "10",
                 "--batch","100",
@@ -22,6 +23,7 @@
                 "--channels","32", "32", "64", "128", "256",
                 "--layers","5",
                 "-t",
+                "--gpu", "1"
             ],
             "presentation": {
                 "reveal": "always",
