@@ -57,20 +57,20 @@ def get_min_max(xs):
 def inv(x):
     return math.sqrt(1 - (1 - x)**2)
 
-def plotPoints(xs, ys, zs, axis_names, legend = True, num_of_series = 1, series_labels=[], function = inv):
+def plotPoints(xs, ys, zs, axis_names = ["", "", ""], legend = True, num_of_series = 1, series_labels=[], function = inv):
     mpl.rcParams['legend.fontsize'] = 10
 
     if series_labels == []: 
         series_labels = [axis_names[2] for _ in range(num_of_series)]
 
-    x_min, x_max = get_min_max(xs)
-    y_min, y_max = get_min_max(ys)
-    z_min, z_max = get_min_max(zs)
-
     if(not isinstance(xs[0], list)):
         xs = [xs]
         ys = [ys]
         zs = [zs]
+
+    x_min, x_max = get_min_max(xs)
+    y_min, y_max = get_min_max(ys)
+    z_min, z_max = get_min_max(zs)
 
     COLOR = cm.rainbow(np.linspace(0, 1, num_of_series))
     fig = plt.figure()
