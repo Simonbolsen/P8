@@ -12,7 +12,7 @@ import os
 import copy
 import re
 
-def load_pretrained(model_name, num_classes, feature_extract=False):
+def load_pretrained(model_name, num_classes, embedding_dim_count, feature_extract=False):
     """
     Fine-tune a pretrained model
     :param model_name: name of the pretrained model requested
@@ -28,11 +28,13 @@ def load_pretrained(model_name, num_classes, feature_extract=False):
     'vgg16', 'vgg16_bn', 'vgg19', 'vgg19_bn', 'vit_b_16', 'vit_b_32', 'vit_h_14', 'vit_l_16', 'vit_l_32', 'wide_resnet101_2', 'wide_resnet50_2']
     :param model_constructor: constructor for the model
     :param num_classes: number of classes to classify
+    :param embedding_dim_count: The number of dimensions for the embedding
     :param feature_extract: True if only the last layer is to be trained
     :return: model
     """
 
     model = models.get_model(model_name)
+    model.num_of_classes = num_classes
     input_size = 0
 
     #split the model name upon first non letter encountered
@@ -44,8 +46,16 @@ def load_pretrained(model_name, num_classes, feature_extract=False):
 
     if split_name[0] == "resnet":
         num_ftrs = model.fc.in_features
-        model.fc = nn.Linear(num_ftrs, num_classes)
+        model.fc = nn.Linear(num_ftrs, embedding_dim_count)
         input_size = 224
+        model.embeddings = nn.Embedding(num_classes, embedding_dim_count)
+        
+        def forward(x):
+            x = model._forward_impl(x)
+            y = model.embeddings(torch.tensor(range(num_classes), device=model.device))
+            return torch.cat((x, y), dim=0)
+        
+        model.forward = forward
 
     elif model_name == "alexnet":
         "Nicht implementiert"
@@ -58,4 +68,4 @@ def set_parameter_requires_grad(model, feature_extracting):
         for param in model.parameters():
             param.requires_grad = False
 
-load_pretrained("resnet18", 10)
+# load_pretrained("resnet18", 10)
