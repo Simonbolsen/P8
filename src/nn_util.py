@@ -57,14 +57,15 @@ def conv_final_out_size(conv_layers, kernel_size, stride, padding, input_size):
 def get_final_layers_size(picture_size, previous_layer_size):
     return picture_size * picture_size * previous_layer_size
 
-def simple_dist_loss(output, target, num_of_classes, device):
+def simple_dist_loss(output_embds, class_embeds, targets, device):
     acc_loss = torch.tensor(0.0, requires_grad=True, device=device)
-    acc_loss_div = torch.zeros(output.shape, device=device, dtype=torch.float)
+    acc_loss_div = torch.zeros(output_embds.shape, device=device, dtype=torch.float)
+    
+    num_of_classes = len(class_embeds)
 
-    for i, output_embedding in enumerate(output[:-num_of_classes]):
-        actual_index = target[i].item() - num_of_classes
-
-        actual_embedding = output[actual_index]
+    for i, output_embedding in enumerate(output_embds[:-num_of_classes]):
+        actual_index = targets[i]
+        actual_embedding = output_embds[actual_index]
 
         diff = output_embedding - actual_embedding
         squared_dist = (diff).pow(2).sum(0)
@@ -77,21 +78,19 @@ def simple_dist_loss(output, target, num_of_classes, device):
 
     return acc_loss, acc_loss_div
 
-def comparison_dist_loss(output, target, num_of_classes, target_class_map, device):
+def comparison_dist_loss(output_embeddings, class_embeddings, targets, device):
     loss = torch.tensor(0.0, requires_grad=True, device=device)
     #ddx_loss = torch.zeros(output.shape, device=device, dtype=torch.float)
-    output_embeddings = output[:-num_of_classes]
-    class_embeddings = output[-num_of_classes:]
+    num_of_classes = len(class_embeddings)
 
+    for output_embedding, target in zip(output_embeddings, targets):
+        # actual_index = target_class_map[targets[i].item()] - num_of_classes#abusing negative indecies
+        target_class_embedding = class_embeddings[target]
 
-    for i, output_embedding in enumerate(output_embeddings):
-        actual_index = target_class_map[target[i].item()] - num_of_classes#abusing negative indecies
-        actual_class_embedding = output[actual_index]
-
-        diff_actual = output_embedding - actual_class_embedding
+        diff_actual = output_embedding - target_class_embedding
         squared_dist_actual = (diff_actual).pow(2).sum(0)
 
-        other_embeddings = class_embeddings[torch.arange(num_of_classes) != num_of_classes + actual_index]
+        other_embeddings = class_embeddings[torch.arange(num_of_classes) != target]
 
         diff = output_embedding.unsqueeze(0) - other_embeddings
         squared_distances = torch.sum(diff**2, dim=1)
@@ -119,7 +118,7 @@ def comparison_dist_loss(output, target, num_of_classes, target_class_map, devic
     return loss #, ddx_loss
 
 
-def move_away_from_other_near_classes_output_loss(predicted_embeddings:list[list[float]], target_labels:list[int], class_embeddings:list[list[float]], device: torch.device):
+def move_away_from_other_near_classes_output_loss(predicted_embeddings:list[list[float]], class_embeddings:list[list[float]], target_labels:list[int], device: torch.device):
     loss = torch.tensor(0.0, requires_grad=True, device=device)
 
     for predicted_embedding, target_label in zip(predicted_embeddings, target_labels):
@@ -129,7 +128,7 @@ def move_away_from_other_near_classes_output_loss(predicted_embeddings:list[list
     return loss
 
 
-def move_away_from_other_near_classes_class_loss(predicted_embeddings:list[list[float]], target_labels:list[int], class_embeddings:list[list[float]], device: torch.device):
+def move_away_from_other_near_classes_class_loss(predicted_embeddings:list[list[float]], class_embeddings:list[list[float]], target_labels:list[int], device: torch.device):
     def proximity(x): return 1 / (x + 0.0001)
     def get_push_from_other_classes(self_label):
         self_embedding = class_embeddings[self_label]
