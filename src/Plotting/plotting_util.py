@@ -87,7 +87,7 @@ def plotPoints(xs, ys, zs, axis_names, legend = True, num_of_series = 1, series_
     axe.set_xbound(x_min, x_max)
     axe.set_ybound(y_min, y_max)
     axe.set_zbound(z_min, z_max)
-    axe.w_zaxis.set_major_formatter(plt.FuncFormatter(lambda x, pos: f"{function(x):.2f}"))
+    axe.w_zaxis.set_major_formatter(plt.FuncFormatter(lambda x, pos: f"{function(x):.3f}"))
 
     if legend:
         axe.legend()

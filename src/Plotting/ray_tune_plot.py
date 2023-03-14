@@ -6,8 +6,8 @@ import math
 
 parameters = {"lr": "Learning Rate log_10(lr)", "d": "Dimensions d", "i": "Training Iterations i", 
               "e": "Epochs e", "n" : "Linear Num n", "s": "Linear Size s", "b" : "Batch Size log_2(b)", "c": "Channels c"}
-param1 = "lr"
-param2 = "c"
+param1 = "e"
+param2 = "d"
 paramColor = "e"
 
 bin1 = []
@@ -25,7 +25,7 @@ def insert_append(l, i, e):
             l.append([])
         l.append([e])
 
-results = tune.ExperimentAnalysis("~/ray_results/mnist_initial_test", 
+results = tune.ExperimentAnalysis("~/ray_results/mnist_classification_test_comparison_loss", 
                                   default_metric="accuracy", 
                                   default_mode="max")
 best_results = analysis.best_iterations_per_trial(results)
@@ -41,20 +41,17 @@ total = 0
 
 for k, result in best_results.items():
     if "config" in result.keys():
-        params = {"lr": math.log(result["config"]["lr"])} #,10
-        if True: #params["lr"] < -3 and params["lr"] > -5:
-            
-            
-            #params["n"] = result["config"]["linear_n"]
-            params["d"] = result["config"]["d"]
-            params["i"] = result["data"]["training_iteration"]
-            params["e"] = result["config"]["num_of_epochs"]
-            #params["s"] = result["config"]["linear_size"]
-            params["b"] = math.log(result["config"]["batch_size"],2)
-            params["c"] = result["config"]["channels"]
-            accuracy = result["data"]["accuracy"]
+        params = {"lr": math.log(result["config"]["lr"], 10)} #
+        #params["n"] = result["config"]["linear_n"]
+        params["d"] = result["config"]["d"]
+        params["i"] = result["data"]["training_iteration"]
+        params["e"] = result["config"]["num_of_epochs"]
+        #params["s"] = result["config"]["linear_size"]
+        params["b"] = math.log(result["config"]["batch_size"],2)
+        params["c"] = result["config"]["channels"]
+        accuracy = result["data"]["accuracy"]
            
-
+        if True: #params["lr"] < -7 and params["lr"] > -9 and params["c"] > 150:
             if accuracy < 0.2:
                 failures += 1
 
