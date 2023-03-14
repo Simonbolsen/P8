@@ -153,7 +153,7 @@ def setup_and_train(config, train_data, test_data):
     # results[-1].append(accuracy)
     # print(f'Test Accuracy of the model on the 10000 test images: {(accuracy * 100):.2f}%')   
 
-def train(model:emb_model.Convnet, loaders, optimiser, loss_func, num_epochs, current_epoch, device): 
+def train(model, loaders, optimiser, loss_func, num_epochs, current_epoch, device): 
     total_step = len(loaders['train'])
 
     for i, (images, labels) in enumerate(loaders["train"]):

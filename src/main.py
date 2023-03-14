@@ -1,5 +1,6 @@
 
 import argparse
+from PTM.model_loader import load_pretrained
 from loader.loader import load_data, get_data
 import torch
 from functools import partial
@@ -145,10 +146,14 @@ def run_tune(args):
 
 def setup_and_train(config, train_data=None, test_data=None):
     loaders = load_data(train_data=train_data, test_data=test_data, batch_size=config["batch_size"])
-    model = emb_model.Convnet(device, lr = config["lr"], d = config["d"], num_of_classes=config["num_of_classes"], channels=config["channels"]).to(device)
-    optimiser = optim.Adam(model.parameters(), lr=model.lr)
+    model, input_size = load_pretrained("resnet18", config["num_of_classes"], config["d"], feature_extract=False)
+    model.conv1 = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+    model.to(device)
+    model.device = device
+    # model = emb_model.Convnet(device, lr = config["lr"], d = config["d"], num_of_classes=config["num_of_classes"], channels=config["channels"]).to(device)
+    optimiser = optim.Adam(model.parameters(), lr=config["lr"])
     loss_func = nn_util.simple_dist_loss
-    target_class_map = { i:i for i in range(model.num_of_classes) }
+    target_class_map = { i:i for i in range(config["num_of_classes"]) }
     max_epochs = config["num_of_epochs"]
 
     for epoch in range(max_epochs):
