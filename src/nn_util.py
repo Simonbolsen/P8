@@ -76,7 +76,7 @@ def simple_dist_loss(output_embds, class_embeds, targets, device):
 
         acc_loss = acc_loss + squared_dist
 
-    return acc_loss, acc_loss_div
+    return acc_loss#, acc_loss_div
 
 def comparison_dist_loss(output_embeddings, class_embeddings, targets, device):
     loss = torch.tensor(0.0, requires_grad=True, device=device)

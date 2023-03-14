@@ -1,4 +1,4 @@
-
+from training_utils import classification_setup
 import argparse
 from loader.loader import load_data, get_data, get_data_loader
 import torch
@@ -18,6 +18,7 @@ from ray.tune.schedulers import AsyncHyperBandScheduler
 from ray.tune.search.hyperopt import HyperOptSearch
 from hyperopt import hp
 import datetime
+from nn_util import simple_dist_loss
 
 
 def gtzero_int(x):
@@ -37,16 +38,6 @@ def gtzero_float(x):
     if x <= 0:
         raise argparse.ArgumentTypeError("Minimum value is >0")
     return x
-
-
-ngpu = 1
-
-device = torch.device("cuda:0" if (torch.cuda.is_available() and ngpu > 0) else "cpu")
-
-if (device.type == 'cuda'):
-    print('Using GPU')
-else:
-    print('Using CPU')
 
 datasets = {"mnist": 0, 
             "omniglot": 1, 
@@ -82,7 +73,16 @@ def legal_args(args):
         return len(args.dims) > 1 and len(args.lr) > 1 and len(args.epochs) > 1 and (len(args.cnn_channels) == args.cnn_layers)
     return True
 
+def determine_device(ngpu):
+    device = torch.device("cuda:0" if (torch.cuda.is_available() and ngpu > 0) else "cpu")
+
+    if (device.type == 'cuda'):
+        print('Using GPU')
+    else:
+        print('Using CPU')
+
 def run_tune(args):
+    device = determine_device(ngpu=1)
     train_data, test_data = get_data(args)
 
     print("Training data size: ", len(train_data))
@@ -93,6 +93,8 @@ def run_tune(args):
     reporter = tune.CLIReporter(
         metric_columns=["accuracy", "training_iteration"]
     )
+    
+    loss_func = simple_dist_loss
 
     smoke_test_space = {
             "lr": hp.uniform("lr", args.lr[0], args.lr[1]),
@@ -102,17 +104,21 @@ def run_tune(args):
             "batch_size": args.batch_size,
             "num_of_epochs": hp.uniformint("num_of_epochs", args.epochs[0], args.epochs[1])
         }
+    # config["stride"],
+    #                           channels, img_size, config["linear_n"], config["linear_size"]).to(device)
     
     good_start = {"num_of_epochs": 10,
                   "lr": 0.0005,
                   "d" : 60,
                   "channels" : 64,
-                  "num_of_classes": 964,
+                  "num_of_classes": 10,
                   "batch_size": 100,
+                  "k_size": 4,
+                  "stride": 1,
+                  "linear_n": 1,
+                  "linear_size": 64
                   }
 
-    training_function = partial(setup_and_train)
-    
     hyper_opt_search = HyperOptSearch(smoke_test_space, 
                                       metric="accuracy", 
                                       mode="max", 
@@ -134,7 +140,7 @@ def run_tune(args):
     )
 
     tuner = tune.Tuner(
-        tune.with_parameters(training_function, train_data=train_data, test_data=test_data),
+        tune.with_parameters(classification_setup, train_data=train_data, test_data=test_data),
         tune_config=tuner_config,
         run_config=run_config
     )
@@ -143,68 +149,7 @@ def run_tune(args):
         results = tuner.fit()
         print(results.get_best_result().metrics)
     else:
-        setup_and_train(good_start, train_data, test_data)
-
-
-def setup_and_train(config, train_data=None, test_data=None):
-    train_loader = get_data_loader(train_data, batch_size=config["batch_size"])
-    validation_loader = get_data_loader(test_data, batch_size=config["batch_size"])
-    model = emb_model.Convnet(device, lr = config["lr"], d = config["d"], num_of_classes=config["num_of_classes"], 
-                              channels=config["channels"], image_size=train_loader.image_size, image_channels=train_loader.channels).to(device)
-    optimiser = optim.Adam(model.parameters(), lr=model.lr)
-    loss_func = nn_util.simple_dist_loss
-    target_class_map = { i:i for i in range(model.num_of_classes) }
-    max_epochs = config["num_of_epochs"]
-
-    for epoch in range(max_epochs):
-        train(model, train_loader, optimiser, loss_func, max_epochs, current_epoch=epoch, device=device)
-        accuracy = eval(model, validation_loader, target_class_map, device=device)
-        tune.report(accuracy=accuracy)
-
-
-def train(model, loader, optimiser, loss_func, num_epochs, current_epoch, device): 
-    total_step = len(loader)
-
-    for i, (images, labels) in enumerate(loader):
-        images = images.to(device)
-        labels = labels.to(device)
-
-        res = model(images)
-        loss, loss_div = loss_func(res, labels, model.num_of_classes, { i:i for i in range(model.num_of_classes) }, device)
-        optimiser.zero_grad()
-        res.backward(gradient = loss_div)
-        optimiser.step()    
-        if (i+1) % 100 == 0:
-            print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.2f}' 
-                .format(current_epoch + 1, num_epochs, i + 1, total_step, loss.item()))   
-
-def eval(model, loader, target_class_map, device):
-     # Test the model
-    model.eval()    
-    correct = 0
-    total = 0
-    with torch.no_grad():
-        for images, labels in loader:
-            images = images.to(device)
-            labels = labels.to(device)
-
-            test_output = model(images)
-
-            for i, output_embedding in enumerate(test_output[:-model.num_of_classes]):
-                smallest_sqr_dist = 100000000
-                smallest_k = 0
-                for k in range(model.num_of_classes):
-                    actual_class_embedding = test_output[k - model.num_of_classes]
-                    squared_dist = (actual_class_embedding - output_embedding).pow(2).sum(0)
-                    
-                    if squared_dist < smallest_sqr_dist:
-                        smallest_sqr_dist = squared_dist
-                        smallest_k = k
-
-                if smallest_k == target_class_map[labels[i].item()]:
-                    correct += 1
-                total += 1
-        return correct / total
+        classification_setup(good_start, train_data, test_data, loss_func, device, ray_tune=False)
 
 if __name__ == '__main__':
     args = argparser.parse_args()

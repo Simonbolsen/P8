@@ -20,9 +20,11 @@ def train(model, train_loader, optimiser, loss_func,
         res = model(images)
         
         out_embds = res[:-model.num_of_classes]
-        class_embds = res[model.num_of_classes:]
+        class_embds = res[-model.num_of_classes:]
         
-        loss = loss_func(out_embds, class_embds, device)
+        assert len(class_embds) == model.num_of_classes
+        
+        loss = loss_func(out_embds, class_embds, labels, device)
         optimiser.zero_grad()
         loss.backward()
         optimiser.step()
@@ -30,6 +32,8 @@ def train(model, train_loader, optimiser, loss_func,
         if (i+1) % 100 == 0:
             print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.2f}' 
                 .format(current_epoch + 1, num_epochs, i + 1, total_step, loss.item()))   
+            
+        break
 
 def eval_classification(model, test_loader, device):
     model.eval()
@@ -77,9 +81,12 @@ def classification_setup(config, train_data, test_data, loss_func, device, ray_t
     optimiser = optim.Adam(model.parameters(), lr=model.lr)
     max_epochs = config["num_of_epochs"]
 
+    print("start training...")
     for epoch in range(max_epochs):
         train(model, train_loader, optimiser, loss_func, max_epochs, current_epoch=epoch, device=device)
+        print("evaluating...")
         accuracy = eval_classification(model, test_loader, device=device)
+        print(accuracy)
         
         if ray_tune:
             tune.report(accuracy=accuracy)
