@@ -1,0 +1,35 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "MNIST Experiment 1",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar10",
+                "--datadir", "'./data'",
+                "--epochs", "20", "100",
+                "--classes", "10",
+                "--batch","100",
+                "--dims","15", "400",
+                "--lr","0.0004", "0.004",
+                "--channels","32", "32", "64", "128", "256",
+                "--layers","5",
+                "-t",
+                "--gpu", "1"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        }
+    ]
+}

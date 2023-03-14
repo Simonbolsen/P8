@@ -7,7 +7,6 @@ from torchvision import datasets
 from torchvision.transforms import ToTensor
 import nn_util
 import embedding_model as emb_model
-import plotting_util as plot
 from ray import air, tune
 from ray.tune.schedulers import AsyncHyperBandScheduler
 from datahandling_util import get_data, load_data, split_data, k_shot_loaders
@@ -37,9 +36,8 @@ def main():
     print("Test data size: ", len(test_data))
     print("Support data size: ", len(support_data))
 
-    resources = {"cpu": 5, "gpu": 0.33}
+    resources = {"cpu": 1, "gpu": 0.5}
     scheduler = AsyncHyperBandScheduler(grace_period=3)
-
     reporter = tune.CLIReporter(
         metric_columns=["accuracy", "training_iteration"]
     )
@@ -107,6 +105,7 @@ def main():
     
     results = tuner.fit()
     print(results.get_best_result().metrics)
+    #setup_and_train(good_start, train_data, test_data)
 
 def train_few_shot(config, 
                    train_data, 
@@ -156,7 +155,8 @@ def setup_and_train(config, train_data, test_data, support_data, loss_func):
                               1, 28, config["linear_n"], config["linear_size"]).to(device)
     
     optimiser = optim.Adam(model.parameters(), lr=model.lr)
-    # loss_func = nn_util.simple_dist_loss
+    loss_func = nn_util.comparison_dist_loss
+    target_class_map = { i:i for i in range(model.num_of_classes) }
     max_epochs = config["num_of_epochs"]
 
     for epoch in range(max_epochs):
@@ -166,22 +166,22 @@ def setup_and_train(config, train_data, test_data, support_data, loss_func):
         accuracy = sum(correct) / sum(total)
         tune.report(accuracy=accuracy)
 
-def train(model, loaders, optimiser, loss_func, num_epochs, current_epoch, device):
-    total_step = len(loaders["train"])
+def train(model:emb_model.Convnet, loaders, optimiser, loss_func, num_epochs, current_epoch, device): 
+    total_step = len(loaders['train'])
 
     for i, (images, labels) in enumerate(loaders["train"]):
         images = images.to(device)
         labels = labels.to(device)
 
         res = model(images)
-        loss, loss_div = loss_func(res, labels, model.num_of_classes, device)
+        loss = loss_func(res, labels, model.num_of_classes, { i:i for i in range(model.num_of_classes) }, device)
         optimiser.zero_grad()
-        res.backward(gradient=loss_div)
-        optimiser.step()
-        if (i + 1) % 100 == 0:
-            print("Epoch [{}/{}], Step [{}/{}], Loss: {:.2f}"
-                  .format(current_epoch + 1, num_epochs, i + 1, total_step, loss.item()))
-
+        loss.backward()
+        #res.backward(gradient = loss_div)
+        optimiser.step()    
+        if (i+1) % 100 == 0:
+            print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.2f}' 
+                .format(current_epoch + 1, num_epochs, i + 1, total_step, loss.item()))   
 
 def eval(model, loaders, device):
     # Test the model

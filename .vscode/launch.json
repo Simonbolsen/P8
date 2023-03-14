@@ -4,6 +4,7 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
             "name": "Tester.py",
             "type": "python",
@@ -19,6 +20,26 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": true
-        }
+        },
+        {
+            "name": "MNIST experiment",
+            "type": "python",
+            "request": "launch",
+            "program": "src/main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": ["--dataset", "omniglot",
+                    "--epochs", "20", "100",
+                    "--classes", "10",
+                    "--batch","100",
+                    "--dims","15", "400",
+                    "--lr","0.0004", "0.004",
+                    "--channels","32", "32", "64", "128", "256",
+                    "--layers","5",
+                    "-t",
+                    "--gpu", "1"
+            ],
+            
+        },
     ]
 }
