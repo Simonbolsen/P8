@@ -4,7 +4,7 @@ from torch import nn
 
 
 class Convnet(nn.Module):
-    def __init__(self, device, lr = 0.001, d = 17, num_of_classes = 10, channels = 64):
+    def __init__(self, device, lr = 0.001, d = 17, num_of_classes = 10, channels = 64, image_size = 32, image_channels = 1):
         super(Convnet, self).__init__()
         self.device = device
         self.lr = lr
@@ -14,8 +14,8 @@ class Convnet(nn.Module):
         self.k_size = 4
         self.stride = 1
         self.padding = 0
-        self.in_size = 1
-        self.pic_size = 105
+        self.in_size = image_channels
+        self.pic_size = image_size
         self.middle_layers = [self.channels, self.channels, self.channels, self.channels]
         self.model = nn.Sequential(
             # 1 x 32 x 32 --> 16 x 29 x 29

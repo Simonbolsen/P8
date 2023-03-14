@@ -1,6 +1,6 @@
 
 import argparse
-from loader.loader import load_data, get_data
+from loader.loader import load_data, get_data, get_data_loader
 import torch
 from functools import partial
 from torch import nn
@@ -137,30 +137,33 @@ def run_tune(args):
         run_config=run_config
     )
     
-    #setup_and_train(good_start, loader)
-
-    results = tuner.fit()
-    print(results.get_best_result().metrics)
+    if (args.tuning):
+        results = tuner.fit()
+        print(results.get_best_result().metrics)
+    else:
+        setup_and_train(good_start, train_data, test_data)
 
 
 def setup_and_train(config, train_data=None, test_data=None):
-    loaders = load_data(train_data=train_data, test_data=test_data, batch_size=config["batch_size"])
-    model = emb_model.Convnet(device, lr = config["lr"], d = config["d"], num_of_classes=config["num_of_classes"], channels=config["channels"]).to(device)
+    train_loader = get_data_loader(train_data, batch_size=config["batch_size"])
+    validation_loader = get_data_loader(test_data, batch_size=config["batch_size"])
+    model = emb_model.Convnet(device, lr = config["lr"], d = config["d"], num_of_classes=config["num_of_classes"], 
+                              channels=config["channels"], image_size=train_loader.image_size, image_channels=train_loader.channels).to(device)
     optimiser = optim.Adam(model.parameters(), lr=model.lr)
     loss_func = nn_util.simple_dist_loss
     target_class_map = { i:i for i in range(model.num_of_classes) }
     max_epochs = config["num_of_epochs"]
 
     for epoch in range(max_epochs):
-        train(model, loaders, optimiser, loss_func, max_epochs, current_epoch=epoch, device=device)
-        accuracy = eval(model, loaders, target_class_map, device=device)
+        train(model, train_loader, optimiser, loss_func, max_epochs, current_epoch=epoch, device=device)
+        accuracy = eval(model, validation_loader, target_class_map, device=device)
         tune.report(accuracy=accuracy)
 
 
 def train(model, loader, optimiser, loss_func, num_epochs, current_epoch, device): 
-    total_step = len(loader["train"])
+    total_step = len(loader)
 
-    for i, (images, labels) in enumerate(loader["train"]):
+    for i, (images, labels) in enumerate(loader):
         images = images.to(device)
         labels = labels.to(device)
 
@@ -179,7 +182,7 @@ def eval(model, loader, target_class_map, device):
     correct = 0
     total = 0
     with torch.no_grad():
-        for images, labels in loader["test"]:
+        for images, labels in loader:
             images = images.to(device)
             labels = labels.to(device)
 
