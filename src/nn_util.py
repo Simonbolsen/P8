@@ -61,11 +61,11 @@ def simple_dist_loss(output_embds, class_embeds, targets, device):
     acc_loss = torch.tensor(0.0, requires_grad=True, device=device)
     acc_loss_div = torch.zeros(output_embds.shape, device=device, dtype=torch.float)
     
-    num_of_classes = len(class_embeds)
+    # num_of_classes = len(class_embeds)
 
-    for i, output_embedding in enumerate(output_embds[:-num_of_classes]):
+    for i, output_embedding in enumerate(output_embds):
         actual_index = targets[i]
-        actual_embedding = output_embds[actual_index]
+        actual_embedding = class_embeds[actual_index]
 
         diff = output_embedding - actual_embedding
         squared_dist = (diff).pow(2).sum(0)

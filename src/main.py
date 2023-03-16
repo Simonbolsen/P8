@@ -19,6 +19,7 @@ from ray.tune.search.hyperopt import HyperOptSearch
 from hyperopt import hp
 import datetime
 from nn_util import simple_dist_loss
+from few_shot_utils import train_few_shot
 
 
 def gtzero_int(x):
@@ -81,14 +82,15 @@ def determine_device(ngpu):
     else:
         print('Using CPU')
 
-def run_tune(args):
+def run_tune_fewshot(args):
     device = determine_device(ngpu=1)
-    train_data, test_data = get_data(args)
+    train_data, val_data, test_data = get_data(args)
 
     print("Training data size: ", len(train_data))
+    print("Validation data size: ", len(val_data))
     print("Test data size: ", len(test_data))
 
-    resources = {"cpu": args.cpu, "gpu": args.gpu}
+    # resources = {"cpu": args.cpu, "gpu": args.gpu}
     scheduler = AsyncHyperBandScheduler(grace_period=args.grace)
     reporter = tune.CLIReporter(
         metric_columns=["accuracy", "training_iteration"]
@@ -104,19 +106,18 @@ def run_tune(args):
             "batch_size": args.batch_size,
             "num_of_epochs": hp.uniformint("num_of_epochs", args.epochs[0], args.epochs[1])
         }
-    # config["stride"],
-    #                           channels, img_size, config["linear_n"], config["linear_size"]).to(device)
     
     good_start = {"num_of_epochs": 10,
                   "lr": 0.0005,
                   "d" : 60,
                   "channels" : 64,
-                  "num_of_classes": 10,
+                  "num_of_classes": 64,
                   "batch_size": 100,
                   "k_size": 4,
                   "stride": 1,
                   "linear_n": 1,
-                  "linear_size": 64
+                  "linear_size": 64,
+                  "shots": 5
                   }
 
     hyper_opt_search = HyperOptSearch(smoke_test_space, 
@@ -149,7 +150,79 @@ def run_tune(args):
         results = tuner.fit()
         print(results.get_best_result().metrics)
     else:
-        classification_setup(good_start, train_data, test_data, loss_func, device, ray_tune=False)
+        # classification_setup(good_start, train_data, test_data, loss_func, device, ray_tune=False)
+        train_few_shot(good_start, train_data, val_data, test_data, loss_func, device, ray_tune=False)
+
+def run_tune(args):
+    device = determine_device(ngpu=1)
+    train_data, test_data = get_data(args)
+
+    print("Training data size: ", len(train_data))
+    print("Test data size: ", len(test_data))
+
+    resources = {"cpu": args.cpu, "gpu": args.gpu}
+    scheduler = AsyncHyperBandScheduler(grace_period=args.grace)
+    reporter = tune.CLIReporter(
+        metric_columns=["accuracy", "training_iteration"]
+    )
+    
+    loss_func = simple_dist_loss
+
+    smoke_test_space = {
+            "lr": hp.uniform("lr", args.lr[0], args.lr[1]),
+            "d": hp.uniformint("d", args.dims[0], args.dims[1]),
+            "num_of_classes": args.num_of_classes,
+            "channels": hp.choice("channels", args.cnn_channels),
+            "batch_size": args.batch_size,
+            "num_of_epochs": hp.uniformint("num_of_epochs", args.epochs[0], args.epochs[1])
+        }
+    
+    good_start = {"num_of_epochs": 10,
+                  "lr": 0.0005,
+                  "d" : 60,
+                  "channels" : 64,
+                  "num_of_classes": 10,
+                  "batch_size": 100,
+                  "k_size": 4,
+                  "stride": 1,
+                  "linear_n": 1,
+                  "linear_size": 64,
+                  "shots": 5
+                  }
+
+    hyper_opt_search = HyperOptSearch(smoke_test_space, 
+                                      metric="accuracy", 
+                                      mode="max", 
+                                    #   n_initial_points=2, 
+                                      points_to_evaluate=[good_start])
+
+    tuner_config = tune.TuneConfig(
+            metric="accuracy",
+            mode="max",
+            scheduler=scheduler,
+            search_alg=hyper_opt_search,
+            num_samples=1000
+    )
+
+    run_config = air.RunConfig(
+            name="mnist_initial_test",
+            progress_reporter=reporter,
+            # stop={"training_iteration": 10}
+    )
+
+    tuner = tune.Tuner(
+        tune.with_parameters(classification_setup, train_data=train_data, test_data=test_data),
+        tune_config=tuner_config,
+        run_config=run_config
+    )
+    
+    if (args.tuning):
+        results = tuner.fit()
+        print(results.get_best_result().metrics)
+    else:
+        # classification_setup(good_start, train_data, test_data, loss_func, device, ray_tune=False)
+        train_few_shot(good_start, train_data, test_data, test_data, loss_func, device, ray_tune=False)
+
 
 if __name__ == '__main__':
     args = argparser.parse_args()
@@ -157,6 +230,6 @@ if __name__ == '__main__':
         raise argparse.ArgumentError("Illegal config")
 
     print(args.dataset)
-    run_tune(args)
+    run_tune_fewshot(args)
     print("Determines the dataset on which training occurs. Choose between: {}".format(", ".join(datasets)))
 

@@ -16,7 +16,7 @@ def train_few_shot(config,
     val_sup_load, val_query_load = k_shot_loaders(validation_data, config["shots"])     
     
     img_size = train_loader.image_size
-    img_channels = train_loader.image_channels
+    img_channels = train_loader.channels
     
     model = emb_model.Convnet(device, config["lr"], 
                               config["d"], 
@@ -30,18 +30,24 @@ def train_few_shot(config,
     
     max_epochs = config["num_of_epochs"]
     
-    last_accuracy = 0
+    last_acc = 0
     for epoch in range(max_epochs):
+        print("training...")
         train(model, train_loader, optimiser, loss_func, max_epochs, epoch, device)
-        correct, total = few_shot_eval(model, fs_sup_loader, fs_query_load)
-        accuracy = sum(correct) / sum(total)
+        print("evaluating...")
+        correct, total = few_shot_eval(model, fs_sup_loader, fs_query_load, device)
+        last_acc = sum(correct) / sum(total)
         if ray_tune:
-            tune.report(accuracy = accuracy)
+            tune.report(accuracy = last_acc, val_acc=0)
+        else:
+            print(f"Test accuracy: {last_acc}")
     
     print("doing final evaluation...")
-    val_acc = few_shot_eval(model, val_sup_load, val_query_load)
-    # todo : report final acc
-    # tune.report(val_acc = val_acc)
+    val_acc = few_shot_eval(model, val_sup_load, val_query_load, device)
+    if ray_tune:
+        tune.report(accuracy=last_acc, val_acc=val_acc)
+    else:
+        print(f"Final validation accuracy: {val_acc}")
 
 def few_shot_eval(model, support_loaders, query_loader, device):
     # Test the model
@@ -66,8 +72,10 @@ def few_shot_eval(model, support_loaders, query_loader, device):
 
         # do evaluation
         for images, labels in query_loader:
-            # todo: remove hardcoded shape
-            images = images.view(-1, 1, 28, 28).float().to(device)
+            img_size = query_loader.image_size
+            channels = query_loader.channels
+            images = images.view(-1, img_size, channels, channels).float().to(device)
+            
             test_output = model(images)
 
             for i, output_embedding in enumerate(test_output[:-model.num_of_classes]):
@@ -90,12 +98,14 @@ def find_few_shot_targets(support_loaders):
 
 def get_few_shot_embeddings(support_loaders, model, device):
     new_class_embeddings = []
-
-    for loaders in support_loaders:
-        for images, _ in loaders:
+    for loader in support_loaders:
+        img_size = loader.image_size
+        channels = loader.channels
+       
+        for images, _ in loader:
             # todo: remove hardcode shape
             # ensure correct shape
-            images = images.view(-1, 1, 28, 28).float().to(device)
+            images = images.view(-1, channels, img_size, img_size).float().to(device)
             few_shot_output = model(images)
             new_class_embeddings.append(few_shot_output[:-model.num_of_classes])
     

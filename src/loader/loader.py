@@ -26,6 +26,7 @@ def get_data_loader(data, batch_size=100):
     loader = torch.utils.data.DataLoader(data, batch_size=batch_size, shuffle=True, num_workers=1)
     loader.image_size = data[0][0].size()[1]
     loader.channels = data[0][0].size()[0]
+    loader.unique_targets = torch.unique(data.targets)
 
     return loader
 
@@ -85,6 +86,9 @@ def get_cifar100(config):
         transform=ToTensor(),
         download=True
     ) 
+    
+    training_set.targets = torch.from_numpy(np.array(training_set.targets))
+    testing_set.targets = torch.from_numpy(np.array(testing_set.targets))
 
     return training_set, testing_set
 
@@ -98,18 +102,20 @@ class CustomCifarDataset(torch.utils.data.Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-        return self.transform(self.data[idx]), torch.from_numpy(self.targets)[idx]
+        return self.transform(self.data[idx]), self.targets[idx]
     
 
 def get_cifarfs(config):
     train_data, test_data = get_cifar100(config)
 
     all_data =  np.concatenate((train_data.data, test_data.data), axis=0)
-    all_targets = np.concatenate((train_data.targets, test_data.targets), axis=0)
+    all_targets = torch.from_numpy(np.concatenate((train_data.targets, test_data.targets), axis=0))
 
-    train_idx = [train_data.class_to_idx[v] for v in cifarfs_splits.train]
-    test_idx = [train_data.class_to_idx[v] for v in cifarfs_splits.test]
-    val_idx = [train_data.class_to_idx[v] for v in cifarfs_splits.validation]
+    idx_to_class = {v : k for k,v in train_data.class_to_idx.items()}
+
+    train_idx = [i for i, v in enumerate(all_targets) if idx_to_class[v.item()] in cifarfs_splits.train]
+    test_idx = [i for i, v in enumerate(all_targets) if idx_to_class[v.item()] in cifarfs_splits.test]
+    val_idx = [i for i, v in enumerate(all_targets) if idx_to_class[v.item()] in cifarfs_splits.validation]
     
     train_data_split = all_data[train_idx]
     train_target_split = all_targets[train_idx]
@@ -122,7 +128,7 @@ def get_cifarfs(config):
     test_split = CustomCifarDataset(test_data_split, test_target_split)
     val_split = CustomCifarDataset(val_data_split, val_target_split)
 
-    return train_split, test_split, val_split
+    return train_split, val_split, test_split 
 
 
 def get_omniglot(config, target_alphabets=[]):
@@ -170,12 +176,15 @@ def k_shot_loaders(support_data, shots, query_batch_size=100):
         subset_indexs = [j for j, x in enumerate(support_data.targets) if x == target][:shots]
         all_indexs_to_remove.extend(subset_indexs)
         subset_data = Subset(support_data, subset_indexs)
-        support_loaders.append(torch.utils.data.DataLoader(subset_data, batch_size=shots, shuffle=True, num_workers=1))
+        support_loader = get_data_loader(subset_data, batch_size=shots)
+        support_loaders.append(support_loader)
+        # support_loaders.append(torch.utils.data.DataLoader(subset_data, batch_size=shots, shuffle=True, num_workers=1))
 
     indexs_to_keep = [i for i in range(len(support_data.data)) if i not in all_indexs_to_remove]
     query_data = Subset(support_data, indexs_to_keep)
     
-    query_loader = torch.utils.data.DataLoader(query_data, batch_size=query_batch_size, shuffle=True, num_workers=1)
+    # query_loader = torch.utils.data.DataLoader(query_data, batch_size=query_batch_size, shuffle=True, num_workers=1)
+    query_loader = get_data_loader(query_data, query_batch_size)
 
     return support_loaders, query_loader
 
