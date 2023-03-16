@@ -74,7 +74,7 @@ def few_shot_eval(model, support_loaders, query_loader, device):
         for images, labels in query_loader:
             img_size = query_loader.image_size
             channels = query_loader.channels
-            images = images.view(-1, img_size, channels, channels).float().to(device)
+            images = images.view(-1, channels, img_size, img_size).float().to(device)
             
             test_output = model(images)
 

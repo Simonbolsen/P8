@@ -10,7 +10,7 @@ from ray import tune
 
 def train(model, train_loader, optimiser, loss_func, 
           num_epochs, current_epoch, device): 
-    embeds_map = { i : v for i, v in enumerate(train_loader.unique_targets) }
+    embeds_map = { v.item() : i for i, v in enumerate(train_loader.unique_targets) }
     total_step = len(train_loader)
 
     for i, (images, labels) in enumerate(train_loader):
@@ -24,7 +24,7 @@ def train(model, train_loader, optimiser, loss_func,
         
         assert len(class_embds) == model.num_of_classes
         
-        loss = loss_func(out_embds, class_embds, labels, device)
+        loss = loss_func(out_embds, class_embds, [embeds_map[v.item()] for v in labels], device)
         optimiser.zero_grad()
         loss.backward()
         optimiser.step()

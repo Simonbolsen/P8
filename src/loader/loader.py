@@ -176,12 +176,14 @@ def k_shot_loaders(support_data, shots, query_batch_size=100):
         subset_indexs = [j for j, x in enumerate(support_data.targets) if x == target][:shots]
         all_indexs_to_remove.extend(subset_indexs)
         subset_data = Subset(support_data, subset_indexs)
+        subset_data.targets = torch.tensor([target])
         support_loader = get_data_loader(subset_data, batch_size=shots)
         support_loaders.append(support_loader)
         # support_loaders.append(torch.utils.data.DataLoader(subset_data, batch_size=shots, shuffle=True, num_workers=1))
 
     indexs_to_keep = [i for i in range(len(support_data.data)) if i not in all_indexs_to_remove]
     query_data = Subset(support_data, indexs_to_keep)
+    query_data.targets = targets
     
     # query_loader = torch.utils.data.DataLoader(query_data, batch_size=query_batch_size, shuffle=True, num_workers=1)
     query_loader = get_data_loader(query_data, query_batch_size)
