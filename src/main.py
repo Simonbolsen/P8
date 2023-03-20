@@ -148,16 +148,6 @@ def run_tune(args):
 
 
 def setup_and_train(config, train_data=None, test_data=None):
-    """Setup pretrained model
-    loaders = load_data(train_data=train_data, test_data=test_data, batch_size=config["batch_size"])
-    model, input_size = load_pretrained("resnet18", config["num_of_classes"], config["d"], feature_extract=False)
-    model.conv1 = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
-    model.to(device)
-    model.device = device
-    # model = emb_model.Convnet(device, lr = config["lr"], d = config["d"], num_of_classes=config["num_of_classes"], channels=config["channels"]).to(device)
-    optimiser = optim.Adam(model.parameters(), lr=config["lr"])
-    """
-
     train_loader = get_data_loader(train_data, batch_size=config["batch_size"])
     validation_loader = get_data_loader(test_data, batch_size=config["batch_size"])
     model = emb_model.Convnet(device, lr = config["lr"], d = config["d"], num_of_classes=config["num_of_classes"], 
@@ -172,6 +162,22 @@ def setup_and_train(config, train_data=None, test_data=None):
         accuracy = eval(model, validation_loader, target_class_map, device=device)
         tune.report(accuracy=accuracy)
 
+def setup_and_finetune(config, train_data=None, test_data=None):
+    train_loader = get_data_loader(train_data, batch_size=config["batch_size"])
+    validation_loader = get_data_loader(test_data, batch_size=config["batch_size"])
+    model, input_size = load_pretrained("resnet18", config["num_of_classes"], config["d"], feature_extract=False)
+    #model.conv1 = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+    model.to(device)
+    model.device = device
+    optimiser = optim.Adam(model.parameters(), lr=config["lr"])
+    loss_func = nn_util.simple_dist_loss
+    target_class_map = { i:i for i in range(config["num_of_classes"]) }
+    max_epochs = config["num_of_epochs"]
+
+    for epoch in range(max_epochs):
+        train(model, train_loader, optimiser, loss_func, max_epochs, current_epoch=epoch, device=device)
+        accuracy = eval(model, validation_loader, target_class_map, device=device)
+        tune.report(accuracy=accuracy)
 
 def train(model, loader, optimiser, loss_func, num_epochs, current_epoch, device): 
     total_step = len(loader)
