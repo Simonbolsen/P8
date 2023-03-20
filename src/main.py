@@ -1,5 +1,6 @@
 from training_utils import classification_setup
 import argparse
+from PTM.model_loader import load_pretrained
 from loader.loader import load_data, get_data, get_data_loader
 import torch
 from functools import partial
@@ -223,6 +224,22 @@ def run_tune(args):
         # classification_setup(good_start, train_data, test_data, loss_func, device, ray_tune=False)
         train_few_shot(good_start, train_data, test_data, test_data, loss_func, device, ray_tune=False)
 
+def setup_and_finetune(config, train_data=None, test_data=None):
+    train_loader = get_data_loader(train_data, batch_size=config["batch_size"])
+    validation_loader = get_data_loader(test_data, batch_size=config["batch_size"])
+    model, input_size = load_pretrained("resnet18", config["num_of_classes"], config["d"], feature_extract=False)
+    #model.conv1 = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+    model.to(device)
+    model.device = device
+    optimiser = optim.Adam(model.parameters(), lr=config["lr"])
+    loss_func = nn_util.simple_dist_loss
+    target_class_map = { i:i for i in range(config["num_of_classes"]) }
+    max_epochs = config["num_of_epochs"]
+
+    for epoch in range(max_epochs):
+        train(model, train_loader, optimiser, loss_func, max_epochs, current_epoch=epoch, device=device)
+        accuracy = eval(model, validation_loader, target_class_map, device=device)
+        tune.report(accuracy=accuracy)
 
 if __name__ == '__main__':
     args = argparser.parse_args()
