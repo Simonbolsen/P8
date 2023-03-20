@@ -6,6 +6,11 @@ import matplotlib.cm as cm
 import math
 from pathlib import Path
 
+def plot_2d(ys):
+    fig = plt.figure()
+    axe = plt.axes()
+    axe.plot(range(len(ys)), ys)
+
 def get_colors(num):
     return cm.rainbow(np.linspace(0, 1, num))
 
