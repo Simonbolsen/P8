@@ -12,7 +12,7 @@ import os
 import copy
 import re
 
-def load_pretrained(model_name, num_classes, embedding_dim_count, feature_extract=False):
+def load_pretrained(model_name, num_classes, embedding_dim_count, image_size, img_channels, feature_extract=False):
     """
     Fine-tune a pretrained model
     :param model_name: name of the pretrained model requested
@@ -32,7 +32,7 @@ def load_pretrained(model_name, num_classes, embedding_dim_count, feature_extrac
     :param feature_extract: True if only the last layer is to be trained
     :return: model
     """
-
+    
     model = models.get_model(model_name)
     model.num_of_classes = num_classes
     input_size = 0
@@ -49,6 +49,7 @@ def load_pretrained(model_name, num_classes, embedding_dim_count, feature_extrac
         model.fc = nn.Linear(num_ftrs, embedding_dim_count)
         input_size = 224
         model.embeddings = nn.Embedding(num_classes, embedding_dim_count)
+        model.conv1 = nn.Conv2d(img_channels, 64, kernel_size=7, stride=2, padding=3, bias=False)
         
         def forward(x):
             x = model._forward_impl(x)
