@@ -237,6 +237,7 @@ def setup_and_finetune(config, train_data, test_data, device):
     model.to(device)
     model.device = device
     optimiser = optim.Adam(model.parameters(), lr=config["lr"])
+
     loss_func = nn_util.simple_dist_loss
     max_epochs = config["num_of_epochs"]
 
