@@ -153,7 +153,7 @@ def setup_and_train(config, train_data=None, test_data=None):
     model = emb_model.Convnet(device, lr = config["lr"], d = config["d"], num_of_classes=config["num_of_classes"], 
                               channels=config["channels"], image_size=train_loader.image_size, image_channels=train_loader.channels).to(device)
     optimiser = optim.Adam(model.parameters(), lr=model.lr)
-    loss_func = nn_util.simple_dist_loss
+    loss_func = nn_util.dist_and_proximity_loss(500)
     target_class_map = { i:i for i in range(config["num_of_classes"]) }
     max_epochs = config["num_of_epochs"]
 
@@ -170,7 +170,7 @@ def setup_and_finetune(config, train_data=None, test_data=None):
     model.to(device)
     model.device = device
     optimiser = optim.Adam(model.parameters(), lr=config["lr"])
-    loss_func = nn_util.simple_dist_loss
+    loss_func = nn_util.dist_and_proximity_loss(500)
     target_class_map = { i:i for i in range(config["num_of_classes"]) }
     max_epochs = config["num_of_epochs"]
 
@@ -187,9 +187,11 @@ def train(model, loader, optimiser, loss_func, num_epochs, current_epoch, device
         labels = labels.to(device)
 
         res = model(images)
-        loss, loss_div = loss_func(res, labels, model.num_of_classes, { i:i for i in range(model.num_of_classes) }, device)
+        # loss, loss_div = loss_func(res, labels, model.num_of_classes, { i:i for i in range(model.num_of_classes) }, device)
+        loss = loss_func(res, labels, model.num_of_classes, { i:i for i in range(model.num_of_classes) }, device)
         optimiser.zero_grad()
-        res.backward(gradient = loss_div)
+        # res.backward(gradient = loss_div)
+        loss.backward()
         optimiser.step()    
         if (i+1) % 100 == 0:
             print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.2f}' 
