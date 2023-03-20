@@ -50,8 +50,8 @@ def get_mnist(config):
         transform = ToTensor()
     )
     
-    train_data = Subset(train_data, range(len(train_data)))
-    train_data.targets = torch.unique(train_data.dataset.targets)
+    # train_data = Subset(train_data, range(len(train_data)))
+    # train_data.targets = torch.unique(train_data.dataset.targets)
 
     return train_data, test_data
 
