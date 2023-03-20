@@ -16,10 +16,13 @@ from datahandling_util import get_data, load_data
 from ray.tune.search.hyperopt import HyperOptSearch
 from hyperopt import hp
 import datetime
+import json
 
 ngpu = 1
 
 device = torch.device("cuda:0" if (torch.cuda.is_available() and ngpu > 0) else "cpu")
+run_raytune = True
+
 
 if (device.type == 'cuda'):
     print('Using GPU')
@@ -47,10 +50,10 @@ def main():
             "num_of_epochs": hp.uniformint("num_of_epochs", 3, 30)
         }
     
-    good_start = {"num_of_epochs": 3,
-                  "lr": 0.0001,
+    good_start = {"num_of_epochs": 10,
+                  "lr": 0.0005,
                   "d" : 60,
-                  "channels" : 64,
+                  "channels" : 110,
                   "num_of_classes" : 10,
                   "batch_size" : 100}
 
@@ -84,9 +87,11 @@ def main():
         run_config=run_config
     )
 
-    results = tuner.fit()
-    print(results.get_best_result().metrics)
-    #setup_and_train(good_start, train_data, test_data)
+    if run_raytune:
+        results = tuner.fit()
+        print(results.get_best_result().metrics)
+    else:
+        setup_and_train(good_start, train_data, test_data)
 
     # lrs = []
     # dims = []
@@ -138,22 +143,50 @@ def setup_and_train(config, train_data, test_data):
     loaders = load_data(train_data, test_data, config["batch_size"])
     model = emb_model.Convnet(device, lr = config["lr"], d = config["d"], num_of_classes=config["num_of_classes"], channels=config["channels"]).to(device)
     optimiser = optim.Adam(model.parameters(), lr=model.lr)
-    loss_func = nn_util.comparison_dist_loss
+    loss_func = nn_util.simple_dist_loss
     target_class_map = { i:i for i in range(model.num_of_classes) }
     max_epochs = config["num_of_epochs"]
 
     for epoch in range(max_epochs):
         train(model, loaders, optimiser, loss_func, max_epochs, current_epoch=epoch, device=device)
-        accuracy = eval(model, loaders, target_class_map, device=device)
-        tune.report(accuracy=accuracy)
-        
+        if run_raytune:
+            accuracy = eval(model, loaders, target_class_map, device=device)
+            tune.report(accuracy=accuracy)
+
+    #accuracy = eval(model, loaders, target_class_map, device=device)
+    #save_embeddings(loaders, model, config, accuracy)
 
     # train(model, config["num_of_epochs"], loaders, optimiser, loss_func)
 
     # results[-1].append(accuracy)
     # print(f'Test Accuracy of the model on the 10000 test images: {(accuracy * 100):.2f}%')   
 
-def train(model, loaders, optimiser, loss_func, num_epochs, current_epoch, device): 
+def save_embeddings(loaders, model, config, accuracy): 
+    train_embeddings = []
+    test_embeddings = []
+
+    model.eval()
+
+    train_labels = []
+    test_labels = []
+
+    for images, labels in loaders["train"]: 
+        train_embeddings.extend(model.model(images.to(device)).tolist())
+        train_labels.extend(labels.tolist())
+    
+    for images, labels in loaders["test"]: 
+        test_embeddings.extend(model.model(images.to(device)).tolist())
+        test_labels.extend(labels.tolist())
+
+
+    embeddings = {"train_embeddings": train_embeddings, "train_labels": train_labels, 
+                  "test_embeddings": test_embeddings, "test_labels": test_labels,
+                  "class_embeddings": model.get_embeddings().tolist(), "accuracy" : accuracy, "config" : config}
+
+    with open('EmbeddingData/json_data.json', 'w') as outfile:
+        json.dump(json.dumps(embeddings), outfile)
+
+def train(model:emb_model.Convnet, loaders, optimiser, loss_func, num_epochs, current_epoch, device): 
     total_step = len(loaders['train'])
 
     for i, (images, labels) in enumerate(loaders["train"]):
@@ -163,11 +196,11 @@ def train(model, loaders, optimiser, loss_func, num_epochs, current_epoch, devic
         res = model(images)
         #(predicted_embeddings, target_labels, class_embeddings, device):
         #loss = loss_func(res[0:-model.num_of_classes], labels, res[-model.num_of_classes:], device)
-        #loss, loss_div = loss_func(res, labels, model.num_of_classes, { i:i for i in range(model.num_of_classes) }, device)
-        loss = loss_func(res, labels, model.num_of_classes, { i:i for i in range(model.num_of_classes) }, device)
+        loss, loss_div = loss_func(res, labels, model.num_of_classes, { i:i for i in range(model.num_of_classes) }, device)
+        #loss = loss_func(res, labels, model.num_of_classes, { i:i for i in range(model.num_of_classes) }, device)
         optimiser.zero_grad()
-        loss.backward()
-        #res.backward(gradient = loss_div)
+        #loss.backward()
+        res.backward(gradient = loss_div)
         optimiser.step()    
         if (i+1) % 100 == 0:
             print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.2f}' 
