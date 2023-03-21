@@ -1,6 +1,6 @@
 from training_utils import classification_setup
 import argparse
-from loader.loader import load_data, get_data, get_data_loader
+from loader.loader import load_data, get_data, get_fs_data, get_data_loader
 import torch
 from functools import partial
 from torch import nn
@@ -50,6 +50,7 @@ argparser = argparse.ArgumentParser()
 argparser.add_argument('--dataset', dest="dataset", type=str, default="mnist", choices=datasets.keys(),
                         help="Determines the dataset on which training occurs. Choose between: ".format(datasets.keys()))
 argparser.add_argument('--datadir', dest="data_dir", type=str, default="./data", help="Path to the data relative to current path")
+argparser.add_argument('-fs', dest="few_shot", action="store_true", help="Few-shot flag")
 
 # Training arguments
 argparser.add_argument('--epochs', dest="epochs", nargs="+", type=gtzero_int, default=[5,30], help="Epochs must be > 0. Can be multiple values")
@@ -84,11 +85,10 @@ def determine_device(ngpu):
 
 def run_tune_fewshot(args):
     device = determine_device(ngpu=1)
-    train_data, val_data, test_data = get_data(args)
+    train_data, val_data, _ = get_fs_data(args)
 
     print("Training data size: ", len(train_data))
     print("Validation data size: ", len(val_data))
-    print("Test data size: ", len(test_data))
 
     # resources = {"cpu": args.cpu, "gpu": args.gpu}
     scheduler = AsyncHyperBandScheduler(grace_period=args.grace)
@@ -107,7 +107,7 @@ def run_tune_fewshot(args):
             "num_of_epochs": hp.uniformint("num_of_epochs", args.epochs[0], args.epochs[1])
         }
     
-    good_start = {"num_of_epochs": 10,
+    good_start = {"num_of_epochs": 1,
                   "lr": 0.0005,
                   "d" : 60,
                   "channels" : 64,
@@ -141,7 +141,7 @@ def run_tune_fewshot(args):
     )
 
     tuner = tune.Tuner(
-        tune.with_parameters(classification_setup, train_data=train_data, test_data=test_data),
+        tune.with_parameters(classification_setup, train_data=train_data, test_data=val_data),
         tune_config=tuner_config,
         run_config=run_config
     )
@@ -151,7 +151,7 @@ def run_tune_fewshot(args):
         print(results.get_best_result().metrics)
     else:
         # classification_setup(good_start, train_data, test_data, loss_func, device, ray_tune=False)
-        train_few_shot(good_start, train_data, val_data, test_data, loss_func, device, ray_tune=False)
+        train_few_shot(good_start, train_data, val_data, loss_func, device, ray_tune=False)
 
 def run_tune(args):
     device = determine_device(ngpu=1)
@@ -177,17 +177,16 @@ def run_tune(args):
             "num_of_epochs": hp.uniformint("num_of_epochs", args.epochs[0], args.epochs[1])
         }
     
-    good_start = {"num_of_epochs": 10,
+    good_start = {"num_of_epochs": 1,
                   "lr": 0.0005,
                   "d" : 60,
                   "channels" : 64,
-                  "num_of_classes": 10,
+                  "num_of_classes": 64,
                   "batch_size": 100,
                   "k_size": 4,
                   "stride": 1,
                   "linear_n": 1,
                   "linear_size": 64,
-                  "shots": 5
                   }
 
     hyper_opt_search = HyperOptSearch(smoke_test_space, 
@@ -220,8 +219,8 @@ def run_tune(args):
         results = tuner.fit()
         print(results.get_best_result().metrics)
     else:
-        # classification_setup(good_start, train_data, test_data, loss_func, device, ray_tune=False)
-        train_few_shot(good_start, train_data, test_data, test_data, loss_func, device, ray_tune=False)
+        classification_setup(good_start, train_data, test_data, loss_func, device, ray_tune=False)
+        #train_few_shot(good_start, train_data, test_data, test_data, loss_func, device, ray_tune=False)
 
 
 if __name__ == '__main__':
@@ -230,6 +229,9 @@ if __name__ == '__main__':
         raise argparse.ArgumentError("Illegal config")
 
     print(args.dataset)
-    run_tune_fewshot(args)
-    print("Determines the dataset on which training occurs. Choose between: {}".format(", ".join(datasets)))
+
+    if (args.few_shot):
+        run_tune_fewshot(args)
+    else:
+        run_tune(args)
 

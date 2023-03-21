@@ -29,7 +29,7 @@ def train(model, train_loader, optimiser, loss_func,
         loss.backward()
         optimiser.step()
 
-        if (i+1) % 100 == 0:
+        if (i+1) % 100 == 0 or i+1 == total_step:
             print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.2f}' 
                 .format(current_epoch + 1, num_epochs, i + 1, total_step, loss.item()))   
 
