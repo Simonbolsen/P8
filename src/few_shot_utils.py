@@ -6,6 +6,7 @@ from training_utils import train
 from ray import tune
 import torch
 import sys
+import os
 from nn_util import get_loss_function
 from PTM.model_loader import load_pretrained
 from ray import tune
@@ -155,17 +156,23 @@ def save_few_shot_embedding_result(train_loader, support_loaders, query_loader, 
     val_support_labels = []
     val_query_labels = []
 
+    class_embeds = []
+    first_it = True
+
     for images, labels in train_loader: 
-        train_embeddings.extend(model.model(images.to(device)).tolist())
+        if (first_it):
+            first_it = False
+            class_embeds = model(images.to(device)).tolist()[len(-train_loader.unique_targets):]
+        train_embeddings.extend(model(images.to(device)).tolist())
         train_labels.extend(labels.tolist())
     
     for support_loader in support_loaders:
         for images, labels in support_loader: 
-            val_support_embeddings.extend(model.model(images.to(device)).tolist())
+            val_support_embeddings.extend(model(images.to(device)).tolist())
             val_support_labels.extend(labels.tolist())
 
     for images, labels in query_loader:
-        val_query_embeddings.extend(model.model(images.to(device)).tolist())
+        val_query_embeddings.extend(model(images.to(device)).tolist())
         val_query_labels.extend(labels.tolist())
 
     new_class_embeds = []
@@ -177,9 +184,9 @@ def save_few_shot_embedding_result(train_loader, support_loaders, query_loader, 
                   "val_support_embeddings": val_support_embeddings, "val_support_labels": val_support_labels,
                   "val_query_embeddings": val_query_embeddings, "val_query_labels": val_query_labels,
                   "new_class_embeddings": new_class_embeds,
-                  "class_embeddings": model.get_embeddings().tolist(), "accuracy" : accuracy, "config" : config}
+                  "class_embeddings": class_embeds, "accuracy" : accuracy, "config" : config}
 
-    with open('embeddingData/few_shot_test_data.json', 'w') as outfile:
+    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'embeddingData', 'few_shot_test_data.json'), 'w+') as outfile:
         json.dump(json.dumps(embeddings), outfile)
 
 
