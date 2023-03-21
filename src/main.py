@@ -14,6 +14,12 @@ from nn_util import simple_dist_loss, dist_and_proximity_loss, comparison_dist_l
 from few_shot_utils import setup_few_shot_pretrained
 from training_utils import train, eval_classification
 
+def gezero_int(x):
+    x = int()
+    if x < 0:
+        raise argparse.ArgumentTypeError("Minimum value is 0")
+    return x
+
 def gtzero_int(x):
     x = int(x)
     if x < 1:
@@ -51,7 +57,7 @@ argparser.add_argument('--datadir', dest="data_dir", type=str, default="./data",
 argparser.add_argument('-fs', dest="few_shot", action="store_true", help="Few-shot flag")
 
 # Training arguments
-argparser.add_argument('--epochs', dest="epochs", type=gtzero_int, default=1, help="Epochs must be > 0. Can be multiple values")
+argparser.add_argument('--epochs', dest="epochs", type=gtzero_int, default=1, help="Epochs must be > 0.")
 argparser.add_argument('--classes', dest="num_of_classes", type=gtzero_int, help="Number of unique classes for the dataset")
 argparser.add_argument('--batch', dest="batch_size", type=gtzero_int, default=100, help="Batch size must be > 0")
 
@@ -78,6 +84,7 @@ argparser.add_argument('--grace', dest="grace", type=gtzero_int, default=4, help
 argparser.add_argument('-t', dest="tuning", action="store_true", help="Tuning flag")
 argparser.add_argument('--samples', dest='samples', type=gtzero_int, default=1, help='Samples to run for experiment')
 argparser.add_argument('--exp-name', dest='exp_name', type=str, help='Name for raytune experiement')
+argparser.add_argument('--verbosity', dest='verbosity', type=gezero_int, default=2, help='Verbosity level for raytune reporter.')
 
 class bcolors:
     HEADER = '\033[95m'
@@ -128,6 +135,7 @@ def get_run_config(args, metric_columens = ["accuracy", "training_iteration"]):
     return air.RunConfig(
             name=args.exp_name,
             progress_reporter=reporter,
+            verbose=args.verbosity
     )
 
 
@@ -315,8 +323,7 @@ def pretrained_fewshot(args):
 #         # train_few_shot(good_start, train_data, test_data, test_data, loss_func, device, ray_tune=False)
 #         setup_and_finetune(good_start, train_data, test_data, device)
 
-if __name__ == '__main__':
-    args = argparser.parse_args()
+def run_main(args):
     if (not legal_args(args)):
         raise argparse.ArgumentError("Illegal config")
 
@@ -334,3 +341,6 @@ if __name__ == '__main__':
         pass
         # run_tune(args)
 
+if __name__ == '__main__':
+    args = argparser.parse_args()
+    run_main(args)
