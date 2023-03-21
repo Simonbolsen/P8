@@ -9,6 +9,7 @@ import sys
 from nn_util import get_loss_function
 from PTM.model_loader import load_pretrained
 from ray import tune
+import json
 
 def get_few_shot_loaders(config, train_data, few_shot_data):
     train_loader = get_data_loader(train_data, config["batch_size"])
@@ -35,16 +36,19 @@ def train_few_shot(config, train_loader, fs_sup_loaders, fs_query_load,
     
     max_epochs = config["max_epochs"]
     
+    last_acc = 0
     for epoch in range(max_epochs):
         print("training...")
         train(model, train_loader, optimiser, loss_func, max_epochs, epoch, device)
         print("evaluating...")
         last_acc = few_shot_eval(model, fs_sup_loaders, fs_query_load, device)
         if ray_tune:
-            tune.report(accuracy = last_acc, val_acc=0)
+            tune.report(accuracy = last_acc)
         else:
             print(f"Validation accuracy: {last_acc}")
     
+    save_few_shot_embedding_result(train_loader, fs_sup_loaders, fs_query_load, model, config, last_acc, device)
+
 def few_shot_eval(model, support_loaders, query_loader, device):
     # Test the model
     model.eval()
@@ -117,8 +121,43 @@ def find_closest_embedding(query, class_embeddings):
     return closest_target_index
 
 
-def save_few_shot_embedding_result(train_loader, support_loader, query_loader, model, config, accuracy):
-    pass
+def save_few_shot_embedding_result(train_loader, support_loaders, query_loader, model, config, accuracy, device):
+    train_embeddings = []
+    val_support_embeddings = []
+    val_query_embeddings = []
+
+    model.eval()
+
+    train_labels = []
+    val_support_labels = []
+    val_query_labels = []
+
+    for images, labels in train_loader: 
+        train_embeddings.extend(model.model(images.to(device)).tolist())
+        train_labels.extend(labels.tolist())
+    
+    for support_loader in support_loaders:
+        for images, labels in support_loader: 
+            val_support_embeddings.extend(model.model(images.to(device)).tolist())
+            val_support_labels.extend(labels.tolist())
+
+    for images, labels in query_loader:
+        val_query_embeddings.extend(model.model(images.to(device)).tolist())
+        val_query_labels.extend(labels.tolist())
+
+    new_class_embeds = []
+    few_shot_embeds = get_few_shot_embeddings(support_loaders, model, device)
+    for few_shot_embed in few_shot_embeds:
+        new_class_embeds.append(few_shot_embed.tolist())
+
+    embeddings = {"train_embeddings": train_embeddings, "train_labels": train_labels, 
+                  "val_support_embeddings": val_support_embeddings, "val_support_labels": val_support_labels,
+                  "val_query_embeddings": val_query_embeddings, "val_query_labels": val_query_labels,
+                  "new_class_embeddings": new_class_embeds,
+                  "class_embeddings": model.get_embeddings().tolist(), "accuracy" : accuracy, "config" : config}
+
+    with open('embeddingData/few_shot_test_data.json', 'w') as outfile:
+        json.dump(json.dumps(embeddings), outfile)
 
 
 """ {

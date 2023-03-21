@@ -1,7 +1,7 @@
 from functools import partial
 from training_utils import classification_setup
 import argparse
-from loader.loader import load_data, get_data, get_fs_data, get_data_loader
+from loader.loader import load_data, get_data, get_fs_data, get_data_loader, transforms_dict
 from PTM.model_loader import load_pretrained
 import torch
 from torchvision import datasets
@@ -41,6 +41,12 @@ datasets = {"mnist": 0,
 argparser = argparse.ArgumentParser()
 argparser.add_argument('--dataset', dest="dataset", type=str, default="mnist", choices=datasets.keys(),
                         help="Determines the dataset on which training occurs. Choose between: ".format(datasets.keys()))
+
+argparser.add_argument('--train_transforms', dest="train_transforms", type=str, default="toTensor", choices=transforms_dict.keys(),
+                        help="Determines the transforms applied to the training data. Choose between: ".format(transforms_dict.keys()))
+argparser.add_argument('--test_transforms', dest="test_transforms", type=str, default="toTensor", choices=transforms_dict.keys(),
+                        help="Determines the transforms applied to the test data. Choose between: ".format(transforms_dict.keys()))
+
 argparser.add_argument('--datadir', dest="data_dir", type=str, default="./data", help="Path to the data relative to current path")
 argparser.add_argument('-fs', dest="few_shot", action="store_true", help="Few-shot flag")
 
