@@ -6,13 +6,59 @@ import matplotlib.cm as cm
 import math
 from pathlib import Path
 
-def plot_2d(ys):
-    fig = plt.figure()
+def inv(x):
+    return math.sqrt(1 - (1 - x)**2)
+
+def plot_line_2d(ys, function = inv):
     axe = plt.axes()
     axe.plot(range(len(ys)), ys)
+    axe.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, pos: f"{function(x):.3f}"))
+    plt.show()
+
+def plot_line_2d(xs, y_series, labels, function = inv):
+    axe = plt.axes()
+    for index, ys in enumerate(y_series):
+        axe.plot(xs, ys, label = labels[index])
+    axe.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, pos: f"{function(x):.3f}"))
+    plt.legend()
+    plt.show()
+
+def plot_points_2d(xs, ys):
+    plt.scatter(xs, ys, marker="o", s = [0.1 for _ in range(len(xs))])
+    plt.legend()
+    plt.show()
+
+def plot_points_series_2d(xs, ys):
+    for i in range(len(xs)):
+        plt.scatter(xs[i], ys[i], marker="o", s = [1 for _ in range(len(xs[i]))])
+    plt.legend()
+    plt.show()
 
 def get_colors(num):
     return cm.rainbow(np.linspace(0, 1, num))
+
+def plotHeatMap(xs, ys, width, height, label):
+    x_max = max(xs)
+    x_min = min(xs)
+    y_max = max(ys)
+    y_min = min(ys)
+
+    heights = [[0 for _ in range(height)] for _ in range(width)]
+    for i, x in enumerate(xs):
+        y = ys[i]
+        xi = int((x - x_min) / (x_max - x_min) * (width - 1))
+        yi = int((y - y_min) / (y_max - y_min) * (height - 1))
+        heights[xi][yi] += 1
+
+    for i in range(width):
+        for ii in range(height):
+            heights[i][ii] = np.log(heights[i][ii] + 1)
+
+    plotSurface([heights], "Amount", 
+                [i * (x_max - x_min) / (width - 1) + x_min for i in range(width)], "x",
+                [i * (y_max - y_min) / (height - 1) + y_min for i in range(height)], "y",
+                num_of_surfaces=1, surfaceLabels=[label])
+
 
 def plotSurface(heights, zTitle, xAxis, xTitle, yAxis, yTitle, num_of_surfaces, surfaceLabels):
     mpl.rcParams['legend.fontsize'] = 10
@@ -61,9 +107,6 @@ def get_min_max(xs):
             x_max = max(x_max, max(x))
             x_min = min(x_min, min(x))
     return x_min, x_max
-
-def inv(x):
-    return math.sqrt(1 - (1 - x)**2)
 
 def plotPoints(xs, ys, zs, axis_names = ["", "", ""], legend = True, num_of_series = 1, series_labels=[], function = inv, marker = "o"):
     mpl.rcParams['legend.fontsize'] = 10
