@@ -259,8 +259,7 @@ def setup_and_finetune(config, train_data, test_data, device):
         print(accuracy)
         # tune.report(accuracy=accuracy)
 
-if __name__ == '__main__':
-    args = argparser.parse_args()
+def run_main(args):
     if (not legal_args(args)):
         raise argparse.ArgumentError("Illegal config")
 
@@ -274,3 +273,6 @@ if __name__ == '__main__':
     else:
         run_tune(args)
 
+if __name__ == '__main__':
+    args = argparser.parse_args()
+    run_main(args)
