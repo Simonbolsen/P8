@@ -5,26 +5,28 @@ from training_utils import train
 from ray import tune
 import torch
 import sys
+from nn_util import get_loss_function
+from PTM.model_loader import load_pretrained
 
-def train_few_shot(config, 
-                   train_data, 
-                   few_shot_data, 
-                   validation_data, 
-                   loss_func, device, ray_tune = True):
+def get_few_shot_loaders(config, train_data, few_shot_data):
     train_loader = get_data_loader(train_data, config["batch_size"])
     fs_sup_loader, fs_query_load = k_shot_loaders(few_shot_data, config["shots"])
-    val_sup_load, val_query_load = k_shot_loaders(validation_data, config["shots"])     
     
-    img_size = train_loader.image_size
-    img_channels = train_loader.channels
+    return train_loader, fs_sup_loader, fs_query_load
+
+def setup_few_shot_pretrained(config, model_name, train_data, few_shot_data, device, ray_tune = True):
+    train_loader, fs_sup_loader, fs_query_loader = get_few_shot_loaders(config, train_data, few_shot_data)
+    loss_func = get_loss_function(config)
+    num_of_classes = len(train_loader.unique_targets)
+    model = load_pretrained(model_name, num_of_classes, 
+                            config["d"], train_loader.image_size, 
+                            train_loader.channels)
     
-    model = emb_model.Convnet(device, config["lr"], 
-                              config["d"], 
-                              config["num_of_classes"], 
-                              config["channels"],
-                              config["k_size"],
-                              config["stride"],
-                              img_channels, img_size, config["linear_n"], config["linear_size"]).to(device)
+    train_few_shot(config, train_loader, fs_sup_loader, fs_query_loader, 
+                   loss_func, model, device, ray_tune)
+
+def train_few_shot(config, train_loader, fs_sup_loader, fs_query_load, 
+                   model, loss_func, device, ray_tune):
     
     optimiser = optim.Adam(model.parameters(), lr=config["lr"])
     
@@ -42,12 +44,12 @@ def train_few_shot(config,
         else:
             print(f"Test accuracy: {last_acc}")
     
-    print("doing final evaluation...")
-    val_acc = few_shot_eval(model, val_sup_load, val_query_load, device)
-    if ray_tune:
-        tune.report(accuracy=last_acc, val_acc=val_acc)
-    else:
-        print(f"Final validation accuracy: {val_acc}")
+    # print("doing final evaluation...")
+    # val_acc = few_shot_eval(model, val_sup_load, val_query_load, device)
+    # if ray_tune:
+    #     tune.report(accuracy=last_acc, val_acc=val_acc)
+    # else:
+    #     print(f"Final validation accuracy: {val_acc}")
 
 def few_shot_eval(model, support_loaders, query_loader, device):
     # Test the model
@@ -103,8 +105,6 @@ def get_few_shot_embeddings(support_loaders, model, device):
         channels = loader.channels
        
         for images, _ in loader:
-            # todo: remove hardcode shape
-            # ensure correct shape
             images = images.view(-1, channels, img_size, img_size).float().to(device)
             few_shot_output = model(images)
             new_class_embeddings.append(few_shot_output[:-model.num_of_classes])

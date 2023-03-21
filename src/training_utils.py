@@ -5,8 +5,30 @@ import torch
 from torch import optim
 import embedding_model as emb_model
 from ray import tune
+from PTM.model_loader import load_pretrained
+from nn_util import get_loss_function
 
+def setup_and_finetune(config, train_data, test_data, device, ray_tune = True):
+    train_loader = get_data_loader(train_data, batch_size=config["batch_size"])
+    validation_loader = get_data_loader(test_data, batch_size=config["batch_size"])
 
+    img_size = train_loader.image_size
+    img_channels = train_loader.channels    
+    
+    model, _ = load_pretrained(config["model"], config["num_of_classes"], config["d"], img_size, img_channels, feature_extract=False)
+    model.to(device)
+    model.device = device
+    optimiser = optim.Adam(model.parameters(), lr=config["lr"])
+
+    loss_func = get_loss_function(config)
+    max_epochs = config["num_of_epochs"]
+
+    for epoch in range(max_epochs):
+        print("training...")
+        train(model, train_loader, optimiser, loss_func, max_epochs, epoch, device)
+        accuracy = eval_classification(model, validation_loader, device)
+        if ray_tune:
+            tune.report(accuracy=accuracy)
 
 def train(model, train_loader, optimiser, loss_func, 
           num_epochs, current_epoch, device): 

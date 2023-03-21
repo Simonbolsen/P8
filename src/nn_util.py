@@ -149,14 +149,24 @@ def _move_away_from_other_near_classes_class_loss(proximity_multiplier, predicte
 
 
 def dist_and_proximity_loss(proximity_multiplier:float or int):
-    return lambda model, target, num_of_classes, target_class_map, device: _move_away_from_other_near_classes_class_loss(
+    return lambda output_embds, class_embeds, targets, device: _move_away_from_other_near_classes_class_loss(
             proximity_multiplier = proximity_multiplier,
-            predicted_embeddings = model[:-num_of_classes],
-            target_labels = target,
-            class_embeddings = model[-num_of_classes:],
+            predicted_embeddings = output_embds,
+            target_labels = targets,
+            class_embeddings = class_embeds,
             device = device
         )
 
+def get_loss_function(config):
+    loss_functions = {
+        "simple-dist" : simple_dist_loss,
+        "class-push" : dist_and_proximity_loss,
+        "comp-dist-loss" : comparison_dist_loss
+    }
 
-# def get_class_embeddings(res, number_of_classes):
-#     return res[-number_of_classes:]
+    loss_func = loss_functions[config["loss_func"]]
+
+    if config.loss_func == "class-push":
+        loss_func = loss_func(config["prox_mult"])
+            
+    return loss_func
