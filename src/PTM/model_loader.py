@@ -71,7 +71,7 @@ def load_pretrained(model_name, num_classes, embedding_dim_count, image_size, im
             x = model.avgpool(x)
             x = torch.flatten(x, 1)
             x = model.classifier(x)
-            y = model.embeddings(torch.tensor(range(num_classes), device=model.device))
+            y = model.embeddings(torch.tensor(range(num_classes), device=device))
             return torch.cat((x, y), dim=0)
         model.forward = forward
 
