@@ -323,8 +323,7 @@ def pretrained_fewshot(args):
 #         # train_few_shot(good_start, train_data, test_data, test_data, loss_func, device, ray_tune=False)
 #         setup_and_finetune(good_start, train_data, test_data, device)
 
-if __name__ == '__main__':
-    args = argparser.parse_args()
+def run_main(args):
     if (not legal_args(args)):
         raise argparse.ArgumentError("Illegal config")
 
@@ -342,3 +341,6 @@ if __name__ == '__main__':
         pass
         # run_tune(args)
 
+if __name__ == '__main__':
+    args = argparser.parse_args()
+    run_main(args)
