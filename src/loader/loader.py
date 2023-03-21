@@ -1,6 +1,7 @@
 import torch
 from torchvision import datasets
 from torchvision.transforms import ToTensor
+import torchvision.transforms as transforms
 from torch.utils.data import ConcatDataset, Subset, TensorDataset
 import numpy as np
 import loader.cifarfs_splits as cifarfs_splits
@@ -12,6 +13,21 @@ dataset_dict = {
     "mnist": lambda c: get_mnist(config=c),
     "cifar10": lambda c: get_cifar10(config=c),
     "cifar100": lambda c: get_cifar100(config=c),
+}
+
+transforms_dict = {
+    "toTensor": ToTensor(),
+    "resize224_flip": transforms.Compose([
+                        transforms.Resize(224),
+                        transforms.RandomHorizontalFlip(),
+                        transforms.ToTensor(),
+                        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+                    ]),
+    "resize224": transforms.Compose([
+                        transforms.Resize(224),
+                        transforms.ToTensor(),
+                        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+                    ]),
 }
 
 def load_data(train_data, test_data, batch_size=100):
@@ -40,14 +56,14 @@ def get_mnist(config):
     train_data = datasets.MNIST(
         root = config.data_dir,
         train = True,                         
-        transform = ToTensor(), 
+        transform = transforms_dict[config.train_transforms], 
         download = True,            
     )
 
     test_data = datasets.MNIST(
         root = config.data_dir, 
         train = False, 
-        transform = ToTensor()
+        transform = transforms_dict[config.test_transforms],
     )
     
     # train_data = Subset(train_data, range(len(train_data)))
@@ -60,14 +76,14 @@ def get_cifar10(config):
     training_set = datasets.CIFAR10(
         root=config.data_dir,
         train=True,
-        transform=ToTensor(),
+        transform=transforms_dict[config.train_transforms],
         download=True
     )       
     
     testing_set = datasets.CIFAR10(
         root=config.data_dir,
         train=False,
-        transform=ToTensor(),
+        transform=transforms_dict[config.test_transforms],
         download=True
     )       
     
@@ -80,14 +96,14 @@ def get_omniglot(config, target_alphabets=[]):
     background_set = datasets.Omniglot(
         root = config.data_dir,
         background = True,                         
-        transform = ToTensor(), 
+        transform = transforms_dict[config.train_transforms], 
         download = True,            
     )
 
     evaluation_set = datasets.Omniglot(
         root = config.data_dir,
         background = False, 
-        transform = ToTensor(),
+        transform = transforms_dict[config.test_transforms],
         download=True,
     )
 

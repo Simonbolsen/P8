@@ -12,7 +12,7 @@ import os
 import copy
 import re
 
-def load_pretrained(model_name, num_classes, embedding_dim_count, image_size, img_channels, feature_extract=False):
+def load_pretrained(model_name, num_classes, embedding_dim_count, image_size, img_channels, device, feature_extract=False):
     """
     Fine-tune a pretrained model
     :param model_name: name of the pretrained model requested
@@ -45,20 +45,39 @@ def load_pretrained(model_name, num_classes, embedding_dim_count, image_size, im
         print (param.data)"""
 
     if split_name[0] == "resnet":
+        model.conv1 = nn.Conv2d(img_channels, 64, kernel_size=7, stride=2, padding=3, bias=False)
+
         num_ftrs = model.fc.in_features
         model.fc = nn.Linear(num_ftrs, embedding_dim_count)
-        input_size = 224
         model.embeddings = nn.Embedding(num_classes, embedding_dim_count)
-        model.conv1 = nn.Conv2d(img_channels, 64, kernel_size=7, stride=2, padding=3, bias=False)
         
         def forward(x):
             x = model._forward_impl(x)
-            y = model.embeddings(torch.tensor(range(num_classes), device=model.device))
+            y = model.embeddings(torch.tensor(range(num_classes), device=device))
             return torch.cat((x, y), dim=0)
-        
         model.forward = forward
 
+        input_size = 224
+
     elif model_name == "alexnet":
+        model.features[0] = nn.Conv2d(img_channels, 64, kernel_size=11, stride=4, padding=2)
+
+        #Output stems from the sixth layer in the dense net at the end called classifier
+        model.classifier[6] = nn.Linear(4096, embedding_dim_count)
+        model.embeddings = nn.Embedding(num_classes, embedding_dim_count)
+
+        def forward(x):
+            x = model.features(x)
+            x = model.avgpool(x)
+            x = torch.flatten(x, 1)
+            x = model.classifier(x)
+            y = model.embeddings(torch.tensor(range(num_classes), device=device))
+            return torch.cat((x, y), dim=0)
+        model.forward = forward
+
+        input_size = 224
+    
+    elif model_name == "densenet":
         "Nicht implementiert"
 
     return model, input_size
