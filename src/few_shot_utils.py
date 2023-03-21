@@ -8,19 +8,17 @@ import sys
 
 def train_few_shot(config, 
                    train_data, 
-                   few_shot_data, 
                    validation_data, 
                    loss_func, device, ray_tune = True):
     train_loader = get_data_loader(train_data, config["batch_size"])
-    fs_sup_loader, fs_query_load = k_shot_loaders(few_shot_data, config["shots"])
-    val_sup_load, val_query_load = k_shot_loaders(validation_data, config["shots"])     
+    fs_sup_loaders, fs_query_load = k_shot_loaders(validation_data, config["shots"])   
     
     img_size = train_loader.image_size
     img_channels = train_loader.channels
     
     model = emb_model.Convnet(device, config["lr"], 
                               config["d"], 
-                              config["num_of_classes"], 
+                              len(train_loader.unique_targets), 
                               config["channels"],
                               config["k_size"],
                               config["stride"],
@@ -35,19 +33,20 @@ def train_few_shot(config,
         print("training...")
         train(model, train_loader, optimiser, loss_func, max_epochs, epoch, device)
         print("evaluating...")
-        correct, total = few_shot_eval(model, fs_sup_loader, fs_query_load, device)
-        last_acc = sum(correct) / sum(total)
+        last_acc = few_shot_eval(model, fs_sup_loaders, fs_query_load, device)
         if ray_tune:
             tune.report(accuracy = last_acc, val_acc=0)
         else:
-            print(f"Test accuracy: {last_acc}")
+            print(f"Validation accuracy: {last_acc}")
     
     print("doing final evaluation...")
-    val_acc = few_shot_eval(model, val_sup_load, val_query_load, device)
+    val_acc = few_shot_eval(model, fs_sup_loaders, fs_query_load, device)
     if ray_tune:
         tune.report(accuracy=last_acc, val_acc=val_acc)
     else:
         print(f"Final validation accuracy: {val_acc}")
+
+    save_few_shot_embedding_result(train_loader, fs_sup_loaders, fs_query_load, )
 
 def few_shot_eval(model, support_loaders, query_loader, device):
     # Test the model
@@ -86,7 +85,7 @@ def few_shot_eval(model, support_loaders, query_loader, device):
                     correct[closest_target_index] += 1
                 total[closest_target_index] += 1
 
-        return correct, total
+        return sum(correct) / sum(total)
     
 def find_few_shot_targets(support_loaders):
     few_shot_targets = []
@@ -123,4 +122,12 @@ def find_closest_embedding(query, class_embeddings):
     return closest_target_index
 
 
+def save_few_shot_embedding_result(train_loader, support_loader, query_loader, model, config, accuracy):
+    pass
 
+
+""" {
+    "train_embeddings", "train_labels", val_support_embeddings, val_support_labels, 
+    val_query_embeddings, val_query_labels, "class_embeddings", "new_class_embeddings", 
+    accuracy, config
+}"""
