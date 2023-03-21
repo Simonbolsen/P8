@@ -118,18 +118,9 @@ def comparison_dist_loss(output_embeddings, class_embeddings, targets, device):
     return loss #, ddx_loss
 
 
-def move_away_from_other_near_classes_output_loss(predicted_embeddings:list[list[float]], class_embeddings:list[list[float]], target_labels:list[int], device: torch.device):
-    loss = torch.tensor(0.0, requires_grad=True, device=device)
 
-    for predicted_embedding, target_label in zip(predicted_embeddings, target_labels):
-        dist = torch.linalg.norm(predicted_embedding - class_embeddings[target_label]).pow(2)
-        loss = loss + dist
-
-    return loss
-
-
-def move_away_from_other_near_classes_class_loss(predicted_embeddings:list[list[float]], class_embeddings:list[list[float]], target_labels:list[int], device: torch.device):
-    def proximity(x): return 1 / (x + 0.0001)
+def _move_away_from_other_near_classes_class_loss(proximity_multiplier, predicted_embeddings:list[list[float]], target_labels:list[int], class_embeddings:list[list[float]], device: torch.device):
+    def proximity(x): return proximity_multiplier / (x + 1)
     def get_push_from_other_classes(self_label):
         self_embedding = class_embeddings[self_label]
         other_embeddings = class_embeddings[torch.arange(len(class_embeddings), device=device) != self_label]
@@ -156,6 +147,15 @@ def move_away_from_other_near_classes_class_loss(predicted_embeddings:list[list[
 
     return loss
 
+
+def dist_and_proximity_loss(proximity_multiplier:float or int):
+    return lambda model, target, num_of_classes, target_class_map, device: _move_away_from_other_near_classes_class_loss(
+            proximity_multiplier = proximity_multiplier,
+            predicted_embeddings = model[:-num_of_classes],
+            target_labels = target,
+            class_embeddings = model[-num_of_classes:],
+            device = device
+        )
 
 
 # def get_class_embeddings(res, number_of_classes):

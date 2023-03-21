@@ -21,7 +21,7 @@ import math
 def main():
     
     #Hyperparameters, model and data are configured. This can be messed with to see how it affects the model
-    model, input_size = load_pretrained("resnet18", num_classes=10)
+    model, input_size = load_pretrained("resnet18", num_classes=10, embedding_dim_count=200)
 
     train_transforms = transforms.Compose([
             transforms.RandomResizedCrop(input_size),

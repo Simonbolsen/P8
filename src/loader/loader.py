@@ -50,7 +50,8 @@ def get_mnist(config):
         transform = ToTensor()
     )
     
-    train_data = Subset(train_data, range(len(train_data)))
+    # train_data = Subset(train_data, range(len(train_data)))
+    # train_data.targets = torch.unique(train_data.dataset.targets)
 
     return train_data, test_data
 
@@ -69,6 +70,9 @@ def get_cifar10(config):
         transform=ToTensor(),
         download=True
     )       
+    
+    training_set.targets = torch.from_numpy(np.array(training_set.targets))
+    testing_set.targets = torch.from_numpy(np.array(testing_set.targets))
     
     return training_set, testing_set
 

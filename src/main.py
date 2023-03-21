@@ -1,6 +1,7 @@
 from training_utils import classification_setup
 import argparse
 from loader.loader import load_data, get_data, get_fs_data, get_data_loader
+from PTM.model_loader import load_pretrained
 import torch
 from functools import partial
 from torch import nn
@@ -13,6 +14,7 @@ import nn_util
 import embedding_model as emb_model
 import Plotting.plotting_util as plot
 import math
+import ray
 from ray import air, tune
 from ray.tune.schedulers import AsyncHyperBandScheduler
 from ray.tune.search.hyperopt import HyperOptSearch
@@ -20,7 +22,7 @@ from hyperopt import hp
 import datetime
 from nn_util import simple_dist_loss
 from few_shot_utils import train_few_shot
-
+from training_utils import train, eval_classification
 
 def gtzero_int(x):
     x = int(x)
@@ -151,11 +153,13 @@ def run_tune_fewshot(args):
         print(results.get_best_result().metrics)
     else:
         # classification_setup(good_start, train_data, test_data, loss_func, device, ray_tune=False)
-        train_few_shot(good_start, train_data, val_data, loss_func, device, ray_tune=False)
+        #train_few_shot(good_start, train_data, val_data, loss_func, device, ray_tune=False)
+        # train_few_shot(good_start, train_data, val_data, None, loss_func, device, ray_tune=False)
+        setup_and_finetune(good_start, train_data, val_data, device)
 
 def run_tune(args):
     device = determine_device(ngpu=1)
-    train_data, test_data = get_data(args)
+    train_data, test_data,  = get_data(args)
 
     print("Training data size: ", len(train_data))
     print("Test data size: ", len(test_data))
@@ -219,14 +223,43 @@ def run_tune(args):
         results = tuner.fit()
         print(results.get_best_result().metrics)
     else:
-        classification_setup(good_start, train_data, test_data, loss_func, device, ray_tune=False)
+        #classification_setup(good_start, train_data, test_data, loss_func, device, ray_tune=False)
         #train_few_shot(good_start, train_data, test_data, test_data, loss_func, device, ray_tune=False)
+        # classification_setup(good_start, train_data, test_data, loss_func, device, ray_tune=False)
+        # train_few_shot(good_start, train_data, test_data, test_data, loss_func, device, ray_tune=False)
+        setup_and_finetune(good_start, train_data, test_data, device)
 
+def setup_and_finetune(config, train_data, test_data, device):
+    train_loader = get_data_loader(train_data, batch_size=config["batch_size"])
+    validation_loader = get_data_loader(test_data, batch_size=config["batch_size"])
+
+    img_size = train_loader.image_size
+    img_channels = train_loader.channels    
+    
+    model, _ = load_pretrained("resnet18", config["num_of_classes"], config["d"], img_size, img_channels, feature_extract=False)
+    model.to(device)
+    model.device = device
+    optimiser = optim.Adam(model.parameters(), lr=config["lr"])
+
+    loss_func = nn_util.simple_dist_loss
+    max_epochs = config["num_of_epochs"]
+
+    for epoch in range(max_epochs):
+        print("training...")
+        train(model, train_loader, optimiser, loss_func, max_epochs, epoch, device)
+        # train(model, train_loader, optimiser, loss_func, max_epochs, current_epoch=epoch, device=device)
+        # accuracy = eval(model, validation_loader, target_class_map, device=device)
+        accuracy = eval_classification(model, validation_loader, device)
+        print(accuracy)
+        # tune.report(accuracy=accuracy)
 
 if __name__ == '__main__':
     args = argparser.parse_args()
     if (not legal_args(args)):
         raise argparse.ArgumentError("Illegal config")
+
+    if args.tuning:
+        ray.init(num_cpus=args.cpu, num_gpus=args.gpu)
 
     print(args.dataset)
 

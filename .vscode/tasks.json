@@ -13,7 +13,7 @@
             },
             "args": [
                 "./src/main.py",
-                "--dataset", "cifar10",
+                "--dataset", "mnist",
                 "--datadir", "'./data'",
                 "--epochs", "20", "100",
                 "--classes", "10",
