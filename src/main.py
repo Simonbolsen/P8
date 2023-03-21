@@ -1,3 +1,4 @@
+from functools import partial
 from training_utils import classification_setup
 import argparse
 from loader.loader import load_data, get_data, get_fs_data, get_data_loader
@@ -9,7 +10,7 @@ from ray import air, tune
 from ray.tune.schedulers import AsyncHyperBandScheduler
 from ray.tune.search.hyperopt import HyperOptSearch
 from hyperopt import hp
-from nn_util import simple_dist_loss, dist_and_proximity_loss, comparison_dist_loss
+from nn_util import simple_dist_loss, dist_and_proximity_loss, comparison_dist_loss, loss_functions
 from few_shot_utils import setup_few_shot_pretrained
 from training_utils import train, eval_classification
 
@@ -44,15 +45,17 @@ argparser.add_argument('--datadir', dest="data_dir", type=str, default="./data",
 argparser.add_argument('-fs', dest="few_shot", action="store_true", help="Few-shot flag")
 
 # Training arguments
-argparser.add_argument('--epochs', dest="epochs", nargs="+", type=gtzero_int, default=[5,30], help="Epochs must be > 0. Can be multiple values")
+argparser.add_argument('--epochs', dest="epochs", type=gtzero_int, default=1, help="Epochs must be > 0. Can be multiple values")
 argparser.add_argument('--classes', dest="num_of_classes", type=gtzero_int, help="Number of unique classes for the dataset")
 argparser.add_argument('--batch', dest="batch_size", type=gtzero_int, default=100, help="Batch size must be > 0")
 
 argparser.add_argument('--channels', dest="cnn_channels", nargs="+", type=gtzero_int, default=[16, 32, 64, 128, 256], help="Number of channels in each convolutional layer")
 argparser.add_argument('--layers', dest="cnn_layers", type=gtzero_int, default=5, help="Number of convolutional layers")
 
+argparser.add_argument('--loss-func', dest='loss_func', default='simple-dist', choices=loss_functions.keys())
+
 # Pretrained
-argparser.add_argument('--pretrained', dest="pretrained", action='store_true', help="If training should run a pretrained model")
+argparser.add_argument('-pt', dest="pretrained", action='store_true', help="If training should run a pretrained model")
 argparser.add_argument('--model', dest='model', type=str, help='Model name to run for pretrained')
 
 # Few-shot
@@ -67,27 +70,43 @@ argparser.add_argument('--gpu', dest="gpu", type=gtzero_float, default=0.25, hel
 argparser.add_argument('--cpu', dest="cpu", type=gtzero_float, default=3, help="CPU resources")
 argparser.add_argument('--grace', dest="grace", type=gtzero_int, default=4, help="Grace period before early stopping")
 argparser.add_argument('-t', dest="tuning", action="store_true", help="Tuning flag")
-argparser.add_argument('--samples', dest='samples', type=gtzero_int, help='Samples to run for experiment')
+argparser.add_argument('--samples', dest='samples', type=gtzero_int, default=1, help='Samples to run for experiment')
+argparser.add_argument('--exp-name', dest='exp_name', type=str, help='Name for raytune experiement')
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 
 def legal_args(args):
     if (args.tuning):
-        return len(args.dims) > 1 and len(args.lr) > 1 and len(args.epochs) > 1 and (len(args.cnn_channels) == args.cnn_layers)
+        return len(args.dims) > 1 and len(args.lr) > 1 and (len(args.cnn_channels) == args.cnn_layers)
     return True
 
 def determine_device(ngpu):
     device = torch.device("cuda:0" if (torch.cuda.is_available() and ngpu > 0) else "cpu")
 
     if (device.type == 'cuda'):
-        print('Using GPU')
+        print(f'{bcolors.OKGREEN}OK: Using GPU{bcolors.ENDC}')
     else:
-        print('Using CPU')
+        print(f'{bcolors.WARNING}Warning: Using CPU{bcolors.ENDC}')
+    
+    return device
    
 def get_base_config(args):
     base_config = {
         "lr": hp.uniform("lr", args.lr[0], args.lr[1]),
         "max_epochs": args.epochs,
         "batch_size": args.batch_size, # TODO: make choice?
-        "d" : args.dims
+        "d" : hp.uniformint("d", args.dims[0], args.dims[1]),
+        "loss_func" : args.loss_func
     }
     
     return base_config
@@ -108,14 +127,14 @@ def get_run_config(args, metric_columens = ["accuracy", "training_iteration"]):
 
 def get_tune_config(args, search_alg, metric="accuracy", mode="max"):
     scheduler = get_scheduler(args)    
-    
-    tune.TuneConfig(
+     
+    return tune.TuneConfig(
             metric=metric,
             mode=mode,
             scheduler=scheduler,
             search_alg=search_alg,
             num_samples=args.samples
-    )
+    ) 
     
 def get_few_shot_config(args):
     return {
@@ -183,13 +202,18 @@ def get_hyper_opt(space, metric="accuracy", mode="max", good_starts=None):
 
 def pretrained_fewshot(args):
     device = determine_device(ngpu=1)
-    train_data, val_data,  = get_fs_data(args)
+    train_data, val_data, _  = get_fs_data(args)
+    train_data_ptr = ray.put(train_data)
+    val_data_ptr = ray.put(val_data)
+
     print("Training data size: ", len(train_data))
     print("Test data size: ", len(val_data))
+    model = args.model
+
+    resources = {"cpu": args.cpu, "gpu": args.gpu}
 
     base_config = get_base_config(args)
     few_shot_config = get_few_shot_config(args)
-    model = args.model
     
     space = base_config | few_shot_config
     
@@ -198,10 +222,13 @@ def pretrained_fewshot(args):
     tuner_config = get_tune_config(args, search_alg)
     run_config = get_run_config(args)
     
+    setup_func = partial(setup_few_shot_pretrained, model_name=model, train_data=train_data_ptr,
+                         few_shot_data=val_data_ptr, args=args, device=device)
+    
     tuner = tune.Tuner(
-        tune.with_parameters(setup_few_shot_pretrained, model_name=model, train_data=train_data, few_shot_data=val_data, device=device),
+        tune.with_resources(setup_func, resources=resources),
         tune_config=tuner_config,
-        run_config=run_config
+        run_config=run_config,
     )
 
     if args.tuning:
@@ -288,14 +315,16 @@ if __name__ == '__main__':
         raise argparse.ArgumentError("Illegal config")
 
     if args.tuning:
+        print(f"Starting ray tune cluster with: cpu: {args.cpu}, gpu: {args.gpu}")
         ray.init(num_cpus=args.cpu, num_gpus=args.gpu)
 
-    if args.pretrained:
-        pretrained_fewshot(args)
     print(args.dataset)
 
-    if (args.few_shot):
-        run_tune_fewshot(args)
+    if args.few_shot:
+        if args.pretrained:
+           pretrained_fewshot(args)           
+        # run_tune_fewshot(args)
     else:
-        run_tune(args)
+        pass
+        # run_tune(args)
 

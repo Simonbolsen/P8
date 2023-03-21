@@ -12,7 +12,7 @@ import os
 import copy
 import re
 
-def load_pretrained(model_name, num_classes, embedding_dim_count, image_size, img_channels, feature_extract=False):
+def load_pretrained(model_name, num_classes, embedding_dim_count, image_size, img_channels, device, feature_extract=False):
     """
     Fine-tune a pretrained model
     :param model_name: name of the pretrained model requested
@@ -53,7 +53,7 @@ def load_pretrained(model_name, num_classes, embedding_dim_count, image_size, im
         
         def forward(x):
             x = model._forward_impl(x)
-            y = model.embeddings(torch.tensor(range(num_classes), device=model.device))
+            y = model.embeddings(torch.tensor(range(num_classes), device=device))
             return torch.cat((x, y), dim=0)
         
         model.forward = forward

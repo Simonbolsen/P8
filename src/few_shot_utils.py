@@ -1,3 +1,4 @@
+import ray
 import embedding_model as emb_model
 from torch import optim
 from loader.loader import get_data_loader, k_shot_loaders
@@ -7,6 +8,7 @@ import torch
 import sys
 from nn_util import get_loss_function
 from PTM.model_loader import load_pretrained
+from ray import tune
 
 def get_few_shot_loaders(config, train_data, few_shot_data):
     train_loader = get_data_loader(train_data, config["batch_size"])
@@ -14,25 +16,25 @@ def get_few_shot_loaders(config, train_data, few_shot_data):
     
     return train_loader, fs_sup_loader, fs_query_load
 
-def setup_few_shot_pretrained(config, model_name, train_data, few_shot_data, device, ray_tune = True):
-    train_loader, fs_sup_loader, fs_query_loader = get_few_shot_loaders(config, train_data, few_shot_data)
-    loss_func = get_loss_function(config)
+def setup_few_shot_pretrained(config, model_name, train_data, few_shot_data, device, args, ray_tune = True):
+    train_loader, fs_sup_loader, fs_query_loaders = get_few_shot_loaders(config, ray.get(train_data), ray.get(few_shot_data))
+    loss_func = get_loss_function(args)
     num_of_classes = len(train_loader.unique_targets)
-    model = load_pretrained(model_name, num_of_classes, 
+    model, _ = load_pretrained(model_name, num_of_classes, 
                             config["d"], train_loader.image_size, 
-                            train_loader.channels)
+                            train_loader.channels, device)
+    model.to(device)
     
-    train_few_shot(config, train_loader, fs_sup_loader, fs_query_loader, 
-                   loss_func, model, device, ray_tune)
+    train_few_shot(config, train_loader, fs_sup_loader, fs_query_loaders, 
+                model, loss_func, device, ray_tune)
 
-def train_few_shot(config, train_loader, fs_sup_loader, fs_query_load, 
+def train_few_shot(config, train_loader, fs_sup_loaders, fs_query_load, 
                    model, loss_func, device, ray_tune):
     
     optimiser = optim.Adam(model.parameters(), lr=config["lr"])
     
-    max_epochs = config["num_of_epochs"]
+    max_epochs = config["max_epochs"]
     
-    last_acc = 0
     for epoch in range(max_epochs):
         print("training...")
         train(model, train_loader, optimiser, loss_func, max_epochs, epoch, device)
@@ -43,15 +45,6 @@ def train_few_shot(config, train_loader, fs_sup_loader, fs_query_load,
         else:
             print(f"Validation accuracy: {last_acc}")
     
-    # print("doing final evaluation...")
-    # val_acc = few_shot_eval(model, val_sup_load, val_query_load, device)
-    # if ray_tune:
-    #     tune.report(accuracy=last_acc, val_acc=val_acc)
-    # else:
-    #     print(f"Final validation accuracy: {val_acc}")
-
-    # save_few_shot_embedding_result(train_loader, fs_sup_loaders, fs_query_load, )
-
 def few_shot_eval(model, support_loaders, query_loader, device):
     # Test the model
     model.eval()

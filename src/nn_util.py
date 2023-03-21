@@ -157,16 +157,16 @@ def dist_and_proximity_loss(proximity_multiplier:float or int):
             device = device
         )
 
-def get_loss_function(config):
-    loss_functions = {
+loss_functions = {
         "simple-dist" : simple_dist_loss,
         "class-push" : dist_and_proximity_loss,
         "comp-dist-loss" : comparison_dist_loss
     }
 
-    loss_func = loss_functions[config["loss_func"]]
+def get_loss_function(args):
+    loss_func = loss_functions[args.loss_func]
 
-    if config.loss_func == "class-push":
-        loss_func = loss_func(config["prox_mult"])
+    if args.loss_func == "class-push":
+        loss_func = loss_func(args.prox_mult)
             
     return loss_func
