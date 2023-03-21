@@ -4,6 +4,7 @@ from torchvision.transforms import ToTensor
 from torch.utils.data import ConcatDataset, Subset, TensorDataset
 import numpy as np
 import loader.cifarfs_splits as cifarfs_splits
+import loader.cifar10fs_splits as cifar10fs_splits
 
 
 dataset_dict = {
@@ -11,7 +12,6 @@ dataset_dict = {
     "mnist": lambda c: get_mnist(config=c),
     "cifar10": lambda c: get_cifar10(config=c),
     "cifar100": lambda c: get_cifar100(config=c),
-    "cifarfs": lambda c: get_cifarfs(config=c),
 }
 
 def load_data(train_data, test_data, batch_size=100):
@@ -76,6 +76,39 @@ def get_cifar10(config):
     
     return training_set, testing_set
 
+def get_omniglot(config, target_alphabets=[]):
+    background_set = datasets.Omniglot(
+        root = config.data_dir,
+        background = True,                         
+        transform = ToTensor(), 
+        download = True,            
+    )
+
+    evaluation_set = datasets.Omniglot(
+        root = config.data_dir,
+        background = False, 
+        transform = ToTensor(),
+        download=True,
+    )
+
+    if target_alphabets:
+        characters = [k for (k, v) in enumerate(background_set._characters) if string_contains(v, target_alphabets)]
+
+        background_data = Subset(background_set, characters)
+        evaluation_data = Subset(evaluation_set, characters)
+    else:
+        background_data = background_set
+        evaluation_data = evaluation_set
+
+    return background_data, evaluation_data
+
+def string_contains(string: str, set: list[str]):
+    contains = False
+    for entry in set:
+        contains = contains or string.startswith(entry)
+    
+    return contains
+
 def get_cifar100(config):
     training_set = datasets.CIFAR100(
         root=config.data_dir,
@@ -95,6 +128,17 @@ def get_cifar100(config):
     testing_set.targets = torch.from_numpy(np.array(testing_set.targets))
 
     return training_set, testing_set
+
+
+#________________________ FEW-SHOT LAND_________________________________
+
+fs_dataset_dict = {
+    "cifarfs": lambda c: get_cifarfs(config=c),
+    "cifar10": lambda c: get_cifar10_fs(config=c)
+}
+
+def get_fs_data(config):
+    return fs_dataset_dict[config.dataset](config)
 
 class CustomCifarDataset(torch.utils.data.Dataset):
     def __init__(self, data, data_targets):
@@ -134,39 +178,31 @@ def get_cifarfs(config):
 
     return train_split, val_split, test_split 
 
+def get_cifar10_fs(config):
+    train_data, test_data = get_cifar10(config)
 
-def get_omniglot(config, target_alphabets=[]):
-    background_set = datasets.Omniglot(
-        root = config.data_dir,
-        background = True,                         
-        transform = ToTensor(), 
-        download = True,            
-    )
+    all_data =  np.concatenate((train_data.data, test_data.data), axis=0)
+    all_targets = torch.from_numpy(np.concatenate((train_data.targets, test_data.targets), axis=0))
 
-    evaluation_set = datasets.Omniglot(
-        root = config.data_dir,
-        background = False, 
-        transform = ToTensor(),
-        download=True,
-    )
+    idx_to_class = {v : k for k,v in train_data.class_to_idx.items()}
 
-    if target_alphabets:
-        characters = [k for (k, v) in enumerate(background_set._characters) if string_contains(v, target_alphabets)]
-
-        background_data = Subset(background_set, characters)
-        evaluation_data = Subset(evaluation_set, characters)
-    else:
-        background_data = background_set
-        evaluation_data = evaluation_set
-
-    return background_data, evaluation_data
-
-def string_contains(string: str, set: list[str]):
-    contains = False
-    for entry in set:
-        contains = contains or string.startswith(entry)
+    train_idx = [i for i, v in enumerate(all_targets) if idx_to_class[v.item()] in cifar10fs_splits.train]
+    test_idx = [i for i, v in enumerate(all_targets) if idx_to_class[v.item()] in cifar10fs_splits.test]
+    val_idx = [i for i, v in enumerate(all_targets) if idx_to_class[v.item()] in cifar10fs_splits.validation]
     
-    return contains
+    train_data_split = all_data[train_idx]
+    train_target_split = all_targets[train_idx]
+    test_data_split = all_data[test_idx]
+    test_target_split = all_targets[test_idx]
+    val_data_split = all_data[val_idx]
+    val_target_split = all_targets[val_idx]
+
+    train_split = CustomCifarDataset(train_data_split, train_target_split)
+    test_split = CustomCifarDataset(test_data_split, test_target_split)
+    val_split = CustomCifarDataset(val_data_split, val_target_split)
+
+    return train_split, val_split, test_split 
+
 
 # Create loaders for each class in support data 
 # with batch size of shots.

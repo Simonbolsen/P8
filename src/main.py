@@ -1,7 +1,7 @@
 from training_utils import classification_setup
 import argparse
+from loader.loader import load_data, get_data, get_fs_data, get_data_loader
 from PTM.model_loader import load_pretrained
-from loader.loader import load_data, get_data, get_data_loader
 import torch
 from torchvision import datasets
 import ray
@@ -41,6 +41,7 @@ argparser = argparse.ArgumentParser()
 argparser.add_argument('--dataset', dest="dataset", type=str, default="mnist", choices=datasets.keys(),
                         help="Determines the dataset on which training occurs. Choose between: ".format(datasets.keys()))
 argparser.add_argument('--datadir', dest="data_dir", type=str, default="./data", help="Path to the data relative to current path")
+argparser.add_argument('-fs', dest="few_shot", action="store_true", help="Few-shot flag")
 
 # Training arguments
 argparser.add_argument('--epochs', dest="epochs", nargs="+", type=gtzero_int, default=[5,30], help="Epochs must be > 0. Can be multiple values")
@@ -292,6 +293,9 @@ if __name__ == '__main__':
     if args.pretrained:
         pretrained_fewshot(args)
     print(args.dataset)
-    # run_tune_fewshot(args)
-    print("Determines the dataset on which training occurs. Choose between: {}".format(", ".join(datasets)))
+
+    if (args.few_shot):
+        run_tune_fewshot(args)
+    else:
+        run_tune(args)
 
