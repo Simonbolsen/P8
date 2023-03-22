@@ -13,6 +13,7 @@ from hyperopt import hp
 from nn_util import simple_dist_loss, dist_and_proximity_loss, comparison_dist_loss, loss_functions
 from few_shot_utils import setup_few_shot_pretrained
 from training_utils import train, eval_classification
+from bcolors import bcolors
 
 def gezero_int(x):
     x = int()
@@ -58,7 +59,7 @@ argparser.add_argument('-fs', dest="few_shot", action="store_true", help="Few-sh
 
 # Training arguments
 argparser.add_argument('--epochs', dest="epochs", type=gtzero_int, default=1, help="Epochs must be > 0.")
-argparser.add_argument('--classes', dest="num_of_classes", type=gtzero_int, help="Number of unique classes for the dataset")
+# argparser.add_argument('--classes', dest="num_of_classes", type=gtzero_int, help="Number of unique classes for the dataset")
 argparser.add_argument('--batch', dest="batch_size", type=gtzero_int, default=100, help="Batch size must be > 0")
 
 argparser.add_argument('--channels', dest="cnn_channels", nargs="+", type=gtzero_int, default=[16, 32, 64, 128, 256], help="Number of channels in each convolutional layer")
@@ -71,7 +72,7 @@ argparser.add_argument('-pt', dest="pretrained", action='store_true', help="If t
 argparser.add_argument('--model', dest='model', type=str, help='Model name to run for pretrained')
 
 # Few-shot
-argparser.add_argument('--shots', dest="shots", type=gtzero_int, help="Shots in few-shot learning")
+argparser.add_argument('--shots', dest="shots", type=gtzero_int, default=5, help="Shots in few-shot learning")
 
 # Optimiser arguments
 argparser.add_argument('--lr', dest="lr", nargs="+", type=gtzero_float, default=[0.00001, 0.0001], help="One or more learning rates")
@@ -85,17 +86,6 @@ argparser.add_argument('-t', dest="tuning", action="store_true", help="Tuning fl
 argparser.add_argument('--samples', dest='samples', type=gtzero_int, default=1, help='Samples to run for experiment')
 argparser.add_argument('--exp-name', dest='exp_name', type=str, help='Name for raytune experiement')
 argparser.add_argument('--verbosity', dest='verbosity', type=gezero_int, default=2, help='Verbosity level for raytune reporter.')
-
-class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
 
 
 def legal_args(args):
@@ -327,9 +317,10 @@ def run_main(args):
     if (not legal_args(args)):
         raise argparse.ArgumentError("Illegal config")
 
-    if args.tuning:
-        print(f"Starting ray tune cluster with: cpu: {args.cpu}, gpu: {args.gpu}")
-        ray.init(num_cpus=args.cpu, num_gpus=args.gpu)
+    # if args.tuning:
+    #     print(f"Starting ray tune cluster with: cpu: {args.cpu}, gpu: {args.gpu} per task")
+    #     # ray.init(num_cpus=args.cpu, num_gpus=args.gpu)
+    #     print("hjælp")
 
     print(args.dataset)
 

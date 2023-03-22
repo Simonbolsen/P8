@@ -11,6 +11,8 @@ from nn_util import get_loss_function
 from PTM.model_loader import load_pretrained
 from ray import tune
 import json
+from bcolors import bcolors
+import platform
 
 def get_few_shot_loaders(config, train_data, few_shot_data):
     train_loader = get_data_loader(train_data, config["batch_size"])
@@ -29,7 +31,7 @@ def setup_few_shot_pretrained(config, model_name, train_data, few_shot_data, dev
                             config["d"], train_loader.image_size, 
                             train_loader.channels, device)
     model.to(device)
-    
+   
     train_few_shot(config, train_loader, fs_sup_loaders, fs_query_loader, 
                 model, loss_func, device, ray_tune)
 
@@ -72,7 +74,6 @@ def few_shot_eval(model, support_loaders, query_loader, support_images, device):
         print("calling find few shot targets")
         few_shot_targets = find_few_shot_targets(support_loaders)
         print("done find few shot targets")
-        print(few_shot_targets)
         num_of_new_classes = len(few_shot_targets)
 
         new_class_embeddings = []
@@ -146,6 +147,7 @@ def find_closest_embedding(query, class_embeddings):
 
 
 def save_few_shot_embedding_result(train_loader, support_loaders, query_loader, model, config, accuracy, device):
+    print("saving few shot embedding results")
     train_embeddings = []
     val_support_embeddings = []
     val_query_embeddings = []
@@ -176,7 +178,8 @@ def save_few_shot_embedding_result(train_loader, support_loaders, query_loader, 
         val_query_labels.extend(labels.tolist())
 
     new_class_embeds = []
-    few_shot_embeds = get_few_shot_embeddings(support_loaders, model, device)
+    extracted_images = extract_support_images(support_loaders)
+    few_shot_embeds = get_few_shot_embeddings(extracted_images, model, device)
     for few_shot_embed in few_shot_embeds:
         new_class_embeds.append(few_shot_embed.tolist())
 
