@@ -11,7 +11,7 @@ from ray.tune.schedulers import AsyncHyperBandScheduler
 from ray.tune.search.hyperopt import HyperOptSearch
 from hyperopt import hp
 from nn_util import simple_dist_loss, dist_and_proximity_loss, comparison_dist_loss, loss_functions
-from few_shot_utils import setup_few_shot_pretrained
+from few_shot_utils import setup_few_shot_pretrained, setup_few_shot_custom_model
 from training_utils import train, eval_classification
 from bcolors import bcolors
 
@@ -54,12 +54,13 @@ argparser.add_argument('--train_transforms', dest="train_transforms", type=str, 
 argparser.add_argument('--test_transforms', dest="test_transforms", type=str, default="toTensor", choices=transforms_dict.keys(),
                         help="Determines the transforms applied to the test data. Choose between: ".format(transforms_dict.keys()))
 
-argparser.add_argument('--datadir', dest="data_dir", type=str, default="./data", help="Path to the data relative to current path")
+argparser.add_argument('--datadir', dest="data_dir", type=str, default="./data", help="Path to the data relative to working dir path")
 argparser.add_argument('-fs', dest="few_shot", action="store_true", help="Few-shot flag")
 
 # Training arguments
-argparser.add_argument('--epochs', dest="epochs", type=gtzero_int, default=1, help="Epochs must be > 0.")
+argparser.add_argument('--epochs', dest="epochs", type=gtzero_int, default=1, help="Epochs must be > 0")
 # argparser.add_argument('--classes', dest="num_of_classes", type=gtzero_int, help="Number of unique classes for the dataset")
+# TODO: batch size list
 argparser.add_argument('--batch', dest="batch_size", type=gtzero_int, default=100, help="Batch size must be > 0")
 
 argparser.add_argument('--channels', dest="cnn_channels", nargs="+", type=gtzero_int, default=[16, 32, 64, 128, 256], help="Number of channels in each convolutional layer")
@@ -204,7 +205,40 @@ def get_hyper_opt(space, metric="accuracy", mode="max", good_starts=None):
 #         # train_few_shot(good_start, train_data, val_data, None, loss_func, device, ray_tune=False)
 #         setup_and_finetune(good_start, train_data, val_data, device)
 
+def get_custom_net_config(args):
+    return {
+        
+    }
+
+def custom_net_fewshot(args):
+    print("Running custom net few shot")
+    device = determine_device(ngpu=1)
+    train_data, val_data, _  = get_fs_data(args)
+    train_data_ptr = ray.put(train_data)
+    val_data_ptr = ray.put(val_data)
+
+    print("Training data size: ", len(train_data))
+    print("Test data size: ", len(val_data))
+ 
+    base_config = get_base_config(args)
+    custom_net_config = get_custom_net_config(args)
+
+    space = base_config | custom_net_config
+
+    setup_func = partial(setup_few_shot_custom_model, train_data_ptr=train_data_ptr, 
+                         few_shot_data_ptr=val_data_ptr, device=device, args=args, ray_tune=args.tuning) 
+
+    tuner = create_tuner(args, space, setup_func)
+    
+    if args.tuning:
+        start_ray_experiment(tuner)
+    else:
+        print(f"{bcolors.FAIL}fewshot custom network setup non ray function not implemented{bcolors.ENDC}")
+        exit(1)
+
+
 def pretrained_fewshot(args):
+    print("Running pretrained few shot")
     device = determine_device(ngpu=1)
     train_data, val_data, _  = get_fs_data(args)
     train_data_ptr = ray.put(train_data)
@@ -214,34 +248,41 @@ def pretrained_fewshot(args):
     print("Test data size: ", len(val_data))
     model = args.model
 
-    resources = {"cpu": args.cpu, "gpu": args.gpu}
-
     base_config = get_base_config(args)
     few_shot_config = get_few_shot_config(args)
     
     space = base_config | few_shot_config
     
+    setup_func = partial(setup_few_shot_pretrained, model_name=model, train_data=train_data_ptr,
+                         few_shot_data=val_data_ptr, args=args, device=device, ray_tune=args.tuning)
+    
+    tuner = create_tuner(args, space, setup_func)
+
+    if args.tuning:
+        start_ray_experiment(tuner)
+    else:
+        print(f"{bcolors.FAIL}fewshot pretrained setup non ray function not implemented{bcolors.ENDC}")
+        exit(1)
+
+def start_ray_experiment(tuner):
+    print(f"{bcolors.OKBLUE}starting experiment with ray tune{bcolors.ENDC}")
+    results = tuner.fit()
+    print(results.get_best_result().metrics)
+
+def create_tuner(args, space, setup_func):
+    resources = {"cpu": args.cpu, "gpu": args.gpu}
     search_alg = get_hyper_opt(space)
     
     tuner_config = get_tune_config(args, search_alg)
     run_config = get_run_config(args)
-    
-    setup_func = partial(setup_few_shot_pretrained, model_name=model, train_data=train_data_ptr,
-                         few_shot_data=val_data_ptr, args=args, device=device)
     
     tuner = tune.Tuner(
         tune.with_resources(setup_func, resources=resources),
         tune_config=tuner_config,
         run_config=run_config,
     )
-
-    if args.tuning:
-        print(f"{bcolors.OKBLUE}starting experiment with ray tune{bcolors.ENDC}")
-        results = tuner.fit()
-        print(results.get_best_result().metrics)
-    else:
-        print(f"{bcolors.FAIL}fewshot pretrained setup non ray function not implemented{bcolors.ENDC}")
-        exit(1)
+    
+    return tuner
 
 # def run_tune(args):
 #     device = determine_device(ngpu=1)
@@ -327,7 +368,9 @@ def run_main(args):
 
     if args.few_shot:
         if args.pretrained:
-           pretrained_fewshot(args)           
+            pretrained_fewshot(args)
+        else:
+            custom_net_fewshot(args)
         # run_tune_fewshot(args)
     else:
         pass

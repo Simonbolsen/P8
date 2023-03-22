@@ -11,8 +11,6 @@ from nn_util import get_loss_function
 from PTM.model_loader import load_pretrained
 from ray import tune
 import json
-from bcolors import bcolors
-import platform
 
 def get_few_shot_loaders(config, train_data, few_shot_data):
     train_loader = get_data_loader(train_data, config["batch_size"])
@@ -20,7 +18,25 @@ def get_few_shot_loaders(config, train_data, few_shot_data):
     
     return train_loader, fs_sup_loaders, fs_query_loader
 
-def setup_few_shot_pretrained(config, model_name, train_data, few_shot_data, device, args, ray_tune = True):
+def setup_few_shot_custom_model(config, train_data_ptr, few_shot_data_ptr, device, args, ray_tune):
+    train_loader, fs_sup_loaders, fs_query_loader = get_few_shot_loaders(config, ray.get(train_data_ptr), ray.get(few_shot_data_ptr))
+    print(f"support loaders: {len(fs_sup_loaders)}")
+    print(f"few shot support loader batches: {len(fs_sup_loaders[0])}")
+    print(f"few shot querry loader batches: {len(fs_query_loader)}")
+
+    loss_func = get_loss_function(args)
+    num_of_classes = train_loader.unique_targets 
+    image_channels = train_loader.channels
+    image_size = train_loader.image_size
+    model = emb_model.Convnet(device, config["lr"], config["d"],
+                              num_of_classes, config["channels"], config["kernel_size"],
+                              config["stride"], image_channels, image_size, config["linear_layers"],
+                              config["linear_size"])
+    
+    train_few_shot(config, train_loader, fs_sup_loaders, fs_query_loader, 
+                   model, loss_func, device, ray_tune)
+    
+def setup_few_shot_pretrained(config, model_name, train_data, few_shot_data, device, args, ray_tune):
     train_loader, fs_sup_loaders, fs_query_loader = get_few_shot_loaders(config, ray.get(train_data), ray.get(few_shot_data))
     print(f"support loaders: {len(fs_sup_loaders)}")
     print(f"few shot support loader batches: {len(fs_sup_loaders[0])}")
@@ -99,8 +115,6 @@ def few_shot_eval(model, support_loaders, query_loader, support_images, device):
             
             test_output = model(images)
 
-            # find_closest_embeddings(test_output, new_class_embeddings)
-            
             for i, output_embedding in enumerate(test_output[:-model.num_of_classes]):
                 closest_target_index = find_closest_embedding(output_embedding, new_class_embeddings)
                 predicted_target = few_shot_targets[closest_target_index]
