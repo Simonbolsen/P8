@@ -236,10 +236,11 @@ def pretrained_fewshot(args):
     )
 
     if args.tuning:
+        print(f"{bcolors.OKBLUE}starting experiment with ray tune{bcolors.ENDC}")
         results = tuner.fit()
         print(results.get_best_result().metrics)
     else:
-        print("fewshot pretrained setup non ray function not implemented")
+        print(f"{bcolors.FAIL}fewshot pretrained setup non ray function not implemented{bcolors.ENDC}")
         exit(1)
 
 # def run_tune(args):
