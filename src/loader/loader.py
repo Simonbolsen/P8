@@ -1,9 +1,11 @@
 import torch
 from torchvision import datasets
 from torchvision.transforms import ToTensor
+import torchvision.transforms as transforms
 from torch.utils.data import ConcatDataset, Subset, TensorDataset
 import numpy as np
 import loader.cifarfs_splits as cifarfs_splits
+import loader.cifar10fs_splits as cifar10fs_splits
 
 
 dataset_dict = {
@@ -11,7 +13,21 @@ dataset_dict = {
     "mnist": lambda c: get_mnist(config=c),
     "cifar10": lambda c: get_cifar10(config=c),
     "cifar100": lambda c: get_cifar100(config=c),
-    "cifarfs": lambda c: get_cifarfs(config=c),
+}
+
+transforms_dict = {
+    "toTensor": ToTensor(),
+    "resize224_flip": transforms.Compose([
+                        transforms.Resize(224),
+                        transforms.RandomHorizontalFlip(),
+                        transforms.ToTensor(),
+                        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+                    ]),
+    "resize224": transforms.Compose([
+                        transforms.Resize(224),
+                        transforms.ToTensor(),
+                        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+                    ]),
 }
 
 def load_data(train_data, test_data, batch_size=100):
@@ -26,6 +42,7 @@ def get_data_loader(data, batch_size=100):
     loader = torch.utils.data.DataLoader(data, batch_size=batch_size, shuffle=True, num_workers=1)
     loader.image_size = data[0][0].size()[1]
     loader.channels = data[0][0].size()[0]
+    loader.unique_targets = torch.unique(data.targets)
 
     return loader
 
@@ -39,17 +56,18 @@ def get_mnist(config):
     train_data = datasets.MNIST(
         root = config.data_dir,
         train = True,                         
-        transform = ToTensor(), 
+        transform = transforms_dict[config.train_transforms], 
         download = True,            
     )
 
     test_data = datasets.MNIST(
         root = config.data_dir, 
         train = False, 
-        transform = ToTensor()
+        transform = transforms_dict[config.test_transforms],
     )
     
-    train_data = Subset(train_data, range(len(train_data)))
+    # train_data = Subset(train_data, range(len(train_data)))
+    # train_data.targets = torch.unique(train_data.dataset.targets)
 
     return train_data, test_data
 
@@ -58,18 +76,54 @@ def get_cifar10(config):
     training_set = datasets.CIFAR10(
         root=config.data_dir,
         train=True,
-        transform=ToTensor(),
+        transform=transforms_dict[config.train_transforms],
         download=True
     )       
     
     testing_set = datasets.CIFAR10(
         root=config.data_dir,
         train=False,
-        transform=ToTensor(),
+        transform=transforms_dict[config.test_transforms],
         download=True
     )       
     
+    training_set.targets = torch.from_numpy(np.array(training_set.targets))
+    testing_set.targets = torch.from_numpy(np.array(testing_set.targets))
+    
     return training_set, testing_set
+
+def get_omniglot(config, target_alphabets=[]):
+    background_set = datasets.Omniglot(
+        root = config.data_dir,
+        background = True,                         
+        transform = transforms_dict[config.train_transforms], 
+        download = True,            
+    )
+
+    evaluation_set = datasets.Omniglot(
+        root = config.data_dir,
+        background = False, 
+        transform = transforms_dict[config.test_transforms],
+        download=True,
+    )
+
+    if target_alphabets:
+        characters = [k for (k, v) in enumerate(background_set._characters) if string_contains(v, target_alphabets)]
+
+        background_data = Subset(background_set, characters)
+        evaluation_data = Subset(evaluation_set, characters)
+    else:
+        background_data = background_set
+        evaluation_data = evaluation_set
+
+    return background_data, evaluation_data
+
+def string_contains(string: str, set: list[str]):
+    contains = False
+    for entry in set:
+        contains = contains or string.startswith(entry)
+    
+    return contains
 
 def get_cifar100(config):
     training_set = datasets.CIFAR100(
@@ -85,8 +139,22 @@ def get_cifar100(config):
         transform=ToTensor(),
         download=True
     ) 
+    
+    training_set.targets = torch.from_numpy(np.array(training_set.targets))
+    testing_set.targets = torch.from_numpy(np.array(testing_set.targets))
 
     return training_set, testing_set
+
+
+#________________________ FEW-SHOT LAND_________________________________
+
+fs_dataset_dict = {
+    "cifarfs": lambda c: get_cifarfs(config=c),
+    "cifar10": lambda c: get_cifar10_fs(config=c)
+}
+
+def get_fs_data(config):
+    return fs_dataset_dict[config.dataset](config)
 
 class CustomCifarDataset(torch.utils.data.Dataset):
     def __init__(self, data, data_targets):
@@ -98,18 +166,20 @@ class CustomCifarDataset(torch.utils.data.Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-        return self.transform(self.data[idx]), torch.from_numpy(self.targets)[idx]
+        return self.transform(self.data[idx]), self.targets[idx]
     
 
 def get_cifarfs(config):
     train_data, test_data = get_cifar100(config)
 
     all_data =  np.concatenate((train_data.data, test_data.data), axis=0)
-    all_targets = np.concatenate((train_data.targets, test_data.targets), axis=0)
+    all_targets = torch.from_numpy(np.concatenate((train_data.targets, test_data.targets), axis=0))
 
-    train_idx = [train_data.class_to_idx[v] for v in cifarfs_splits.train]
-    test_idx = [train_data.class_to_idx[v] for v in cifarfs_splits.test]
-    val_idx = [train_data.class_to_idx[v] for v in cifarfs_splits.validation]
+    idx_to_class = {v : k for k,v in train_data.class_to_idx.items()}
+
+    train_idx = [i for i, v in enumerate(all_targets) if idx_to_class[v.item()] in cifarfs_splits.train]
+    test_idx = [i for i, v in enumerate(all_targets) if idx_to_class[v.item()] in cifarfs_splits.test]
+    val_idx = [i for i, v in enumerate(all_targets) if idx_to_class[v.item()] in cifarfs_splits.validation]
     
     train_data_split = all_data[train_idx]
     train_target_split = all_targets[train_idx]
@@ -122,42 +192,59 @@ def get_cifarfs(config):
     test_split = CustomCifarDataset(test_data_split, test_target_split)
     val_split = CustomCifarDataset(val_data_split, val_target_split)
 
-    return train_split, test_split, val_split
+    return train_split, val_split, test_split 
 
+def get_cifar10_fs(config):
+    train_data, test_data = get_cifar10(config)
 
-def get_omniglot(config, target_alphabets=[]):
-    background_set = datasets.Omniglot(
-        root = config.data_dir,
-        background = True,                         
-        transform = ToTensor(), 
-        download = True,            
-    )
+    all_data =  np.concatenate((train_data.data, test_data.data), axis=0)
+    all_targets = torch.from_numpy(np.concatenate((train_data.targets, test_data.targets), axis=0))
 
-    evaluation_set = datasets.Omniglot(
-        root = config.data_dir,
-        background = False, 
-        transform = ToTensor(),
-        download=True,
-    )
+    idx_to_class = {v : k for k,v in train_data.class_to_idx.items()}
 
-    if target_alphabets:
-        characters = [k for (k, v) in enumerate(background_set._characters) if string_contains(v, target_alphabets)]
-
-        background_data = Subset(background_set, characters)
-        evaluation_data = Subset(evaluation_set, characters)
-    else:
-        background_data = background_set
-        evaluation_data = evaluation_set
-
-    return background_data, evaluation_data
-
-def string_contains(string, set):
-    contains = False
-    for entry in set:
-        contains = contains or string.startswith(entry)
+    train_idx = [i for i, v in enumerate(all_targets) if idx_to_class[v.item()] in cifar10fs_splits.train]
+    test_idx = [i for i, v in enumerate(all_targets) if idx_to_class[v.item()] in cifar10fs_splits.test]
+    val_idx = [i for i, v in enumerate(all_targets) if idx_to_class[v.item()] in cifar10fs_splits.validation]
     
-    return contains
+    train_data_split = all_data[train_idx]
+    train_target_split = all_targets[train_idx]
+    test_data_split = all_data[test_idx]
+    test_target_split = all_targets[test_idx]
+    val_data_split = all_data[val_idx]
+    val_target_split = all_targets[val_idx]
 
+    train_split = CustomCifarDataset(train_data_split, train_target_split)
+    test_split = CustomCifarDataset(test_data_split, test_target_split)
+    val_split = CustomCifarDataset(val_data_split, val_target_split)
+
+    return train_split, val_split, test_split 
+
+
+# Create loaders for each class in support data 
+# with batch size of shots.
+# Creates loader for queries which contain the rest of the data
+def k_shot_loaders(support_data, shots, query_batch_size=100):
+    all_indexs_to_remove = []
+    support_loaders = []
+    targets = torch.unique(support_data.targets)
+    
+    for target in targets:
+        subset_indexs = [j for j, x in enumerate(support_data.targets) if x == target][:shots]
+        all_indexs_to_remove.extend(subset_indexs)
+        subset_data = Subset(support_data, subset_indexs)
+        subset_data.targets = torch.tensor([target])
+        support_loader = get_data_loader(subset_data, batch_size=shots)
+        support_loaders.append(support_loader)
+        # support_loaders.append(torch.utils.data.DataLoader(subset_data, batch_size=shots, shuffle=True, num_workers=1))
+
+    indexs_to_keep = [i for i in range(len(support_data.data)) if i not in all_indexs_to_remove]
+    query_data = Subset(support_data, indexs_to_keep)
+    query_data.targets = targets
+    
+    # query_loader = torch.utils.data.DataLoader(query_data, batch_size=query_batch_size, shuffle=True, num_workers=1)
+    query_loader = get_data_loader(query_data, query_batch_size)
+
+    return support_loaders, query_loader
 
 if __name__ == '__main__':
     train, test = get_omniglot(0, ["Arcadian", "Armenian"])
