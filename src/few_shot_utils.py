@@ -71,7 +71,8 @@ def train_few_shot(config, train_loader, fs_sup_loaders, fs_query_load,
         else:
             print(f"Validation accuracy: {last_acc}")
     
-    save_few_shot_embedding_result(train_loader, fs_sup_loaders, fs_query_load, model, config, last_acc, device)
+    if not ray_tune:
+        save_few_shot_embedding_result(train_loader, fs_sup_loaders, fs_query_load, model, config, last_acc, device)
 
 def extract_support_images(fs_sup_loaders):
     batches = []
