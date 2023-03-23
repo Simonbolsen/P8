@@ -9,7 +9,7 @@ from pathlib import Path
 def inv(x):
     return math.sqrt(1 - (1 - x)**2)
 
-def plot_line_2d(ys, function = inv):
+def plot_simple_line_2d(ys, function = inv):
     axe = plt.axes()
     axe.plot(range(len(ys)), ys)
     axe.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, pos: f"{function(x):.3f}"))
@@ -155,10 +155,13 @@ def plotCustomPoints(series, axis_names = ["", "", ""], legend = True, axes=[0,1
 
     for i, s in enumerate(series):
         coordinates = np.array(s["points"]).transpose() if "points" in s else [s["xs"], s["ys"], s["zs"]]
-        label = s["label"] if "label" in s else axis_names[2]
-        marker = s["marker"] if "marker" in s else "o"
-        color = s["color"] if "color" in s else [0,0,0]
-        axe.plot(coordinates[axes[0]], coordinates[axes[1]], coordinates[axes[2]], marker, color=color, label=label)
+        if len(coordinates) > 0:
+            label = s["label"] if "label" in s else axis_names[2]
+            marker = s["marker"] if "marker" in s else "o"
+            color = s["color"] if "color" in s else [0,0,0]
+            axe.plot(coordinates[axes[0]], coordinates[axes[1]], coordinates[axes[2]], marker, color=color, label=label)
+        else:
+            print(f"SERIES {i} IS EMPTY, WHAT THE FUCK IS UP WITH THAT?")
 
     axe.set_xlabel(axis_names[0])
     axe.set_ylabel(axis_names[1])
