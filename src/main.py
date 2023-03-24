@@ -89,7 +89,7 @@ argparser.add_argument('-t', dest="tuning", action="store_true", help="Tuning fl
 argparser.add_argument('--samples', dest='samples', type=gtzero_int, default=1, help='Samples to run for experiment')
 argparser.add_argument('--exp-name', dest='exp_name', type=str, help='Name for raytune experiement')
 argparser.add_argument('--verbosity', dest='verbosity', type=gezero_int, default=2, help='Verbosity level for raytune reporter.')
-argparser.add_argument('--log', dest='log_level', type=str, help='Set log level for logger')
+argparser.add_argument('--log', dest='log_level', type=str, help='Set log level for logger. See https://docs.python.org/3/howto/logging.html for levels.')
 
 
 def legal_args(args):
@@ -274,4 +274,5 @@ def run_main(args):
 
 if __name__ == '__main__':
     args = argparser.parse_args()
+    run_main(args)
    
