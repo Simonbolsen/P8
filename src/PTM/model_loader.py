@@ -41,8 +41,8 @@ def load_pretrained(model_name, num_classes, embedding_dim_count, image_size, im
     split_name = re.split(r'(\d+)', model_name, 1)
     set_parameter_requires_grad(model, feature_extract)
     
-    """for param in model.parameters():
-        print (param.data)"""
+    # for param in model.parameters():
+    #     print (param.data)
 
     if split_name[0] == "resnet":
         model.conv1 = nn.Conv2d(img_channels, 64, kernel_size=7, stride=2, padding=3, bias=False)
