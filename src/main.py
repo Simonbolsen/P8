@@ -196,7 +196,7 @@ def custom_net_fewshot(args):
     if args.tuning:
         start_ray_experiment(tuner)
     else:
-        print(f"{bcolors.FAIL}fewshot custom network setup non ray function not implemented{bcolors.ENDC}")
+        printlc("fewshot custom network setup non ray function not implemented", {bcolors.FAIL})
         os.exit(1)
 
 
@@ -228,7 +228,7 @@ def pretrained_fewshot(args):
                          few_shot_data=val_data_ptr, args=args, device=device, ray_tune=args.tuning)
 
 def start_ray_experiment(tuner):
-    print(f"{bcolors.OKBLUE}starting experiment with ray tune{bcolors.ENDC}")
+    printlc("starting experiment with ray tune", bcolors.OKBLUE)
     results = tuner.fit()
     print(results.get_best_result().metrics)
 
