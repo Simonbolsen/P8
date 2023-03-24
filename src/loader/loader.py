@@ -6,6 +6,7 @@ from torch.utils.data import ConcatDataset, Subset, TensorDataset
 import numpy as np
 import loader.cifarfs_splits as cifarfs_splits
 import loader.cifar10fs_splits as cifar10fs_splits
+from learn2learn.vision.datasets import FC100
 
 
 dataset_dict = {
@@ -150,7 +151,8 @@ def get_cifar100(config):
 
 fs_dataset_dict = {
     "cifarfs": lambda c: get_cifarfs(config=c),
-    "cifar10": lambda c: get_cifar10_fs(config=c)
+    "cifar10": lambda c: get_cifar10_fs(config=c),
+    "fc100": lambda c: get_FC100(config=c)
 }
 
 def get_fs_data(config):
@@ -220,6 +222,27 @@ def get_cifar10_fs(config):
     return train_split, val_split, test_split 
 
 
+def get_FC100(config=None):
+    try:
+        training_set = FC100(root=config.data_dir, mode='train', transform=transforms_dict[config.train_transforms], download=True)
+        validation_set = FC100(root=config.data_dir, mode='validation', transform=transforms_dict[config.train_transforms], download=True)
+        test_set = FC100(root=config.data_dir, mode='test', transform=transforms_dict[config.test_transforms], download=True)
+    except Exception:
+        training_set = FC100(root=config.data_dir, mode='train', transform=transforms_dict[config.train_transforms], download=True)
+        validation_set = FC100(root=config.data_dir, mode='validation', transform=transforms_dict[config.train_transforms], download=True)
+        test_set = FC100(root=config.data_dir, mode='test', transform=transforms_dict[config.test_transforms], download=True)
+
+    training_set.data = training_set.images
+    validation_set.data = validation_set.images
+    test_set.data = test_set.images
+
+    training_set.targets = torch.from_numpy(np.array(training_set.labels))
+    validation_set.targets = torch.from_numpy(np.array(validation_set.labels))
+    test_set.targets = torch.from_numpy(np.array(test_set.labels))
+
+    return training_set, validation_set, test_set
+
+
 # Create loaders for each class in support data 
 # with batch size of shots.
 # Creates loader for queries which contain the rest of the data
@@ -247,8 +270,9 @@ def k_shot_loaders(support_data, shots, query_batch_size=100):
     return support_loaders, query_loader
 
 if __name__ == '__main__':
-    train, test = get_omniglot(0, ["Arcadian", "Armenian"])
-    print(0)
+    get_FC100()
+    # train, test = get_omniglot(0, ["Arcadian", "Armenian"])
+    # print(0)
 
 
 

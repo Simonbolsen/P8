@@ -43,7 +43,8 @@ datasets = {"mnist": 0,
             "omniglot": 1, 
             "cifar10": 2,
             "cifar100": 3,
-            "cifarfs": 4}
+            "cifarfs": 4,
+            "fc100": 5}
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument('--dataset', dest="dataset", type=str, default="mnist", choices=datasets.keys(),
@@ -115,6 +116,18 @@ def get_base_config(args):
     
     return base_config
     
+def get_non_tune_base_config(args):
+    base_config = {
+        "lr": args.lr[0],
+        "max_epochs": args.epochs,
+        "batch_size": args.batch_size, # TODO: make choice?
+        "d" : args.dims[0],
+        "loss_func" : args.loss_func
+    }
+    
+    return base_config
+
+
 def get_scheduler(args):
     return AsyncHyperBandScheduler(grace_period=args.grace)
 
@@ -261,8 +274,8 @@ def pretrained_fewshot(args):
     if args.tuning:
         start_ray_experiment(tuner)
     else:
-        print(f"{bcolors.FAIL}fewshot pretrained setup non ray function not implemented{bcolors.ENDC}")
-        exit(1)
+        setup_few_shot_pretrained(get_non_tune_base_config(args) | few_shot_config, model_name=model, train_data=train_data_ptr,
+                         few_shot_data=val_data_ptr, args=args, device=device, ray_tune=args.tuning)
 
 def start_ray_experiment(tuner):
     print(f"{bcolors.OKBLUE}starting experiment with ray tune{bcolors.ENDC}")

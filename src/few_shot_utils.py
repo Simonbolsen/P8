@@ -40,7 +40,7 @@ def setup_few_shot_pretrained(config, model_name, train_data, few_shot_data, dev
     train_loader, fs_sup_loaders, fs_query_loader = get_few_shot_loaders(config, ray.get(train_data), ray.get(few_shot_data))
     print(f"support loaders: {len(fs_sup_loaders)}")
     print(f"few shot support loader batches: {len(fs_sup_loaders[0])}")
-    print(f"few shot querry loader batches: {len(fs_query_loader)}")
+    print(f"few shot query loader batches: {len(fs_query_loader)}")
     loss_func = get_loss_function(args)
     num_of_classes = len(train_loader.unique_targets)
     model, _ = load_pretrained(model_name, num_of_classes, 
@@ -195,6 +195,7 @@ def save_few_shot_embedding_result(train_loader, support_loaders, query_loader, 
     new_class_embeds = []
     extracted_images = extract_support_images(support_loaders)
     few_shot_embeds = get_few_shot_embeddings(extracted_images, model, device)
+    few_shot_embeds = [sum(item) / len(item) for item in few_shot_embeds]
     for few_shot_embed in few_shot_embeds:
         new_class_embeds.append(few_shot_embed.tolist())
 
