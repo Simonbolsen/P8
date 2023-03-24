@@ -11,8 +11,7 @@ from nn_util import get_loss_function
 from PTM.model_loader import load_pretrained
 from ray import tune
 import json
-from bcolors import bcolors
-import platform
+import logging
 
 def get_few_shot_loaders(config, train_data, few_shot_data):
     train_loader = get_data_loader(train_data, config["batch_size"])
@@ -20,11 +19,29 @@ def get_few_shot_loaders(config, train_data, few_shot_data):
     
     return train_loader, fs_sup_loaders, fs_query_loader
 
-def setup_few_shot_pretrained(config, model_name, train_data, few_shot_data, device, args, ray_tune = True):
+def setup_few_shot_custom_model(config, train_data_ptr, few_shot_data_ptr, device, args, ray_tune):
+    train_loader, fs_sup_loaders, fs_query_loader = get_few_shot_loaders(config, ray.get(train_data_ptr), ray.get(few_shot_data_ptr))
+    logging.debug(f"support loaders: {len(fs_sup_loaders)}")
+    logging.debug(f"few shot support loader batches: {len(fs_sup_loaders[0])}")
+    logging.debug(f"few shot querry loader batches: {len(fs_query_loader)}")
+
+    loss_func = get_loss_function(args)
+    num_of_classes = train_loader.unique_targets 
+    image_channels = train_loader.channels
+    image_size = train_loader.image_size
+    model = emb_model.Convnet(device, config["lr"], config["d"],
+                              num_of_classes, config["channels"], config["kernel_size"],
+                              config["stride"], image_channels, image_size, config["linear_layers"],
+                              config["linear_size"])
+    
+    train_few_shot(config, train_loader, fs_sup_loaders, fs_query_loader, 
+                   model, loss_func, device, ray_tune)
+    
+def setup_few_shot_pretrained(config, model_name, train_data, few_shot_data, device, args, ray_tune):
     train_loader, fs_sup_loaders, fs_query_loader = get_few_shot_loaders(config, ray.get(train_data), ray.get(few_shot_data))
-    print(f"support loaders: {len(fs_sup_loaders)}")
-    print(f"few shot support loader batches: {len(fs_sup_loaders[0])}")
-    print(f"few shot querry loader batches: {len(fs_query_loader)}")
+    logging.debug(f"support loaders: {len(fs_sup_loaders)}")
+    logging.debug(f"few shot support loader batches: {len(fs_sup_loaders[0])}")
+    logging.debug(f"few shot querry loader batches: {len(fs_query_loader)}")
     loss_func = get_loss_function(args)
     num_of_classes = len(train_loader.unique_targets)
     model, _ = load_pretrained(model_name, num_of_classes, 
@@ -38,7 +55,7 @@ def setup_few_shot_pretrained(config, model_name, train_data, few_shot_data, dev
 def train_few_shot(config, train_loader, fs_sup_loaders, fs_query_load, 
                    model, loss_func, device, ray_tune):
     
-    print("extracting support images...")
+    logging.debug("extracting support images...")
     support_images = extract_support_images(fs_sup_loaders)
     
     optimiser = optim.Adam(model.parameters(), lr=config["lr"])
@@ -55,7 +72,8 @@ def train_few_shot(config, train_loader, fs_sup_loaders, fs_query_load,
         else:
             print(f"Validation accuracy: {last_acc}")
     
-    save_few_shot_embedding_result(train_loader, fs_sup_loaders, fs_query_load, model, config, last_acc, device)
+    if not ray_tune:
+        save_few_shot_embedding_result(train_loader, fs_sup_loaders, fs_query_load, model, config, last_acc, device)
 
 def extract_support_images(fs_sup_loaders):
     batches = []
@@ -71,16 +89,16 @@ def few_shot_eval(model, support_loaders, query_loader, support_images, device):
     with torch.no_grad():
         print("evaluating")
         # Get the targets we have not seen before
-        print("calling find few shot targets")
+        logging.debug("calling find few shot targets")
         few_shot_targets = find_few_shot_targets(support_loaders)
-        print("done find few shot targets")
+        logging.debug("done find few shot targets")
         num_of_new_classes = len(few_shot_targets)
 
         new_class_embeddings = []
         correct = [0] * num_of_new_classes
         total = [0] * num_of_new_classes
 
-        print("calculating new embeddings...")
+        logging.debug("calculating new embeddings...")
         new_class_embeddings = get_few_shot_embeddings(support_images, model, device)
         
         # average embeddings for class
@@ -99,8 +117,6 @@ def few_shot_eval(model, support_loaders, query_loader, support_images, device):
             
             test_output = model(images)
 
-            # find_closest_embeddings(test_output, new_class_embeddings)
-            
             for i, output_embedding in enumerate(test_output[:-model.num_of_classes]):
                 closest_target_index = find_closest_embedding(output_embedding, new_class_embeddings)
                 predicted_target = few_shot_targets[closest_target_index]
@@ -123,8 +139,8 @@ def get_few_shot_embeddings(support_images, model, device):
     image_size = support_images[0].size()[2]
     channels = support_images[0].size()[1]
     
-    print("image_size: ", image_size)
-    print("channels ", channels)
+    logging.debug("image_size: ", image_size)
+    logging.debug("channels ", channels)
         
     for support_batch in support_images:
         images = support_batch.view(-1, channels, image_size, image_size).float().to(device)
@@ -180,6 +196,7 @@ def save_few_shot_embedding_result(train_loader, support_loaders, query_loader, 
     new_class_embeds = []
     extracted_images = extract_support_images(support_loaders)
     few_shot_embeds = get_few_shot_embeddings(extracted_images, model, device)
+    few_shot_embeds = [sum(item) / len(item) for item in few_shot_embeds]
     for few_shot_embed in few_shot_embeds:
         new_class_embeds.append(few_shot_embed.tolist())
 

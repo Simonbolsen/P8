@@ -17,13 +17,12 @@ def read_json_file(path_to_json_file):
 def argmin(iterable):
     return min(enumerate(iterable), key=lambda x: x[1])[0]
 
-data = read_json_file(os.path.dirname(__file__) + "/../../embeddingData/json_data.json")
+train_embeddings = []
+test_embeddings  = []
+class_embeddings = []
+test_labels = []
+train_labels = []
 
-train_embeddings = data["train_embeddings"]
-test_embeddings  = data["test_embeddings"]
-class_embeddings = data["class_embeddings"]
-test_labels = data["test_labels"]
-train_labels = data["train_labels"]
 
 def plot_pcas():
     scores = []
@@ -48,26 +47,23 @@ def plot_pcas():
     plot.plot_2d(accs)
     plot.plot_2d(scores)
 
-pca = PCA(n_components = 3)
-train_projections = pca.fit_transform(train_embeddings)
-test_projections  = pca.transform(test_embeddings)
-class_projections = pca.transform(class_embeddings)
 
-COLOR = plot.get_colors(10)
-series = [{"marker": "." if i < 10 else "*", "color": COLOR[i % 10], "label": f"{i%10} {'C' if i < 10 else 'Misc'}lassified", "points":[]} for i in range(20)]
 
-def print_distance_matrix():
+def print_distance_matrix(embeddings):
+
     print("")
-    for i in range(len(class_embeddings)):
+    for i in range(len(embeddings)):
         print(f"  {i}", end="  ")
     print("")
-    for index, i in enumerate(class_embeddings):
+    for index, i in enumerate(embeddings):
         print(f"{index}", end=" ")
-        for ii in class_embeddings:
+        for ii in embeddings:
             print(f"{np.linalg.norm(np.array(i) - np.array(ii)):.2f}",end=" ")
         print("")
 
 def print_distances_from_center():
+    
+
     center = np.zeros(len(class_embeddings[0]))
     for i in class_embeddings:
         center += i
@@ -77,6 +73,14 @@ def print_distances_from_center():
         print(np.linalg.norm(center - i))
 
 def plot_series():
+    pca = PCA(n_components = 3)
+    train_projections = pca.fit_transform(train_embeddings)
+    test_projections  = pca.transform(test_embeddings)
+    class_projections = pca.transform(class_embeddings)
+
+    COLOR = plot.get_colors(10)
+    series = [{"marker": "." if i < 10 else "*", "color": COLOR[i % 10], "label": f"{i%10} {'C' if i < 10 else 'Misc'}lassified", "points":[]} for i in range(20)]
+
     misclassified = 0
     for i, v in enumerate(test_embeddings):
         label = data["test_labels"][i]
@@ -93,7 +97,7 @@ def plot_series():
     #plot.plotCustomPoints(series, legend=False, axes=[1,2,3])
     #plot.plotCustomPoints(series, legend=False, axes=[0,2,3])
 
-def get_dists(embeddings, labels):
+def get_dists(embeddings, labels, class_embeddings):
     dists = []
     for i, embedding in enumerate(embeddings):
         class_embedding = class_embeddings[labels[i]]
@@ -181,6 +185,15 @@ def plot_center_class_projection():
     plot.plot_points_series_2d(xs, ys)
 
 if __name__ == '__main__':
+    data = read_json_file(os.path.dirname(__file__) + "/../../embeddingData/few_shot_test_data.json")
+
+    train_embeddings = data["train_embeddings"]
+    test_embeddings  = data["test_embeddings"]
+    class_embeddings = data["class_embeddings"]
+    test_labels = data["test_labels"]
+    train_labels = data["train_labels"]
+
+
     #print_distance_matrix()
     #print_distances_from_center()
     #plot_series()

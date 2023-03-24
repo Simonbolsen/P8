@@ -1,4 +1,5 @@
 from functools import partial
+import os
 from training_utils import classification_setup
 import argparse
 from loader.loader import load_data, get_data, get_fs_data, get_data_loader, transforms_dict
@@ -11,9 +12,10 @@ from ray.tune.schedulers import AsyncHyperBandScheduler
 from ray.tune.search.hyperopt import HyperOptSearch
 from hyperopt import hp
 from nn_util import simple_dist_loss, dist_and_proximity_loss, comparison_dist_loss, loss_functions
-from few_shot_utils import setup_few_shot_pretrained
+from few_shot_utils import setup_few_shot_pretrained, setup_few_shot_custom_model
 from training_utils import train, eval_classification
-from bcolors import bcolors
+from bcolors import bcolors, printlc
+import logging
 
 def gezero_int(x):
     x = int()
@@ -43,7 +45,8 @@ datasets = {"mnist": 0,
             "omniglot": 1, 
             "cifar10": 2,
             "cifar100": 3,
-            "cifarfs": 4}
+            "cifarfs": 4,
+            "fc100": 5}
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument('--dataset', dest="dataset", type=str, default="mnist", choices=datasets.keys(),
@@ -54,12 +57,13 @@ argparser.add_argument('--train_transforms', dest="train_transforms", type=str, 
 argparser.add_argument('--test_transforms', dest="test_transforms", type=str, default="toTensor", choices=transforms_dict.keys(),
                         help="Determines the transforms applied to the test data. Choose between: ".format(transforms_dict.keys()))
 
-argparser.add_argument('--datadir', dest="data_dir", type=str, default="./data", help="Path to the data relative to current path")
+argparser.add_argument('--datadir', dest="data_dir", type=str, default="./data", help="Path to the data relative to working dir path")
 argparser.add_argument('-fs', dest="few_shot", action="store_true", help="Few-shot flag")
 
 # Training arguments
-argparser.add_argument('--epochs', dest="epochs", type=gtzero_int, default=1, help="Epochs must be > 0.")
+argparser.add_argument('--epochs', dest="epochs", type=gtzero_int, default=1, help="Epochs must be > 0")
 # argparser.add_argument('--classes', dest="num_of_classes", type=gtzero_int, help="Number of unique classes for the dataset")
+# TODO: batch size list
 argparser.add_argument('--batch', dest="batch_size", type=gtzero_int, default=100, help="Batch size must be > 0")
 
 argparser.add_argument('--channels', dest="cnn_channels", nargs="+", type=gtzero_int, default=[16, 32, 64, 128, 256], help="Number of channels in each convolutional layer")
@@ -86,6 +90,7 @@ argparser.add_argument('-t', dest="tuning", action="store_true", help="Tuning fl
 argparser.add_argument('--samples', dest='samples', type=gtzero_int, default=1, help='Samples to run for experiment')
 argparser.add_argument('--exp-name', dest='exp_name', type=str, help='Name for raytune experiement')
 argparser.add_argument('--verbosity', dest='verbosity', type=gezero_int, default=2, help='Verbosity level for raytune reporter.')
+argparser.add_argument('--log', dest='log_level', type=str, help='Set log level for logger. See https://docs.python.org/3/howto/logging.html for levels.')
 
 
 def legal_args(args):
@@ -114,6 +119,18 @@ def get_base_config(args):
     
     return base_config
     
+def get_non_tune_base_config(args):
+    base_config = {
+        "lr": args.lr[0],
+        "max_epochs": args.epochs,
+        "batch_size": args.batch_size, # TODO: make choice?
+        "d" : args.dims[0],
+        "loss_func" : args.loss_func
+    }
+    
+    return base_config
+
+
 def get_scheduler(args):
     return AsyncHyperBandScheduler(grace_period=args.grace)
 
@@ -150,61 +167,41 @@ def get_hyper_opt(space, metric="accuracy", mode="max", good_starts=None):
                                 #   n_initial_points=2, 
                                 points_to_evaluate=good_starts)
 
-# def run_tune_fewshot(args):
-#     device = determine_device(ngpu=1)
-#     train_data, val_data, _ = get_data(args)
+   
+def get_custom_net_config(args):
+    return {
+        
+    }
 
-#     print("Training data size: ", len(train_data))
-#     print("Validation data size: ", len(val_data))
+def custom_net_fewshot(args):
+    printlc("Running custom new few shot", bcolors.OKCYAN)
+    device = determine_device(ngpu=1)
+    train_data, val_data, _  = get_fs_data(args)
+    train_data_ptr = ray.put(train_data)
+    val_data_ptr = ray.put(val_data)
 
-#     base_config = get_base_config(args)
+    print("Training data size: ", len(train_data))
+    print("Test data size: ", len(val_data))
+ 
+    base_config = get_base_config(args)
+    custom_net_config = get_custom_net_config(args)
 
-#     smoke_test_space = {
-#             "lr": hp.uniform("lr", args.lr[0], args.lr[1]),
-#             "d": hp.uniformint("d", args.dims[0], args.dims[1]),
-#             "num_of_classes": args.num_of_classes,
-#             "channels": hp.choice("channels", args.cnn_channels),
-#             "batch_size": args.batch_size,
-#             "num_of_epochs": hp.uniformint("num_of_epochs", args.epochs[0], args.epochs[1])
-#         }
+    space = base_config | custom_net_config
+
+    setup_func = partial(setup_few_shot_custom_model, train_data_ptr=train_data_ptr, 
+                         few_shot_data_ptr=val_data_ptr, device=device, args=args, ray_tune=args.tuning) 
+
+    tuner = create_tuner(args, space, setup_func)
     
-#     good_start = {"num_of_epochs": 10,
-#                   "lr": 0.0005,
-#                   "d" : 60,
-#                   "channels" : 64,
-#                   "num_of_classes": 64,
-#                   "batch_size": 100,
-#                   "k_size": 4,
-#                   "stride": 1,
-#                   "linear_n": 1,
-#                   "linear_size": 64,
-#                   "shots": 5
-#                   }
+    if args.tuning:
+        start_ray_experiment(tuner)
+    else:
+        print(f"{bcolors.FAIL}fewshot custom network setup non ray function not implemented{bcolors.ENDC}")
+        os.exit(1)
 
-#     hyper_opt_search = HyperOptSearch(smoke_test_space, 
-#                                       metric="accuracy", 
-#                                       mode="max", 
-#                                       points_to_evaluate=[good_start])
-
-#     tuner_config = get_tune_config(args, hyper_opt_search)
-
-#     run_config = get_run_config(args)
-
-#     tuner = tune.Tuner(
-#         tune.with_parameters(classification_setup, train_data=train_data, test_data=None),
-#         tune_config=tuner_config,
-#         run_config=run_config
-#     )
-    
-#     if (args.tuning):
-#         results = tuner.fit()
-#         print(results.get_best_result().metrics)
-#     else:
-#         # classification_setup(good_start, train_data, test_data, loss_func, device, ray_tune=False)
-#         # train_few_shot(good_start, train_data, val_data, None, loss_func, device, ray_tune=False)
-#         setup_and_finetune(good_start, train_data, val_data, device)
 
 def pretrained_fewshot(args):
+    print("Running pretrained few shot")
     device = determine_device(ngpu=1)
     train_data, val_data, _  = get_fs_data(args)
     train_data_ptr = ray.put(train_data)
@@ -214,57 +211,41 @@ def pretrained_fewshot(args):
     print("Test data size: ", len(val_data))
     model = args.model
 
-    resources = {"cpu": args.cpu, "gpu": args.gpu}
-
     base_config = get_base_config(args)
     few_shot_config = get_few_shot_config(args)
     
     space = base_config | few_shot_config
     
+    setup_func = partial(setup_few_shot_pretrained, model_name=model, train_data=train_data_ptr,
+                         few_shot_data=val_data_ptr, args=args, device=device, ray_tune=args.tuning)
+    
+    tuner = create_tuner(args, space, setup_func)
+
+    if args.tuning:
+        start_ray_experiment(tuner)
+    else:
+        setup_few_shot_pretrained(get_non_tune_base_config(args) | few_shot_config, model_name=model, train_data=train_data_ptr,
+                         few_shot_data=val_data_ptr, args=args, device=device, ray_tune=args.tuning)
+
+def start_ray_experiment(tuner):
+    print(f"{bcolors.OKBLUE}starting experiment with ray tune{bcolors.ENDC}")
+    results = tuner.fit()
+    print(results.get_best_result().metrics)
+
+def create_tuner(args, space, setup_func):
+    resources = {"cpu": args.cpu, "gpu": args.gpu}
     search_alg = get_hyper_opt(space)
     
     tuner_config = get_tune_config(args, search_alg)
     run_config = get_run_config(args)
-    
-    setup_func = partial(setup_few_shot_pretrained, model_name=model, train_data=train_data_ptr,
-                         few_shot_data=val_data_ptr, args=args, device=device)
     
     tuner = tune.Tuner(
         tune.with_resources(setup_func, resources=resources),
         tune_config=tuner_config,
         run_config=run_config,
     )
-
-    if args.tuning:
-        results = tuner.fit()
-        print(results.get_best_result().metrics)
-    else:
-        print("fewshot pretrained setup non ray function not implemented")
-        exit(1)
-
-# def run_tune(args):
-#     device = determine_device(ngpu=1)
-#     train_data, test_data,  = get_data(args)
-
-#     print("Training data size: ", len(train_data))
-#     print("Test data size: ", len(test_data))
-
-#     resources = {"cpu": args.cpu, "gpu": args.gpu}
-#     scheduler = AsyncHyperBandScheduler(grace_period=args.grace)
-#     reporter = tune.CLIReporter(
-#         metric_columns=["accuracy", "training_iteration"]
-#     )
     
-#     loss_func = simple_dist_loss
-
-#     smoke_test_space = {
-#             "lr": hp.uniform("lr", args.lr[0], args.lr[1]),
-#             "d": hp.uniformint("d", args.dims[0], args.dims[1]),
-#             "num_of_classes": args.num_of_classes,
-#             "channels": hp.choice("channels", args.cnn_channels),
-#             "batch_size": args.batch_size,
-#             "num_of_epochs": hp.uniformint("num_of_epochs", args.epochs[0], args.epochs[1])
-#         }
+    return tuner
     
 #     good_start = {"num_of_epochs": 10,
 #                   "lr": 0.0005,
@@ -279,54 +260,26 @@ def pretrained_fewshot(args):
 #                   "shots": 5
 #                   }
 
-#     hyper_opt_search = HyperOptSearch(smoke_test_space, 
-#                                       metric="accuracy", 
-#                                       mode="max", 
-#                                     #   n_initial_points=2, 
-#                                       points_to_evaluate=[good_start])
-
-#     tuner_config = tune.TuneConfig(
-#             metric="accuracy",
-#             mode="max",
-#             scheduler=scheduler,
-#             search_alg=hyper_opt_search,
-#             num_samples=1000
-#     )
-
-#     run_config = air.RunConfig(
-#             name="mnist_initial_test",
-#             progress_reporter=reporter,
-#             # stop={"training_iteration": 10}
-#     )
-
-#     tuner = tune.Tuner(
-#         tune.with_parameters(classification_setup, train_data=train_data, test_data=test_data),
-#         tune_config=tuner_config,
-#         run_config=run_config
-#     )
-    
-#     if (args.tuning):
-#         results = tuner.fit()
-#         print(results.get_best_result().metrics)
-#     else:
-#         # classification_setup(good_start, train_data, test_data, loss_func, device, ray_tune=False)
-#         # train_few_shot(good_start, train_data, test_data, test_data, loss_func, device, ray_tune=False)
-#         setup_and_finetune(good_start, train_data, test_data, device)
 
 def run_main(args):
     if (not legal_args(args)):
         raise argparse.ArgumentError("Illegal config")
-
-    # if args.tuning:
-    #     print(f"Starting ray tune cluster with: cpu: {args.cpu}, gpu: {args.gpu} per task")
-    #     # ray.init(num_cpus=args.cpu, num_gpus=args.gpu)
-    #     print("hjælp")
+    
+    if args.loglevel:
+        numeric_level = getattr(logging, args.loglevel.upper(), None)
+        if not isinstance(numeric_level, int):
+            logging.error('incorrect logging level... exiting...')
+            os.exit(1)
+        logging.basicConfig(level=numeric_level)
+        print('Setting log level to: ', args.loglevel)
 
     print(args.dataset)
 
     if args.few_shot:
         if args.pretrained:
-           pretrained_fewshot(args)           
+            pretrained_fewshot(args)
+        else:
+            custom_net_fewshot(args)
         # run_tune_fewshot(args)
     else:
         pass
@@ -335,3 +288,4 @@ def run_main(args):
 if __name__ == '__main__':
     args = argparser.parse_args()
     run_main(args)
+   
