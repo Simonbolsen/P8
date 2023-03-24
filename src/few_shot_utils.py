@@ -196,6 +196,7 @@ def save_few_shot_embedding_result(train_loader, support_loaders, query_loader, 
     new_class_embeds = []
     extracted_images = extract_support_images(support_loaders)
     few_shot_embeds = get_few_shot_embeddings(extracted_images, model, device)
+    few_shot_embeds = [sum(item) / len(item) for item in few_shot_embeds]
     for few_shot_embed in few_shot_embeds:
         new_class_embeds.append(few_shot_embed.tolist())
 
