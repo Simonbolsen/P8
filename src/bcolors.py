@@ -9,3 +9,7 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+def printlc(s, color):
+    print(f"{color}{s}{bcolors.ENDC}")
+        
+
