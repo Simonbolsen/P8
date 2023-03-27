@@ -66,8 +66,12 @@ argparser.add_argument('--epochs', dest="epochs", type=gtzero_int, default=1, he
 # TODO: batch size list
 argparser.add_argument('--batch', dest="batch_size", type=gtzero_int, default=100, help="Batch size must be > 0")
 
+# Custom network settings
 argparser.add_argument('--channels', dest="cnn_channels", nargs="+", type=gtzero_int, default=[16, 32, 64, 128, 256], help="Number of channels in each convolutional layer")
-argparser.add_argument('--layers', dest="cnn_layers", type=gtzero_int, default=5, help="Number of convolutional layers")
+argparser.add_argument('--linlayers', dest="linear_layers", type=gtzero_int, default=5, help="Number of linear layers")
+argparser.add_argument('--linsize', dest="linear_size", type=gtzero_int, default=100, help="Number of output features in linear layers")
+argparser.add_argument('--stride', dest='stride', type=gtzero_int, default=1, help="Stride for convolutional layers")
+argparser.add_argument('--kernsize', dest='kernal_size', type=gtzero_int, default=4, help="Size of kernal in convolutional layers")
 
 argparser.add_argument('--loss-func', dest='loss_func', default='simple-dist', choices=loss_functions.keys())
 
@@ -170,7 +174,11 @@ def get_hyper_opt(space, metric="accuracy", mode="max", good_starts=None):
    
 def get_custom_net_config(args):
     return {
-        
+       "channels": args.cnn_channels,
+       "linear_layers": args.linear_layers,
+       "linear_size": args.linear_size,
+       "stride": args.stride,
+       "kernel_size": args.kernal_size  
     }
 
 def custom_net_fewshot(args):
@@ -199,6 +207,10 @@ def custom_net_fewshot(args):
         printlc("fewshot custom network setup non ray function not implemented", {bcolors.FAIL})
         os.exit(1)
 
+def get_pretrained_config(args):
+    return {
+        "model_name" : args.model
+    }
 
 def pretrained_fewshot(args):
     print("Running pretrained few shot")
@@ -209,14 +221,14 @@ def pretrained_fewshot(args):
 
     print("Training data size: ", len(train_data))
     print("Test data size: ", len(val_data))
-    model = args.model
 
     base_config = get_base_config(args)
     few_shot_config = get_few_shot_config(args)
+    pretrained_config = get_pretrained_config(args)
     
-    space = base_config | few_shot_config
+    space = base_config | few_shot_config | pretrained_config
     
-    setup_func = partial(setup_few_shot_pretrained, model_name=model, train_data=train_data_ptr,
+    setup_func = partial(setup_few_shot_pretrained, train_data=train_data_ptr,
                          few_shot_data=val_data_ptr, args=args, device=device, ray_tune=args.tuning)
     
     tuner = create_tuner(args, space, setup_func)
