@@ -63,11 +63,11 @@ argparser.add_argument('-fs', dest="few_shot", action="store_true", help="Few-sh
 # Training arguments
 argparser.add_argument('--epochs', dest="epochs", type=gtzero_int, default=1, help="Epochs must be > 0")
 # argparser.add_argument('--classes', dest="num_of_classes", type=gtzero_int, help="Number of unique classes for the dataset")
-# TODO: batch size list
-argparser.add_argument('--batch', dest="batch_size", type=gtzero_int, default=100, help="Batch size must be > 0")
+argparser.add_argument('--batch', dest="batch_size", nargs="+", type=gtzero_int, default=[100], help="Batch sizes to choose from. Must be > 0")
 
 # Custom network settings
 argparser.add_argument('--channels', dest="cnn_channels", nargs="+", type=gtzero_int, default=[16, 32, 64, 128, 256], help="Number of channels in each convolutional layer")
+argparser.add_argument('--cnnlayers', dest="cnn_layers", type=gtzero_int, default=5, help="Number of convolutional layers")
 argparser.add_argument('--linlayers', dest="linear_layers", type=gtzero_int, default=5, help="Number of linear layers")
 argparser.add_argument('--linsize', dest="linear_size", type=gtzero_int, default=100, help="Number of output features in linear layers")
 argparser.add_argument('--stride', dest='stride', type=gtzero_int, default=1, help="Stride for convolutional layers")
@@ -99,7 +99,7 @@ argparser.add_argument('--log', dest='log_level', type=str, help='Set log level 
 
 def legal_args(args):
     if (args.tuning):
-        return len(args.dims) > 1 and len(args.lr) > 1 and (len(args.cnn_channels) == args.cnn_layers)
+        return len(args.dims) > 1 and len(args.lr) > 1 and (len(args.cnn_channels) == args.cnn_layers) and (len(args.batch_size) > 0)
     return True
 
 def determine_device(ngpu):
@@ -116,7 +116,7 @@ def get_base_config(args):
     base_config = {
         "lr": hp.uniform("lr", args.lr[0], args.lr[1]),
         "max_epochs": args.epochs,
-        "batch_size": args.batch_size, # TODO: make choice?
+        "batch_size": hp.choice(args.batch_size),
         "d" : hp.uniformint("d", args.dims[0], args.dims[1]),
         "loss_func" : args.loss_func
     }
@@ -124,13 +124,9 @@ def get_base_config(args):
     return base_config
     
 def get_non_tune_base_config(args):
-    base_config = {
-        "lr": args.lr[0],
-        "max_epochs": args.epochs,
-        "batch_size": args.batch_size, # TODO: make choice?
-        "d" : args.dims[0],
-        "loss_func" : args.loss_func
-    }
+    base_config = get_base_config(args)
+    base_config["lr"] = args.lr[0]
+    base_config["d"] = args.dims[0]
     
     return base_config
 
