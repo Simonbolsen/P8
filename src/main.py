@@ -116,7 +116,7 @@ def get_base_config(args):
     base_config = {
         "lr": hp.uniform("lr", args.lr[0], args.lr[1]),
         "max_epochs": args.epochs,
-        "batch_size": hp.choice(args.batch_size),
+        "batch_size": hp.choice("batch_size", args.batch_size),
         "d" : hp.uniformint("d", args.dims[0], args.dims[1]),
         "loss_func" : args.loss_func
     }
