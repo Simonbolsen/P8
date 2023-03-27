@@ -6,7 +6,7 @@ import math
 
 parameters = {"lr": "Learning Rate log_10(lr)", "d": "Dimensions d", "i": "Training Iterations i", 
               "e": "Epochs e", "n" : "Linear Num n", "s": "Linear Size s", "b" : "Batch Size log_2(b)", "c": "Channels c"}
-param1 = "e"
+param1 = "c"
 param2 = "d"
 paramColor = "e"
 
@@ -21,11 +21,11 @@ def insert_append(l, i, e):
     if i < len(l):
         l[i].append(e)
     else:
-        while i < len(l):
+        while i > len(l):
             l.append([])
         l.append([e])
 
-results = tune.ExperimentAnalysis("~/ray_results/mnist_classification_test_comparison_loss", 
+results = tune.ExperimentAnalysis("~/ray_results/cifarfs_resnet101_1", 
                                   default_metric="accuracy", 
                                   default_mode="max")
 best_results = analysis.best_iterations_per_trial(results)
@@ -41,17 +41,19 @@ total = 0
 
 for k, result in best_results.items():
     if "config" in result.keys():
+        if result["config"]["max_epochs"] != 15:
+            print("")
         params = {"lr": math.log(result["config"]["lr"], 10)} #
         #params["n"] = result["config"]["linear_n"]
         params["d"] = result["config"]["d"]
         params["i"] = result["data"]["training_iteration"]
-        params["e"] = result["config"]["num_of_epochs"]
+        params["e"] = result["config"]["max_epochs"]
         #params["s"] = result["config"]["linear_size"]
         params["b"] = math.log(result["config"]["batch_size"],2)
-        params["c"] = result["config"]["channels"]
+        # params["c"] = result["config"]["channels"]
         accuracy = result["data"]["accuracy"]
            
-        if True: #params["lr"] < -7 and params["lr"] > -9 and params["c"] > 150:
+        if params["lr"] < -3 and params["lr"] > -3.75:# and params["c"] > 150:
             if accuracy < 0.2:
                 failures += 1
 
@@ -67,5 +69,5 @@ for k, result in best_results.items():
 print(f"Failures: {failures}/{total}")
 
 # print(results.results)
-plot.plotPoints(x1, x2, accuracies, [parameters[param1], parameters[param2], "Accuracy a"], legend = False,
+plot.plotPoints(x1, x2, accuracies, [parameters[param1], parameters[param2], "Accuracy a"], legend = True,
                 num_of_series=len(accuracies), series_labels=[f"{i * binColer_size}" for i in range(len(accuracies))])
