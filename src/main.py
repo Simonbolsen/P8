@@ -67,6 +67,7 @@ argparser.add_argument('--batch', dest="batch_size", nargs="+", type=gtzero_int,
 
 # Custom network settings
 argparser.add_argument('--channels', dest="cnn_channels", nargs="+", type=gtzero_int, default=[16, 32, 64, 128, 256], help="Number of channels in each convolutional layer")
+# TODO: cnnlayers not used at the momenet(?)
 argparser.add_argument('--cnnlayers', dest="cnn_layers", type=gtzero_int, default=5, help="Number of convolutional layers")
 argparser.add_argument('--linlayers', dest="linear_layers", type=gtzero_int, default=5, help="Number of linear layers")
 argparser.add_argument('--linsize', dest="linear_size", type=gtzero_int, default=100, help="Number of output features in linear layers")
@@ -232,7 +233,7 @@ def pretrained_fewshot(args):
     if args.tuning:
         start_ray_experiment(tuner)
     else:
-        setup_few_shot_pretrained(get_non_tune_base_config(args) | few_shot_config, model_name=model, train_data=train_data_ptr,
+        setup_few_shot_pretrained(get_non_tune_base_config(args) | few_shot_config | pretrained_config, train_data=train_data_ptr,
                          few_shot_data=val_data_ptr, args=args, device=device, ray_tune=args.tuning)
 
 def start_ray_experiment(tuner):
@@ -255,19 +256,6 @@ def create_tuner(args, space, setup_func):
     
     return tuner
     
-#     good_start = {"num_of_epochs": 10,
-#                   "lr": 0.0005,
-#                   "d" : 60,
-#                   "channels" : 64,
-#                   "num_of_classes": 10,
-#                   "batch_size": 100,
-#                   "k_size": 4,
-#                   "stride": 1,
-#                   "linear_n": 1,
-#                   "linear_size": 64,
-#                   "shots": 5
-#                   }
-
 
 def run_main(args):
     if (not legal_args(args)):
