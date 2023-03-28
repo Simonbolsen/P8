@@ -105,7 +105,10 @@ argparser.add_argument('--log', dest='log_level', type=str, help='Set log level 
 
 def legal_args(args):
     if (args.tuning):
-        return len(args.dims) > 1 and len(args.lr) > 1 and (len(args.cnn_channels) == args.cnn_layers) and (len(args.batch_size) > 0)
+        return len(args.dims) > 1 and len(args.lr) > 1 and \
+              (len(args.cnn_channels) == args.cnn_layers) and \
+              (len(args.batch_size) > 0) and \
+              (len(args.prox_mult) >= 1)
     return True
 
 def determine_device(ngpu):
