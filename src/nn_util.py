@@ -193,10 +193,10 @@ loss_functions = {
 }
 
 
-def get_loss_function(args):
+def get_loss_function(args, config):
     loss_func = loss_functions[args.loss_func]
 
     if args.loss_func == "class-push":
-        loss_func = loss_func(args.prox_mult)
+        loss_func = loss_func(config["prox_mult"])
 
     return loss_func

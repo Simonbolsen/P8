@@ -72,12 +72,15 @@ argparser.add_argument('--cnnlayers', dest="cnn_layers", type=gtzero_int, defaul
 argparser.add_argument('--linlayers', dest="linear_layers", type=gtzero_int, default=5, help="Number of linear layers")
 argparser.add_argument('--linsize', dest="linear_size", type=gtzero_int, default=100, help="Number of output features in linear layers")
 argparser.add_argument('--stride', dest='stride', type=gtzero_int, default=1, help="Stride for convolutional layers")
-argparser.add_argument('--kernsize', dest='kernal_size', type=gtzero_int, default=4, help="Size of kernal in convolutional layers")
+argparser.add_argument('--kernsize', dest='kernel_size', type=gtzero_int, default=4, help="Size of kernal in convolutional layers")
 
 argparser.add_argument('--loss-func', dest='loss_func', default='simple-dist', choices=loss_functions.keys())
+argparser.add_argument('--prox-mult', dest='prox_mult', nargs="+", type=gtzero_int, default=[100,1000], 
+                       help="Proximity multiplier for push loss functions. Only used with the push loss function")
 
 # Pretrained
-argparser.add_argument('-pt', dest="pretrained", action='store_true', help="If training should run a pretrained model")
+argparser.add_argument('-pt', dest="pretrained", action='store_true', 
+                       help="If training should run a pretrained model")
 argparser.add_argument('--model', dest='model', type=str, help='Model name to run for pretrained')
 
 # Few-shot
@@ -119,7 +122,8 @@ def get_base_config(args):
         "max_epochs": args.epochs,
         "batch_size": hp.choice("batch_size", args.batch_size),
         "d" : hp.uniformint("d", args.dims[0], args.dims[1]),
-        "loss_func" : args.loss_func
+        "loss_func" : args.loss_func,
+        "prox_mult" : hp.uniformint("prox_mult", args.prox_mult[0], args.prox_mult[1])
     }
     
     return base_config
@@ -128,6 +132,7 @@ def get_non_tune_base_config(args):
     base_config = get_base_config(args)
     base_config["lr"] = args.lr[0]
     base_config["d"] = args.dims[0]
+    base_config["prox_mult"] = args.prox_mult[0]
     
     return base_config
 
@@ -175,7 +180,7 @@ def get_custom_net_config(args):
        "linear_layers": args.linear_layers,
        "linear_size": args.linear_size,
        "stride": args.stride,
-       "kernel_size": args.kernal_size  
+       "kernel_size": args.kernel_size
     }
 
 def custom_net_fewshot(args):
@@ -201,7 +206,7 @@ def custom_net_fewshot(args):
     if args.tuning:
         start_ray_experiment(tuner)
     else:
-        printlc("fewshot custom network setup non ray function not implemented", {bcolors.FAIL})
+        printlc("fewshot custom network setup non ray function not implemented", bcolors.FAIL)
         os.exit(1)
 
 def get_pretrained_config(args):
