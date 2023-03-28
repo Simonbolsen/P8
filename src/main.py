@@ -123,7 +123,8 @@ def get_base_config(args):
         "batch_size": hp.choice("batch_size", args.batch_size),
         "d" : hp.uniformint("d", args.dims[0], args.dims[1]),
         "loss_func" : args.loss_func,
-        "prox_mult" : hp.uniformint("prox_mult", args.prox_mult[0], args.prox_mult[1])
+        "prox_mult" : hp.uniformint("prox_mult", args.prox_mult[0], args.prox_mult[1]),
+        "train_layers": hp.uniformint("train_layers", 0, 2)
     }
     
     return base_config
