@@ -1,8 +1,6 @@
 from torch import nn
 import math as Math
 import torch
-import numpy as np
-import random
 
 
 def create_n_linear_layers(n, first_in, size):
@@ -21,10 +19,12 @@ def create_n_linear_layers(n, first_in, size):
     layers = []
 
     layers.append(nn.Linear(first_in, size))
+    layers.append(nn.ReLU())
 
     for _ in range(1, n):
         layer = nn.Linear(size, size)
         layers.append(layer)
+        layers.append(nn.RReLU())
 
     return nn.Sequential(*layers)
 
