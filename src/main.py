@@ -1,5 +1,7 @@
 from functools import partial
 import os
+
+import numpy as np
 from training_utils import classification_setup
 import argparse
 from loader.loader import load_data, get_data, get_fs_data, get_data_loader, transforms_dict
@@ -103,7 +105,10 @@ argparser.add_argument('--log', dest='log_level', type=str, help='Set log level 
 
 def legal_args(args):
     if (args.tuning):
-        return len(args.dims) > 1 and len(args.lr) > 1 and (len(args.cnn_channels) == args.cnn_layers) and (len(args.batch_size) > 0)
+        return len(args.dims) > 1 and len(args.lr) > 1 and \
+              (len(args.cnn_channels) == args.cnn_layers) and \
+              (len(args.batch_size) > 0) and \
+              (len(args.prox_mult) >= 1)
     return True
 
 def determine_device(ngpu):
@@ -118,7 +123,7 @@ def determine_device(ngpu):
    
 def get_base_config(args):
     base_config = {
-        "lr": hp.uniform("lr", args.lr[0], args.lr[1]),
+        "lr": hp.loguniform("lr", np.exp(args.lr[0]), np.exp(args.lr[1])),
         "max_epochs": args.epochs,
         "batch_size": hp.choice("batch_size", args.batch_size),
         "d" : hp.uniformint("d", args.dims[0], args.dims[1]),
