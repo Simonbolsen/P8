@@ -134,6 +134,7 @@ def get_non_tune_base_config(args):
     base_config = get_base_config(args)
     base_config["lr"] = args.lr[0]
     base_config["d"] = args.dims[0]
+    base_config["batch_size"] = args.batch_size[0]
     base_config["prox_mult"] = args.prox_mult[0]
     
     return base_config
@@ -268,13 +269,13 @@ def run_main(args):
     if (not legal_args(args)):
         raise argparse.ArgumentError("Illegal config")
     
-    if args.loglevel:
-        numeric_level = getattr(logging, args.loglevel.upper(), None)
+    if args.log_level:
+        numeric_level = getattr(logging, args.log_level.upper(), None)
         if not isinstance(numeric_level, int):
             logging.error('incorrect logging level... exiting...')
             os.exit(1)
         logging.basicConfig(level=numeric_level)
-        print('Setting log level to: ', args.loglevel)
+        print('Setting log level to: ', args.log_level)
 
     print(args.dataset)
 
