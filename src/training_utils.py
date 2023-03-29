@@ -89,16 +89,36 @@ def setup_classification_custom_model(config, training_data_ptr, val_data_ptr, d
     val_loader = get_data_loader(ray.get(val_data_ptr), config["batch_size"])
 
     loss_func = get_loss_function(args, config)
-    num_of_classes = train_loader.unique_targets 
-    image_channels = train_loader.channels
-    image_size = train_loader.image_size
+    num_of_classes, image_channels, image_size = get_loader_info(train_loader)
+    
     model = emb_model.Convnet(device, config["lr"], config["d"],
                               num_of_classes, config["channels"], config["kernel_size"],
                               config["stride"], image_channels, image_size, config["linear_layers"],
                               config["linear_size"]).to(device)
     classification_setup(config, model, train_loader, val_loader, loss_func, device, ray_tune)  
 
-def classification_setup(config, model, train_loader, test_loader, loss_func, device, ray_tune = True):
+
+def setup_classification_pretrained(config, training_data_ptr, val_data_ptr, device, args, ray_tune):
+    train_loader = get_data_loader(ray.get(training_data_ptr), config["batch_size"])
+    val_loader = get_data_loader(ray.get(val_data_ptr), config["batch_size"])
+
+    loss_func = get_loss_function(args, config)
+    num_of_classes, image_channels, image_size = get_loader_info(train_loader)
+
+    model, _ = load_pretrained(config["model_name"], num_of_classes, 
+                            config["d"], image_size, 
+                            image_channels, device, train_layers=config["train_layers"])
+    
+    classification_setup(config, model, train_loader, val_loader, loss_func, device, ray_tune)
+
+def get_loader_info(train_loader):
+    num_of_classes = train_loader.unique_targets 
+    image_channels = train_loader.channels
+    image_size = train_loader.image_size
+    return num_of_classes,image_channels,image_size
+
+
+def classification_setup(config, model, train_loader, val_loader, loss_func, device, ray_tune = True):
     optimiser = optim.Adam(model.parameters(), lr=config["lr"])
     max_epochs = config["max_epochs"]
 
@@ -106,7 +126,7 @@ def classification_setup(config, model, train_loader, test_loader, loss_func, de
     for epoch in range(max_epochs):
         train(model, train_loader, optimiser, loss_func, max_epochs, current_epoch=epoch, device=device)
         print("evaluating...")
-        accuracy = eval_classification(model, test_loader, device=device)
+        accuracy = eval_classification(model, val_loader, device=device)
         
         if ray_tune:
             tune.report(accuracy=accuracy)

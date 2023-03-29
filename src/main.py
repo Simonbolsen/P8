@@ -2,7 +2,7 @@ from functools import partial
 import os
 
 import numpy as np
-from training_utils import classification_setup, setup_classification_custom_model
+from training_utils import classification_setup, setup_classification_custom_model, setup_classification_pretrained
 import argparse
 from loader.loader import load_data, get_data, get_fs_data, get_data_loader, transforms_dict
 from PTM.model_loader import load_pretrained
@@ -283,7 +283,29 @@ def custom_net_classification(args):
         os.exit(1)
 
 def pretrained_classification(args):
-    pass
+    device = determine_device(1)
+    train_data, val_data, _  = get_data(args) # TODO: THIS MAYBE NEEDS TO BE FIXED???
+    train_data_ptr = ray.put(train_data)
+    val_data_ptr = ray.put(val_data)
+
+    print("Training data size: ", len(train_data))
+    print("Test data size: ", len(val_data))
+    
+    base_config = get_base_config
+    pretrained_config = get_pretrained_config
+    
+    space = base_config | pretrained_config
+        
+    setup_func = partial(setup_classification_pretrained, train_data_ptr=train_data_ptr, 
+                         val_data_ptr=val_data_ptr, device=device, args=args, ray_tune=args.tuning)
+
+    tuner = create_tuner(args, space, setup_func)
+
+    if args.tuning:
+        start_ray_experiment(tuner)
+    else:
+        logging.error("no setup function for pretrained net classification.. exiting...")
+        os.exit(1)
 
 def start_ray_experiment(tuner):
     printlc("starting experiment with ray tune", bcolors.OKBLUE)
