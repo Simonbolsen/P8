@@ -1,5 +1,7 @@
 from functools import partial
 import os
+
+import numpy as np
 from training_utils import classification_setup
 import argparse
 from loader.loader import load_data, get_data, get_fs_data, get_data_loader, transforms_dict
@@ -63,16 +65,24 @@ argparser.add_argument('-fs', dest="few_shot", action="store_true", help="Few-sh
 # Training arguments
 argparser.add_argument('--epochs', dest="epochs", type=gtzero_int, default=1, help="Epochs must be > 0")
 # argparser.add_argument('--classes', dest="num_of_classes", type=gtzero_int, help="Number of unique classes for the dataset")
-# TODO: batch size list
-argparser.add_argument('--batch', dest="batch_size", type=gtzero_int, default=100, help="Batch size must be > 0")
+argparser.add_argument('--batch', dest="batch_size", nargs="+", type=gtzero_int, default=[100], help="Batch sizes to choose from. Must be > 0")
 
+# Custom network settings
 argparser.add_argument('--channels', dest="cnn_channels", nargs="+", type=gtzero_int, default=[16, 32, 64, 128, 256], help="Number of channels in each convolutional layer")
-argparser.add_argument('--layers', dest="cnn_layers", type=gtzero_int, default=5, help="Number of convolutional layers")
+# TODO: cnnlayers not used at the momenet(?)
+argparser.add_argument('--cnnlayers', dest="cnn_layers", type=gtzero_int, default=5, help="Number of convolutional layers")
+argparser.add_argument('--linlayers', dest="linear_layers", type=gtzero_int, default=5, help="Number of linear layers")
+argparser.add_argument('--linsize', dest="linear_size", type=gtzero_int, default=100, help="Number of output features in linear layers")
+argparser.add_argument('--stride', dest='stride', type=gtzero_int, default=1, help="Stride for convolutional layers")
+argparser.add_argument('--kernsize', dest='kernel_size', type=gtzero_int, default=4, help="Size of kernal in convolutional layers")
 
 argparser.add_argument('--loss-func', dest='loss_func', default='simple-dist', choices=loss_functions.keys())
+argparser.add_argument('--prox-mult', dest='prox_mult', nargs="+", type=gtzero_int, default=[100,1000], 
+                       help="Proximity multiplier for push loss functions. Only used with the push loss function")
 
 # Pretrained
-argparser.add_argument('-pt', dest="pretrained", action='store_true', help="If training should run a pretrained model")
+argparser.add_argument('-pt', dest="pretrained", action='store_true', 
+                       help="If training should run a pretrained model")
 argparser.add_argument('--model', dest='model', type=str, help='Model name to run for pretrained')
 
 # Few-shot
@@ -95,7 +105,10 @@ argparser.add_argument('--log', dest='log_level', type=str, help='Set log level 
 
 def legal_args(args):
     if (args.tuning):
-        return len(args.dims) > 1 and len(args.lr) > 1 and (len(args.cnn_channels) == args.cnn_layers)
+        return len(args.dims) > 1 and len(args.lr) > 1 and \
+              (len(args.cnn_channels) == args.cnn_layers) and \
+              (len(args.batch_size) > 0) and \
+              (len(args.prox_mult) >= 1)
     return True
 
 def determine_device(ngpu):
@@ -117,26 +130,26 @@ def torch_augment_image(img: torch.Tensor) -> torch.Tensor:
 
 def get_base_config(args):
     base_config = {
-        "lr": hp.uniform("lr", args.lr[0], args.lr[1]),
+        "lr": hp.loguniform("lr", np.exp(args.lr[0]), np.exp(args.lr[1])),
         "max_epochs": args.epochs,
-        "batch_size": args.batch_size, # TODO: make choice?
+        "batch_size": hp.choice("batch_size", args.batch_size),
         "d" : hp.uniformint("d", args.dims[0], args.dims[1]),
         "loss_func" : args.loss_func,
-        "augment_image": torch_augment_image
+        "augment_image": torch_augment_image,
+        "prox_mult" : hp.uniformint("prox_mult", args.prox_mult[0], args.prox_mult[1]),
+        "train_layers": hp.uniformint("train_layers", 0, 2)
     }
     
     return base_config
     
 def get_non_tune_base_config(args):
-    base_config = {
-        "lr": args.lr[0],
-        "max_epochs": args.epochs,
-        "batch_size": args.batch_size, # TODO: make choice?
-        "d" : args.dims[0],
-        "loss_func" : args.loss_func,
-        "augment_image": torch_augment_image
-    }
-    
+    base_config = get_base_config(args)
+    base_config["lr"] = args.lr[0]
+    base_config["d"] = args.dims[0]
+    base_config["batch_size"] = args.batch_size[0]
+    base_config["prox_mult"] = args.prox_mult[0]
+    base_config["augment_image"] = torch_augment_image
+
     return base_config
 
 
@@ -179,7 +192,11 @@ def get_hyper_opt(space, metric="accuracy", mode="max", good_starts=None):
    
 def get_custom_net_config(args):
     return {
-        
+       "channels": args.cnn_channels,
+       "linear_layers": args.linear_layers,
+       "linear_size": args.linear_size,
+       "stride": args.stride,
+       "kernel_size": args.kernel_size
     }
 
 def custom_net_fewshot(args):
@@ -205,9 +222,13 @@ def custom_net_fewshot(args):
     if args.tuning:
         start_ray_experiment(tuner)
     else:
-        print(f"{bcolors.FAIL}fewshot custom network setup non ray function not implemented{bcolors.ENDC}")
+        printlc("fewshot custom network setup non ray function not implemented", bcolors.FAIL)
         os.exit(1)
 
+def get_pretrained_config(args):
+    return {
+        "model_name" : args.model
+    }
 
 def pretrained_fewshot(args):
     print("Running pretrained few shot")
@@ -218,14 +239,14 @@ def pretrained_fewshot(args):
 
     print("Training data size: ", len(train_data))
     print("Test data size: ", len(val_data))
-    model = args.model
 
     base_config = get_base_config(args)
     few_shot_config = get_few_shot_config(args)
+    pretrained_config = get_pretrained_config(args)
     
-    space = base_config | few_shot_config
+    space = base_config | few_shot_config | pretrained_config
     
-    setup_func = partial(setup_few_shot_pretrained, model_name=model, train_data=train_data_ptr,
+    setup_func = partial(setup_few_shot_pretrained, train_data=train_data_ptr,
                          few_shot_data=val_data_ptr, args=args, device=device, ray_tune=args.tuning)
     
     tuner = create_tuner(args, space, setup_func)
@@ -233,11 +254,11 @@ def pretrained_fewshot(args):
     if args.tuning:
         start_ray_experiment(tuner)
     else:
-        setup_few_shot_pretrained(get_non_tune_base_config(args) | few_shot_config, model_name=model, train_data=train_data_ptr,
+        setup_few_shot_pretrained(get_non_tune_base_config(args) | few_shot_config | pretrained_config, train_data=train_data_ptr,
                          few_shot_data=val_data_ptr, args=args, device=device, ray_tune=args.tuning)
 
 def start_ray_experiment(tuner):
-    print(f"{bcolors.OKBLUE}starting experiment with ray tune{bcolors.ENDC}")
+    printlc("starting experiment with ray tune", bcolors.OKBLUE)
     results = tuner.fit()
     print(results.get_best_result().metrics)
 
@@ -256,31 +277,18 @@ def create_tuner(args, space, setup_func):
     
     return tuner
     
-#     good_start = {"num_of_epochs": 10,
-#                   "lr": 0.0005,
-#                   "d" : 60,
-#                   "channels" : 64,
-#                   "num_of_classes": 10,
-#                   "batch_size": 100,
-#                   "k_size": 4,
-#                   "stride": 1,
-#                   "linear_n": 1,
-#                   "linear_size": 64,
-#                   "shots": 5
-#                   }
-
 
 def run_main(args):
     if (not legal_args(args)):
         raise argparse.ArgumentError("Illegal config")
     
-    if args.loglevel:
-        numeric_level = getattr(logging, args.loglevel.upper(), None)
+    if args.log_level:
+        numeric_level = getattr(logging, args.log_level.upper(), None)
         if not isinstance(numeric_level, int):
             logging.error('incorrect logging level... exiting...')
             os.exit(1)
         logging.basicConfig(level=numeric_level)
-        print('Setting log level to: ', args.loglevel)
+        print('Setting log level to: ', args.log_level)
 
     print(args.dataset)
 

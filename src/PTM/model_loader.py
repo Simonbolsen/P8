@@ -12,7 +12,7 @@ import os
 import copy
 import re
 
-def load_pretrained(model_name, num_classes, embedding_dim_count, image_size, img_channels, device, feature_extract=False):
+def load_pretrained(model_name, num_classes, embedding_dim_count, image_size, img_channels, device, feature_extract=False, train_layers=-1):
     """
     Fine-tune a pretrained model
     :param model_name: name of the pretrained model requested
@@ -83,9 +83,16 @@ def load_pretrained(model_name, num_classes, embedding_dim_count, image_size, im
     return model, input_size
 
 
-def set_parameter_requires_grad(model, feature_extracting):
-    if feature_extracting:
-        for param in model.parameters():
-            param.requires_grad = False
+def set_parameter_requires_grad(model, feature_extracting, train_layers=-1):
+    if feature_extracting or True:
+        if train_layers < 0:
+            for param in model.parameters():
+                param.requires_grad = False
+        else:
+            model_layers = [layer for layer in model.children if isinstance(layer, nn.Sequential) or isinstance(layer, nn.Linear) or isinstance(layer, nn.Conv2d)]
+            for idx in range(max(train_layers, len(model_layers))):
+                for param in model_layers[idx].parameters():
+                    param.requires_grad = True
+
 
 # load_pretrained("resnet18", 10)

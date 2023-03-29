@@ -25,7 +25,7 @@ def setup_few_shot_custom_model(config, train_data_ptr, few_shot_data_ptr, devic
     logging.debug(f"few shot support loader batches: {len(fs_sup_loaders[0])}")
     logging.debug(f"few shot querry loader batches: {len(fs_query_loader)}")
 
-    loss_func = get_loss_function(args)
+    loss_func = get_loss_function(args, config)
     num_of_classes = train_loader.unique_targets 
     image_channels = train_loader.channels
     image_size = train_loader.image_size
@@ -37,16 +37,16 @@ def setup_few_shot_custom_model(config, train_data_ptr, few_shot_data_ptr, devic
     train_few_shot(config, train_loader, fs_sup_loaders, fs_query_loader, 
                    model, loss_func, device, ray_tune)
     
-def setup_few_shot_pretrained(config, model_name, train_data, few_shot_data, device, args, ray_tune):
+def setup_few_shot_pretrained(config, train_data, few_shot_data, device, args, ray_tune):
     train_loader, fs_sup_loaders, fs_query_loader = get_few_shot_loaders(config, ray.get(train_data), ray.get(few_shot_data))
     logging.debug(f"support loaders: {len(fs_sup_loaders)}")
     logging.debug(f"few shot support loader batches: {len(fs_sup_loaders[0])}")
     logging.debug(f"few shot querry loader batches: {len(fs_query_loader)}")
-    loss_func = get_loss_function(args)
+    loss_func = get_loss_function(args, config)
     num_of_classes = len(train_loader.unique_targets)
-    model, _ = load_pretrained(model_name, num_of_classes, 
+    model, _ = load_pretrained(config["model_name"], num_of_classes, 
                             config["d"], train_loader.image_size, 
-                            train_loader.channels, device)
+                            train_loader.channels, device, train_layers=config["train_layers"])
     model.to(device)
    
     train_few_shot(config, train_loader, fs_sup_loaders, fs_query_loader, 
