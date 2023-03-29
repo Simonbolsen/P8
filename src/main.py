@@ -2,7 +2,7 @@ from functools import partial
 import os
 
 import numpy as np
-from training_utils import classification_setup
+from training_utils import classification_setup, setup_classification_custom_model
 import argparse
 from loader.loader import load_data, get_data, get_fs_data, get_data_loader, transforms_dict
 from PTM.model_loader import load_pretrained
@@ -248,6 +248,35 @@ def pretrained_fewshot(args):
         setup_few_shot_pretrained(get_non_tune_base_config(args) | few_shot_config | pretrained_config, train_data=train_data_ptr,
                          few_shot_data=val_data_ptr, args=args, device=device, ray_tune=args.tuning)
 
+def custom_net_classification(args):
+    device = determine_device(1)
+    train_data, val_data, _  = get_data(args) # TODO: THIS MAYBE NEEDS TO BE FIXED???
+    train_data_ptr = ray.put(train_data)
+    val_data_ptr = ray.put(val_data)
+    
+    print("Training data size: ", len(train_data))
+    print("Test data size: ", len(val_data))
+    
+    base_config = get_base_config(args)
+    custom_net_config = get_custom_net_config(args)
+    
+    space = base_config | custom_net_config
+    
+    setup_func = partial(setup_classification_custom_model, 
+                         train_data_ptr=train_data_ptr,
+                         val_data_ptr=val_data_ptr, device=device, args=args, ray_tune=args.tuning)
+    
+    tuner = create_tuner(args, space, setup_func)
+    
+    if args.tuning:
+        start_ray_experiment(tuner)
+    else:
+        logging.error("no setup function for custom net classification... exiting...")
+        os.exit(1)
+
+def pretrained_classification(args):
+    pass
+
 def start_ray_experiment(tuner):
     printlc("starting experiment with ray tune", bcolors.OKBLUE)
     results = tuner.fit()
@@ -290,8 +319,10 @@ def run_main(args):
             custom_net_fewshot(args)
         # run_tune_fewshot(args)
     else:
-        pass
-        # run_tune(args)
+        if args.pretrained:
+            pretrained_classification(args)
+        else:
+            custom_net_classification(args)
 
 if __name__ == '__main__':
     args = argparser.parse_args()

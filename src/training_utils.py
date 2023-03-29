@@ -1,3 +1,4 @@
+import ray
 import embedding_model as emb_model
 import torch.optim
 from loader.loader import get_data_loader
@@ -55,12 +56,12 @@ def train(model, train_loader, optimiser, loss_func,
             print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.2f}' 
                 .format(current_epoch + 1, num_epochs, i + 1, total_step, loss.item()))   
 
-def eval_classification(model, test_loader, device):
+def eval_classification(model, val_loader, device):
     model.eval()
     correct = 0
     total = 0
     with torch.no_grad():
-        for images, labels in test_loader:
+        for images, labels in val_loader:
             images = images.to(device)
             labels = labels.to(device)
 
@@ -83,30 +84,31 @@ def eval_classification(model, test_loader, device):
                 total += 1
         return correct / total
 
-def classification_setup(config, train_data, test_data, loss_func, device, ray_tune = True):
-    train_loader = get_data_loader(train_data, config["batch_size"])
-    test_loader = get_data_loader(test_data, config["batch_size"])
+def setup_classification_custom_model(config, training_data_ptr, val_data_ptr, device, args, ray_tune):
+    train_loader = get_data_loader(ray.get(training_data_ptr), config["batch_size"])
+    val_loader = get_data_loader(ray.get(val_data_ptr), config["batch_size"])
 
-    img_size = train_loader.image_size
-    channels = train_loader.channels
-    
-    model = emb_model.Convnet(device, config["lr"], 
-                              config["d"], 
-                              config["num_of_classes"], 
-                              config["channels"],
-                              config["k_size"], 
-                              config["stride"],
-                              channels, img_size, config["linear_n"], config["linear_size"]).to(device)
-    
-    optimiser = optim.Adam(model.parameters(), lr=model.lr)
-    max_epochs = config["num_of_epochs"]
+    loss_func = get_loss_function(args, config)
+    num_of_classes = train_loader.unique_targets 
+    image_channels = train_loader.channels
+    image_size = train_loader.image_size
+    model = emb_model.Convnet(device, config["lr"], config["d"],
+                              num_of_classes, config["channels"], config["kernel_size"],
+                              config["stride"], image_channels, image_size, config["linear_layers"],
+                              config["linear_size"]).to(device)
+    classification_setup(config, model, train_loader, val_loader, loss_func, device, ray_tune)  
 
-    print("start training...")
+def classification_setup(config, model, train_loader, test_loader, loss_func, device, ray_tune = True):
+    optimiser = optim.Adam(model.parameters(), lr=config["lr"])
+    max_epochs = config["max_epochs"]
+
+    print("start training classification...")
     for epoch in range(max_epochs):
         train(model, train_loader, optimiser, loss_func, max_epochs, current_epoch=epoch, device=device)
         print("evaluating...")
         accuracy = eval_classification(model, test_loader, device=device)
-        print(accuracy)
         
         if ray_tune:
             tune.report(accuracy=accuracy)
+        else: 
+            print(f"accuracy: {accuracy}")

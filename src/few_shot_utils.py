@@ -32,7 +32,7 @@ def setup_few_shot_custom_model(config, train_data_ptr, few_shot_data_ptr, devic
     model = emb_model.Convnet(device, config["lr"], config["d"],
                               num_of_classes, config["channels"], config["kernel_size"],
                               config["stride"], image_channels, image_size, config["linear_layers"],
-                              config["linear_size"])
+                              config["linear_size"]).to(device)
     
     train_few_shot(config, train_loader, fs_sup_loaders, fs_query_loader, 
                    model, loss_func, device, ray_tune)
