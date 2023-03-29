@@ -148,7 +148,6 @@ def get_non_tune_base_config(args):
     base_config["d"] = args.dims[0]
     base_config["batch_size"] = args.batch_size[0]
     base_config["prox_mult"] = args.prox_mult[0]
-    base_config["augment_image"] = torch_augment_image
 
     return base_config
 
