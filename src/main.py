@@ -130,7 +130,7 @@ def torch_augment_image(img: torch.Tensor) -> torch.Tensor:
 
 def get_base_config(args):
     base_config = {
-        "lr": hp.loguniform("lr", np.exp(args.lr[0]), np.exp(args.lr[1])),
+        "lr": hp.loguniform("lr", np.log(args.lr[0]), np.log(args.lr[1])),
         "max_epochs": args.epochs,
         "batch_size": hp.choice("batch_size", args.batch_size),
         "d" : hp.uniformint("d", args.dims[0], args.dims[1]),
