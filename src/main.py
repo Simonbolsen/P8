@@ -5,7 +5,7 @@ import argparse
 from loader.loader import load_data, get_data, get_fs_data, get_data_loader, transforms_dict
 from PTM.model_loader import load_pretrained
 import torch
-from torchvision import datasets
+from torchvision import datasets, transforms
 import ray
 from ray import air, tune
 from ray.tune.schedulers import AsyncHyperBandScheduler
@@ -108,13 +108,21 @@ def determine_device(ngpu):
     
     return device
    
+
+# autoAugment = transforms.AutoAugment(AutoAugmentPolicy = transforms.AutoAugmentPolicy.IMAGENET, interpolation: InterpolationMode = InterpolationMode.NEAREST, fill: Optional[List[float]] = None)
+autoAugment = transforms.AutoAugment(transforms.AutoAugmentPolicy.IMAGENET)
+def torch_augment_image(img: torch.Tensor) -> torch.Tensor:
+    return autoAugment.forward(img)
+
+
 def get_base_config(args):
     base_config = {
         "lr": hp.uniform("lr", args.lr[0], args.lr[1]),
         "max_epochs": args.epochs,
         "batch_size": args.batch_size, # TODO: make choice?
         "d" : hp.uniformint("d", args.dims[0], args.dims[1]),
-        "loss_func" : args.loss_func
+        "loss_func" : args.loss_func,
+        "augment_image": torch_augment_image
     }
     
     return base_config
@@ -125,7 +133,8 @@ def get_non_tune_base_config(args):
         "max_epochs": args.epochs,
         "batch_size": args.batch_size, # TODO: make choice?
         "d" : args.dims[0],
-        "loss_func" : args.loss_func
+        "loss_func" : args.loss_func,
+        "augment_image": torch_augment_image
     }
     
     return base_config
