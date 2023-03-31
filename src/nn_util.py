@@ -157,6 +157,7 @@ def _move_away_from_other_near_classes_class_loss(
 
         return push_amount
 
+    target_labels = torch.tensor(target_labels)
     unique_labels = torch.unique(target_labels)
     push_from_other_classes = {}
     loss = torch.tensor(0.0, requires_grad=True, device=device)

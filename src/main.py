@@ -77,7 +77,7 @@ argparser.add_argument('--stride', dest='stride', type=gtzero_int, default=1, he
 argparser.add_argument('--kernsize', dest='kernel_size', type=gtzero_int, default=4, help="Size of kernal in convolutional layers")
 
 argparser.add_argument('--loss-func', dest='loss_func', default='simple-dist', choices=loss_functions.keys())
-argparser.add_argument('--prox-mult', dest='prox_mult', nargs="+", type=gtzero_int, default=[100,1000], 
+argparser.add_argument('--prox-mult', dest='prox_mult', nargs="+", default=[10,100], type=gtzero_int, 
                        help="Proximity multiplier for push loss functions. Only used with the push loss function")
 
 # Pretrained
@@ -136,9 +136,14 @@ def get_base_config(args):
         "d" : hp.uniformint("d", args.dims[0], args.dims[1]),
         "loss_func" : args.loss_func,
         "augment_image": torch_augment_image,
-        "prox_mult" : hp.uniformint("prox_mult", args.prox_mult[0], args.prox_mult[1]),
-        "train_layers": hp.uniformint("train_layers", 0, 2)
+        "train_layers": hp.uniformint("train_layers", 0, 20)
     }
+
+    if args.loss_func == "class-push" and args.tuning:
+        printlc(f"using class-push loss function... with prox_mult: {args.prox_mult}", bcolors.OKCYAN)
+        base_config |= {
+            "prox_mult" : hp.uniformint("prox_mult", args.prox_mult[0], args.prox_mult[1])
+        }
     
     return base_config
     
