@@ -108,11 +108,11 @@ def setup_classification_pretrained(config, training_data_ptr, val_data_ptr, dev
     model, _ = load_pretrained(config["model_name"], num_of_classes, 
                             config["d"], image_size, 
                             image_channels, device, train_layers=config["train_layers"])
-    
+    model.to(device)
     classification_setup(config, model, train_loader, val_loader, loss_func, device, ray_tune)
 
 def get_loader_info(train_loader):
-    num_of_classes = train_loader.unique_targets 
+    num_of_classes = train_loader.unique_targets.size()[0]
     image_channels = train_loader.channels
     image_size = train_loader.image_size
     return num_of_classes,image_channels,image_size

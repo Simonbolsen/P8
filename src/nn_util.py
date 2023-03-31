@@ -70,13 +70,14 @@ def get_final_layers_size(picture_size, previous_layer_size):
 
 def simple_dist_loss(output_embds, class_embeds, targets, device):
     acc_loss = torch.tensor(0.0, requires_grad=True, device=device)
-    acc_loss_div = torch.zeros(output_embds.shape, device=device, dtype=torch.float)
+    acc_loss_div = torch.zeros(torch.Size([output_embds.size()[0] + class_embeds.size()[0], output_embds.size()[1]]), device=device, dtype=torch.float)
 
     # num_of_classes = len(class_embeds)
 
     for i, output_embedding in enumerate(output_embds):
         actual_index = targets[i]
         actual_embedding = class_embeds[actual_index]
+        actual_index = actual_index + output_embds.size()[0]
 
         diff = output_embedding - actual_embedding
         squared_dist = (diff).pow(2).sum(0)
@@ -92,7 +93,7 @@ def simple_dist_loss(output_embds, class_embeds, targets, device):
 
 def cone_loss(p, q, output_embeds, class_embeds, targets, device):
     acc_loss = torch.tensor(0.0, requires_grad=True, device=device)
-    grad = torch.zeros(output_embeds.shape, device=device, dtype=torch.float)
+    grad = torch.zeros(torch.Size([output_embeds.size()[0] + class_embeds.size()[0], output_embeds.size()[1]]), device=device, dtype=torch.float)
 
     class_center = torch.zeros(output_embeds.shape, device=device, dtype=torch.float)
     for i, class_embedding in enumerate(class_embeds):
@@ -116,6 +117,7 @@ def cone_loss(p, q, output_embeds, class_embeds, targets, device):
         a_length = torch.norm(a)
         scale = (1 - d)**p
 
+        actual_index = actual_index + output_embeds.size()[0]
         grad[i] = scale * diff if d < -q else q * class_from_center + r * a * (cfc_length / a_length)
         grad[actual_index] = grad[actual_index] - diff
 

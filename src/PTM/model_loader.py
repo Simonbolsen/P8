@@ -84,7 +84,7 @@ def load_pretrained(model_name, num_classes, embedding_dim_count, image_size, im
 
 
 def set_parameter_requires_grad(model, feature_extracting, train_layers=-1):
-    if feature_extracting or True:
+    if feature_extracting:
         if train_layers < 0:
             for param in model.parameters():
                 param.requires_grad = False
