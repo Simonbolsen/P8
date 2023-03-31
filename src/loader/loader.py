@@ -68,11 +68,31 @@ def get_mnist(config):
         train = False, 
         transform = transforms_dict[config.test_transforms],
     )
+
+    train_split_size = int(len(train_data) * 0.8)
+    val_split_size = int(len(train_data) * 0.2)
+
+    idx = range(len(train_data))
+    random.seed(25437890)
+    train_split_idx = random.sample(idx, k=train_split_size)
+    remaining_idx = [i for i in idx if i not in train_split_idx]
+    val_split_idx = random.sample(remaining_idx, k=val_split_size)
+
+    train_split = [train_data.data[i] for i in train_split_idx]
+    train_targets = [int(train_data.targets[i].item()) for i in train_split_idx]
+    val_split = [train_data.data[i] for i in val_split_idx]
+    val_targets = [int(train_data.targets[i].item()) for i in val_split_idx]
+
+    train = CustomCifarDataset(train_split, train_targets)
+    val = CustomCifarDataset(val_split, val_targets)
+
+    train.targets = torch.Tensor(train.targets)
+    val.targets = torch.Tensor(val.targets)
     
     # train_data = Subset(train_data, range(len(train_data)))
     # train_data.targets = torch.unique(train_data.dataset.targets)
 
-    return train_data, test_data
+    return train, val, test_data
 
 
 def get_cifar10(config):
