@@ -56,43 +56,44 @@ def get_data(config):
 
 
 def get_mnist(config):
-    train_data = datasets.MNIST(
-        root = config.data_dir,
-        train = True,                         
-        transform = transforms_dict[config.train_transforms], 
-        download = True,            
-    )
+    training_set = datasets.MNIST(
+        root=config.data_dir,
+        train=True,
+        transform=transforms_dict[config.train_transforms],
+        download=True
+    )       
+    
+    testing_set = datasets.MNIST(
+        root=config.data_dir,
+        train=False,
+        transform=transforms_dict[config.test_transforms],
+        download=True
+    )  
 
-    test_data = datasets.MNIST(
-        root = config.data_dir, 
-        train = False, 
-        transform = transforms_dict[config.test_transforms],
-    )
+    training_set.targets = torch.from_numpy(np.array(training_set.targets))
+    testing_set.targets = torch.from_numpy(np.array(testing_set.targets))
+    
+    train_split_size = int(len(training_set) * 0.8)
+    val_split_size = int(len(training_set) * 0.2)
 
-    train_split_size = int(len(train_data) * 0.8)
-    val_split_size = int(len(train_data) * 0.2)
-
-    idx = range(len(train_data))
+    idx = range(len(training_set))
     random.seed(25437890)
     train_split_idx = random.sample(idx, k=train_split_size)
     remaining_idx = [i for i in idx if i not in train_split_idx]
     val_split_idx = random.sample(remaining_idx, k=val_split_size)
 
-    train_split = [train_data.data[i] for i in train_split_idx]
-    train_targets = [int(train_data.targets[i].item()) for i in train_split_idx]
-    val_split = [train_data.data[i] for i in val_split_idx]
-    val_targets = [int(train_data.targets[i].item()) for i in val_split_idx]
+    train_split = [training_set.data[i] for i in train_split_idx]
+    train_targets = [int(training_set.targets[i].item()) for i in train_split_idx]
+    val_split = [training_set.data[i] for i in val_split_idx]
+    val_targets = [int(training_set.targets[i].item()) for i in val_split_idx]
 
     train = CustomCifarDataset(train_split, train_targets)
     val = CustomCifarDataset(val_split, val_targets)
 
-    train.targets = torch.Tensor(train.targets)
-    val.targets = torch.Tensor(val.targets)
-    
-    # train_data = Subset(train_data, range(len(train_data)))
-    # train_data.targets = torch.unique(train_data.dataset.targets)
+    train.targets = torch.tensor(train.targets, dtype=torch.int32)
+    val.targets = torch.tensor(val.targets)
 
-    return train, val, test_data
+    return train, val, testing_set
 
 
 def get_cifar10(config):
@@ -113,7 +114,27 @@ def get_cifar10(config):
     training_set.targets = torch.from_numpy(np.array(training_set.targets))
     testing_set.targets = torch.from_numpy(np.array(testing_set.targets))
     
-    return training_set, testing_set
+    train_split_size = int(len(training_set) * 0.8)
+    val_split_size = int(len(training_set) * 0.2)
+
+    idx = range(len(training_set))
+    random.seed(25437890)
+    train_split_idx = random.sample(idx, k=train_split_size)
+    remaining_idx = [i for i in idx if i not in train_split_idx]
+    val_split_idx = random.sample(remaining_idx, k=val_split_size)
+
+    train_split = [training_set.data[i] for i in train_split_idx]
+    train_targets = [int(training_set.targets[i].item()) for i in train_split_idx]
+    val_split = [training_set.data[i] for i in val_split_idx]
+    val_targets = [int(training_set.targets[i].item()) for i in val_split_idx]
+
+    train = CustomCifarDataset(train_split, train_targets)
+    val = CustomCifarDataset(val_split, val_targets)
+
+    train.targets = torch.tensor(train.targets, dtype=torch.int32)
+    val.targets = torch.tensor(val.targets)
+
+    return train, val, testing_set
 
 def get_omniglot(config, target_alphabets=[]):
     background_set = datasets.Omniglot(
@@ -198,9 +219,9 @@ def get_cifarfs_as_classification(config):
     val = CustomCifarDataset(val_data, val_targets)
     test = CustomCifarDataset(test_data, test_targets)
 
-    train.targets = torch.Tensor(train.targets)
-    val.targets = torch.Tensor(val.targets)
-    test.targets = torch.Tensor(test.targets)
+    train.targets = torch.tensor(train.targets)
+    val.targets = torch.tensor(val.targets)
+    test.targets = torch.tensor(test.targets)
 
     return train, val, test
     

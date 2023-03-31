@@ -294,7 +294,7 @@ def pretrained_classification(args):
     val_data_ptr = ray.put(val_data)
 
     print("Training data size: ", len(train_data))
-    print("Test data size: ", len(val_data))
+    print("Validation data size: ", len(val_data))
     
     base_config = get_base_config(args)
     pretrained_config = get_pretrained_config(args)
