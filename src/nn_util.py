@@ -95,38 +95,38 @@ def cone_loss(p, q, output_embeds, class_embeds, targets, device):
     acc_loss = torch.tensor(0.0, requires_grad=True, device=device)
     grad = torch.zeros(torch.Size([output_embeds.size()[0] + class_embeds.size()[0], output_embeds.size()[1]]), device=device, dtype=torch.float)
 
-    class_center = torch.zeros(output_embeds.shape, device=device, dtype=torch.float)
+    class_center = torch.zeros([output_embeds.size()[1]], device=device, dtype=torch.float)
     for i, class_embedding in enumerate(class_embeds):
         class_center = class_center + class_embedding
 
     class_center = class_center / len(class_embeds)
 
-    r = torch.sqrt(1 - q * q)
+    r = torch.sqrt(torch.tensor(1 - q * q))
 
     for i, output_embedding in enumerate(output_embeds):
         actual_index = targets[i]
         class_from_center = class_embeds[actual_index] - class_center
-        normalized_output_from_center = (output_embedding - class_center).normalize()
+        normalized_output_from_center = torch.nn.functional.normalize(output_embedding - class_center, dim=0)
 
-        diff = class_embeds[actual_index] - output_embedding
+        diff = output_embedding - class_embeds[actual_index]
 
         cfc_length = torch.norm(class_from_center)
 
-        d = (normalized_output_from_center * class_from_center) / cfc_length
+        d = torch.dot(normalized_output_from_center, class_from_center) / cfc_length
         a = class_from_center * d - normalized_output_from_center * cfc_length
         a_length = torch.norm(a)
         scale = (1 - d)**p
 
         actual_index = actual_index + output_embeds.size()[0]
-        grad[i] = scale * diff if d < -q else q * class_from_center + r * a * (cfc_length / a_length)
+        grad[i] = scale * diff if (d.item() < -q) else -q * class_from_center - r * a * (cfc_length / a_length)
         grad[actual_index] = grad[actual_index] - diff
 
         acc_loss = acc_loss + (diff).pow(2).sum(0)
 
     return acc_loss, grad
 
-def cone_loss_hyperparam(p, q):
-    return lambda output_embeds, class_embeds, targets, device: cone_loss(output_embeds, class_embeds, targets, device)
+def cone_loss_hyperparam(p=0, q=0.68):
+    return lambda output_embeds, class_embeds, targets, device: cone_loss(p, q, output_embeds, class_embeds, targets, device)
 
 def comparison_dist_loss(output_embeddings, class_embeddings, targets, device):
     loss = torch.tensor(0.0, requires_grad=True, device=device)

@@ -2,10 +2,9 @@ import ray
 import embedding_model as emb_model
 from torch import optim
 from loader.loader import get_data_loader, k_shot_loaders
-from training_utils import train
+from training_utils import find_closest_embedding, train
 from ray import tune
 import torch
-import sys
 import os
 from nn_util import get_loss_function
 from PTM.model_loader import load_pretrained
@@ -149,18 +148,6 @@ def get_few_shot_embeddings(support_images, model, device):
         new_class_embeddings.append(few_shot_output[:-model.num_of_classes])
     
     return new_class_embeddings
-
-def find_closest_embedding(query, class_embeddings):
-    smallest_sqr_dist = sys.maxsize
-    closest_target_index = 0
-    for i, embedding in enumerate(class_embeddings):
-        squared_dist = (embedding - query).pow(2).sum(0)
-        if squared_dist < smallest_sqr_dist:
-            smallest_sqr_dist = squared_dist
-            closest_target_index = i
-    
-    return closest_target_index
-
 
 def save_few_shot_embedding_result(train_loader, support_loaders, query_loader, model, config, accuracy, device):
     print("saving few shot embedding results")

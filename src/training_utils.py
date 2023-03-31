@@ -1,7 +1,7 @@
+import sys
 import ray
 import embedding_model as emb_model
 import torch.optim
-from few_shot_utils import find_closest_embedding
 from loader.loader import get_data_loader
 import torch
 from torch import optim
@@ -60,9 +60,22 @@ def train(model, train_loader, optimiser, loss_func,
 
         if (i+1) % 100 == 0 or i+1 == total_step:
             print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.2f}' 
-                .format(current_epoch + 1, num_epochs, i + 1, total_step, loss.item()))   
+                .format(current_epoch + 1, num_epochs, i + 1, total_step, loss.item()))
+
+
+def find_closest_embedding(query, class_embeddings):
+    smallest_sqr_dist = sys.maxsize
+    closest_target_index = 0
+    for i, embedding in enumerate(class_embeddings):
+        squared_dist = (embedding - query).pow(2).sum(0)
+        if squared_dist < smallest_sqr_dist:
+            smallest_sqr_dist = squared_dist
+            closest_target_index = i
+
+    return closest_target_index   
 
 def eval_classification(model, val_loader, device):
+    index_to_target = { i : v.item() for i, v in enumerate(val_loader.unique_targets) }
     model.eval()
     correct = 0
     total = 0
@@ -77,7 +90,8 @@ def eval_classification(model, val_loader, device):
     
             for i, output_embedding in enumerate(test_output[:-model.num_of_classes]):
                 closest_target_index = find_closest_embedding(output_embedding, class_embeddings)
-                predicted_target = val_loader.unique_targets[closest_target_index]
+                # predicted_target = val_loader.unique_targets[closest_target_index]
+                predicted_target = index_to_target[closest_target_index]
                 
                 if predicted_target == labels[i].item():
                     correct += 1
@@ -132,3 +146,4 @@ def classification_setup(config, model, train_loader, val_loader, loss_func, dev
             tune.report(accuracy=accuracy)
         else: 
             print(f"accuracy: {accuracy}")
+
