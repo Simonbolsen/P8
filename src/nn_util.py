@@ -90,6 +90,42 @@ def simple_dist_loss(output_embds, class_embeds, targets, device):
     return acc_loss  # , acc_loss_div
 
 
+def cone_loss(p, q, output_embeds, class_embeds, targets, device):
+    acc_loss = torch.tensor(0.0, requires_grad=True, device=device)
+    grad = torch.zeros(output_embeds.shape, device=device, dtype=torch.float)
+
+    class_center = torch.zeros(output_embeds.shape, device=device, dtype=torch.float)
+    for i, class_embedding in enumerate(class_embeds):
+        class_center = class_center + class_embedding
+
+    class_center = class_center / len(class_embeds)
+
+    r = torch.sqrt(1 - q * q)
+
+    for i, output_embedding in enumerate(output_embeds):
+        actual_index = targets[i]
+        class_from_center = class_embeds[actual_index] - class_center
+        normalized_output_from_center = (output_embedding - class_center).normalize()
+
+        diff = class_embeds[actual_index] - output_embedding
+
+        cfc_length = torch.norm(class_from_center)
+
+        d = (normalized_output_from_center * class_from_center) / cfc_length
+        a = class_from_center * d - normalized_output_from_center * cfc_length
+        a_length = torch.norm(a)
+        scale = (1 - d)**p
+
+        grad[i] = scale * diff if d < -q else q * class_from_center + r * a * (cfc_length / a_length)
+        grad[actual_index] = grad[actual_index] - diff
+
+        acc_loss = acc_loss + (diff).pow(2).sum(0)
+
+    return acc_loss, grad
+
+def cone_loss_hyperparam(p, q):
+    return lambda output_embeds, class_embeds, targets, device: cone_loss(output_embeds, class_embeds, targets, device)
+
 def comparison_dist_loss(output_embeddings, class_embeddings, targets, device):
     loss = torch.tensor(0.0, requires_grad=True, device=device)
     # ddx_loss = torch.zeros(output.shape, device=device, dtype=torch.float)
@@ -190,6 +226,7 @@ loss_functions = {
     "simple-dist": simple_dist_loss,
     "class-push": dist_and_proximity_loss,
     "comp-dist-loss": comparison_dist_loss,
+    "cone_loss": cone_loss_hyperparam
 }
 
 
@@ -197,6 +234,8 @@ def get_loss_function(args, config):
     loss_func = loss_functions[args.loss_func]
 
     if args.loss_func == "class-push":
-        loss_func = loss_func(config["prox_mult"])
+        return loss_func(config["prox_mult"])
+    if args.loss_func == "cone_loss":
+        return loss_func(config["p"], config["q"])
 
     return loss_func
