@@ -1,6 +1,7 @@
 import ray
 import embedding_model as emb_model
 import torch.optim
+from few_shot_utils import find_closest_embedding
 from loader.loader import get_data_loader
 import torch
 from torch import optim
@@ -66,20 +67,14 @@ def eval_classification(model, val_loader, device):
             labels = labels.to(device)
 
             test_output = model(images)
+            
+            class_embeddings = test_output[-model.num_of_classes:]
     
-            # Smukt
             for i, output_embedding in enumerate(test_output[:-model.num_of_classes]):
-                smallest_sqr_dist = 100000000
-                smallest_k = 0
-                for k in range(model.num_of_classes):
-                    actual_class_embedding = test_output[k - model.num_of_classes]
-                    squared_dist = (actual_class_embedding - output_embedding).pow(2).sum(0)
-
-                    if squared_dist < smallest_sqr_dist:
-                        smallest_sqr_dist = squared_dist
-                        smallest_k = k
-
-                if smallest_k == labels[i].item():
+                closest_target_index = find_closest_embedding(output_embedding, class_embeddings)
+                predicted_target = val_loader.unique_targets[closest_target_index]
+                
+                if predicted_target == labels[i].item():
                     correct += 1
                 total += 1
         return correct / total

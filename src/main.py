@@ -347,12 +347,12 @@ def run_main(args):
             pretrained_fewshot(args)
         else:
             custom_net_fewshot(args)
-        # run_tune_fewshot(args)
     else:
         if args.pretrained:
             pretrained_classification(args)
         else:
             custom_net_classification(args)
+
 
 if __name__ == '__main__':
     args = argparser.parse_args()

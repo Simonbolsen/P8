@@ -24,7 +24,7 @@ def create_n_linear_layers(n, first_in, size):
     for _ in range(1, n):
         layer = nn.Linear(size, size)
         layers.append(layer)
-        layers.append(nn.RReLU())
+        layers.append(nn.ReLU())
 
     return nn.Sequential(*layers)
 
