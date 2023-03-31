@@ -47,9 +47,14 @@ def train(model, train_loader, optimiser, loss_func,
         
         assert len(class_embds) == model.num_of_classes
         
-        loss = loss_func(out_embds, class_embds, [embeds_map[v.item()] for v in labels], device)
+        loss, grad = loss_func(out_embds, class_embds, [embeds_map[v.item()] for v in labels], device)
         optimiser.zero_grad()
-        loss.backward()
+
+        if grad is None:
+            loss.backward()
+        else:
+            res.backward(gradient = grad)
+            
         optimiser.step()
 
         if (i+1) % 100 == 0 or i+1 == total_step:

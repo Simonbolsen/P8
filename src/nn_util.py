@@ -88,7 +88,7 @@ def simple_dist_loss(output_embds, class_embeds, targets, device):
 
         acc_loss = acc_loss + squared_dist
 
-    return acc_loss  # , acc_loss_div
+    return acc_loss, acc_loss_div
 
 
 def cone_loss(p, q, output_embeds, class_embeds, targets, device):
@@ -168,7 +168,7 @@ def comparison_dist_loss(output_embeddings, class_embeddings, targets, device):
 
         # loss = loss + loss_value
 
-    return loss  # , ddx_loss
+    return loss, None  # , ddx_loss
 
 
 def _move_away_from_other_near_classes_class_loss(
@@ -212,7 +212,7 @@ def _move_away_from_other_near_classes_class_loss(
 
         loss = loss + dist + push_from_class
 
-    return loss
+    return loss, None
 
 
 def dist_and_proximity_loss(proximity_multiplier: float or int):
