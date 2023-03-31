@@ -291,8 +291,8 @@ def pretrained_classification(args):
     print("Training data size: ", len(train_data))
     print("Test data size: ", len(val_data))
     
-    base_config = get_base_config
-    pretrained_config = get_pretrained_config
+    base_config = get_base_config(args)
+    pretrained_config = get_pretrained_config(args)
     
     space = base_config | pretrained_config
         
