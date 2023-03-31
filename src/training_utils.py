@@ -48,9 +48,14 @@ def train(model, train_loader, optimiser, loss_func,
         
         assert len(class_embds) == model.num_of_classes
         
-        loss = loss_func(out_embds, class_embds, [embeds_map[v.item()] for v in labels], device)
+        loss, grad = loss_func(out_embds, class_embds, [embeds_map[v.item()] for v in labels], device)
         optimiser.zero_grad()
-        loss.backward()
+
+        if grad is None:
+            loss.backward()
+        else:
+            res.backward(gradient = grad)
+            
         optimiser.step()
 
         if (i+1) % 100 == 0 or i+1 == total_step:
@@ -103,11 +108,11 @@ def setup_classification_pretrained(config, training_data_ptr, val_data_ptr, dev
     model, _ = load_pretrained(config["model_name"], num_of_classes, 
                             config["d"], image_size, 
                             image_channels, device, train_layers=config["train_layers"])
-    
+    model.to(device)
     classification_setup(config, model, train_loader, val_loader, loss_func, device, ray_tune)
 
 def get_loader_info(train_loader):
-    num_of_classes = train_loader.unique_targets 
+    num_of_classes = train_loader.unique_targets.size()[0]
     image_channels = train_loader.channels
     image_size = train_loader.image_size
     return num_of_classes,image_channels,image_size
