@@ -11,6 +11,7 @@ from PTM.model_loader import load_pretrained
 from ray import tune
 import json
 import logging
+import sys
 
 def get_few_shot_loaders(config, train_data, few_shot_data):
     train_loader = get_data_loader(train_data, config["batch_size"])
@@ -60,6 +61,8 @@ def train_few_shot(config, train_loader, fs_sup_loaders, fs_query_load,
     optimiser = optim.Adam(model.parameters(), lr=config["lr"])
     
     max_epochs = config["max_epochs"]
+
+    snapshot_embeddings = []
     
     last_acc = 0
     for epoch in range(max_epochs):
@@ -70,9 +73,12 @@ def train_few_shot(config, train_loader, fs_sup_loaders, fs_query_load,
             tune.report(accuracy = last_acc)
         else:
             print(f"Validation accuracy: {last_acc}")
+
+        if not ray_tune:
+            snapshot_embeddings.append(get_few_shot_embedding_result(train_loader, fs_sup_loaders, fs_query_load, model, config, last_acc, device))
     
     if not ray_tune:
-        save_few_shot_embedding_result(train_loader, fs_sup_loaders, fs_query_load, model, config, last_acc, device)
+        save_to_json('embeddingData', 'few_shot_test_data.json', snapshot_embeddings)
 
 def extract_support_images(fs_sup_loaders):
     batches = []
@@ -149,7 +155,19 @@ def get_few_shot_embeddings(support_images, model, device):
     
     return new_class_embeddings
 
-def save_few_shot_embedding_result(train_loader, support_loaders, query_loader, model, config, accuracy, device):
+def find_closest_embedding(query, class_embeddings):
+    smallest_sqr_dist = sys.maxsize
+    closest_target_index = 0
+    for i, embedding in enumerate(class_embeddings):
+        squared_dist = (embedding - query).pow(2).sum(0)
+        if squared_dist < smallest_sqr_dist:
+            smallest_sqr_dist = squared_dist
+            closest_target_index = i
+    
+    return closest_target_index
+
+
+def get_few_shot_embedding_result(train_loader, support_loaders, query_loader, model, config, accuracy, device):
     print("saving few shot embedding results")
     train_embeddings = []
     val_support_embeddings = []
@@ -193,9 +211,11 @@ def save_few_shot_embedding_result(train_loader, support_loaders, query_loader, 
                   "new_class_embeddings": new_class_embeds,
                   "class_embeddings": class_embeds, "accuracy" : accuracy, "config" : config}
 
-    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'embeddingData', 'few_shot_test_data.json'), 'w+') as outfile:
-        json.dump(json.dumps(embeddings), outfile)
+    return embeddings
 
+def save_to_json(folder, file_name, object):
+    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', folder, file_name), 'w+') as outfile:
+        json.dump(json.dumps(object), outfile)
 
 """ {
     "train_embeddings", "train_labels", val_support_embeddings, val_support_labels, 
