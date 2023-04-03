@@ -9,6 +9,7 @@ from torchvision.transforms import ToTensor
 import torchvision.transforms as transforms
 from torchvision.datasets.utils import download_url
 from torch.utils.data import ConcatDataset, Subset, TensorDataset, Dataset
+import logging
 
 class Cub200(Dataset):
     url = "https://data.caltech.edu/records/65de6-vp158/files/CUB_200_2011.tgz?download=1"
@@ -24,6 +25,10 @@ class Cub200(Dataset):
 
         if download:
             self._download()
+        
+        if not self._check_exists():
+            logging.error("Dataset not downloaded")
+            
 
     def _load_meta(self):
         folder_path = os.path.join(self.root, self.folder_name)
