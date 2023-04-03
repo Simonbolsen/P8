@@ -39,7 +39,7 @@ def load_pretrained(model_name, num_classes, embedding_dim_count, image_size, im
 
     #split the model name upon first non letter encountered
     split_name = re.split(r'(\d+)', model_name, 1)
-    set_parameter_requires_grad(model, feature_extract)
+    set_parameter_requires_grad(model, feature_extract, train_layers)
     
     # for param in model.parameters():
     #     print (param.data)
