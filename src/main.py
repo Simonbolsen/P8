@@ -153,6 +153,8 @@ def get_non_tune_base_config(args):
     base_config["d"] = args.dims[0]
     base_config["batch_size"] = args.batch_size[0]
     base_config["prox_mult"] = args.prox_mult[0]
+    base_config["p"] = 0 # TODO: DONT HARD CODE
+    base_config["q"] = 0.68
 
     return base_config
 
@@ -263,7 +265,7 @@ def pretrained_fewshot(args):
 
 def custom_net_classification(args):
     device = determine_device(1)
-    train_data, val_data, _  = get_data(args) # TODO: THIS MAYBE NEEDS TO BE FIXED???
+    train_data, val_data, _ = get_data(args) # TODO: THIS MAYBE NEEDS TO BE FIXED???
     train_data_ptr = ray.put(train_data)
     val_data_ptr = ray.put(val_data)
     
@@ -284,20 +286,23 @@ def custom_net_classification(args):
     if args.tuning:
         start_ray_experiment(tuner)
     else:
-        logging.error("no setup function for custom net classification... exiting...")
-        os.exit(1)
+        printlc("running classification with custom network", bcolors.OKCYAN)
+        non_tune_config = get_non_tune_base_config(args) | custom_net_config
+        print("config: ", non_tune_config)
+        setup_classification_custom_model(config=non_tune_config, training_data_ptr=train_data_ptr,
+                                          val_data_ptr=val_data_ptr, device=device, args=args, ray_tune=args.tuning)
 
 def pretrained_classification(args):
     device = determine_device(1)
-    train_data, val_data, _  = get_data(args) # TODO: THIS MAYBE NEEDS TO BE FIXED???
+    train_data, val_data  = get_data(args) # TODO: THIS MAYBE NEEDS TO BE FIXED???
     train_data_ptr = ray.put(train_data)
     val_data_ptr = ray.put(val_data)
 
     print("Training data size: ", len(train_data))
-    print("Test data size: ", len(val_data))
+    print("Validation data size: ", len(val_data))
     
-    base_config = get_base_config
-    pretrained_config = get_pretrained_config
+    base_config = get_base_config(args)
+    pretrained_config = get_pretrained_config(args)
     
     space = base_config | pretrained_config
         
@@ -309,8 +314,8 @@ def pretrained_classification(args):
     if args.tuning:
         start_ray_experiment(tuner)
     else:
-        logging.error("no setup function for pretrained net classification.. exiting...")
-        os.exit(1)
+        setup_classification_pretrained(get_non_tune_base_config(args) | pretrained_config, training_data_ptr=train_data_ptr,
+                                        val_data_ptr=val_data_ptr, device=device, args=args, ray_tune=args.tuning)
 
 def start_ray_experiment(tuner):
     printlc("starting experiment with ray tune", bcolors.OKBLUE)
@@ -352,12 +357,12 @@ def run_main(args):
             pretrained_fewshot(args)
         else:
             custom_net_fewshot(args)
-        # run_tune_fewshot(args)
     else:
         if args.pretrained:
             pretrained_classification(args)
         else:
             custom_net_classification(args)
+
 
 if __name__ == '__main__':
     args = argparser.parse_args()

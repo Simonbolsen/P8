@@ -1,3 +1,4 @@
+import sys
 import ray
 import embedding_model as emb_model
 import torch.optim
@@ -47,16 +48,34 @@ def train(model, train_loader, optimiser, loss_func,
         
         assert len(class_embds) == model.num_of_classes
         
-        loss = loss_func(out_embds, class_embds, [embeds_map[v.item()] for v in labels], device)
+        loss, grad = loss_func(out_embds, class_embds, [embeds_map[v.item()] for v in labels], device)
         optimiser.zero_grad()
-        loss.backward()
+
+        if grad is None:
+            loss.backward()
+        else:
+            res.backward(gradient = grad)
+            
         optimiser.step()
 
         if (i+1) % 100 == 0 or i+1 == total_step:
             print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.2f}' 
-                .format(current_epoch + 1, num_epochs, i + 1, total_step, loss.item()))   
+                .format(current_epoch + 1, num_epochs, i + 1, total_step, loss.item()))
+
+
+def find_closest_embedding(query, class_embeddings):
+    smallest_sqr_dist = sys.maxsize
+    closest_target_index = 0
+    for i, embedding in enumerate(class_embeddings):
+        squared_dist = (embedding - query).pow(2).sum(0)
+        if squared_dist < smallest_sqr_dist:
+            smallest_sqr_dist = squared_dist
+            closest_target_index = i
+
+    return closest_target_index   
 
 def eval_classification(model, val_loader, device):
+    index_to_target = { i : v.item() for i, v in enumerate(val_loader.unique_targets) }
     model.eval()
     correct = 0
     total = 0
@@ -66,20 +85,15 @@ def eval_classification(model, val_loader, device):
             labels = labels.to(device)
 
             test_output = model(images)
+            
+            class_embeddings = test_output[-model.num_of_classes:]
     
-            # Smukt
             for i, output_embedding in enumerate(test_output[:-model.num_of_classes]):
-                smallest_sqr_dist = 100000000
-                smallest_k = 0
-                for k in range(model.num_of_classes):
-                    actual_class_embedding = test_output[k - model.num_of_classes]
-                    squared_dist = (actual_class_embedding - output_embedding).pow(2).sum(0)
-
-                    if squared_dist < smallest_sqr_dist:
-                        smallest_sqr_dist = squared_dist
-                        smallest_k = k
-
-                if smallest_k == labels[i].item():
+                closest_target_index = find_closest_embedding(output_embedding, class_embeddings)
+                # predicted_target = val_loader.unique_targets[closest_target_index]
+                predicted_target = index_to_target[closest_target_index]
+                
+                if predicted_target == labels[i].item():
                     correct += 1
                 total += 1
         return correct / total
@@ -108,11 +122,11 @@ def setup_classification_pretrained(config, training_data_ptr, val_data_ptr, dev
     model, _ = load_pretrained(config["model_name"], num_of_classes, 
                             config["d"], image_size, 
                             image_channels, device, train_layers=config["train_layers"])
-    
+    model.to(device)
     classification_setup(config, model, train_loader, val_loader, loss_func, device, ray_tune)
 
 def get_loader_info(train_loader):
-    num_of_classes = train_loader.unique_targets 
+    num_of_classes = train_loader.unique_targets.size()[0]
     image_channels = train_loader.channels
     image_size = train_loader.image_size
     return num_of_classes,image_channels,image_size
@@ -132,3 +146,4 @@ def classification_setup(config, model, train_loader, val_loader, loss_func, dev
             tune.report(accuracy=accuracy)
         else: 
             print(f"accuracy: {accuracy}")
+
