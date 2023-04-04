@@ -12,6 +12,28 @@ import os
 import copy
 import re
 
+def load_resnet_pure(model_name, num_classes, image_size, img_channels, device, feature_extract=False, train_layers=-1):
+    model = models.get_model(model_name)
+    model.num_of_classes = num_classes
+    input_size = 0
+
+    #split the model name upon first non letter encountered
+    split_name = re.split(r'(\d+)', model_name, 1)
+    set_parameter_requires_grad(model, feature_extract, train_layers)
+    
+    # for param in model.parameters():
+    #     print (param.data)
+
+    if split_name[0] == "resnet":
+        model.conv1 = nn.Conv2d(img_channels, 64, kernel_size=7, stride=2, padding=3, bias=False)
+
+        num_ftrs = model.fc.in_features
+        model.fc = nn.Linear(num_ftrs, num_classes)
+
+        input_size = 224
+
+    return model, input_size
+
 def load_pretrained(model_name, num_classes, embedding_dim_count, image_size, img_channels, device, feature_extract=False, train_layers=-1):
     """
     Fine-tune a pretrained model

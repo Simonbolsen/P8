@@ -7,8 +7,8 @@ import torch
 from torch import optim
 import embedding_model as emb_model
 from ray import tune
-from PTM.model_loader import load_pretrained
-from nn_util import get_loss_function
+from PTM.model_loader import load_pretrained, load_resnet_pure
+from nn_util import get_emc_loss_function, get_pure_loss_function
 
 def setup_and_finetune(config, train_data, test_data, device, ray_tune = True):
     train_loader = get_data_loader(train_data, batch_size=config["batch_size"])
@@ -22,17 +22,50 @@ def setup_and_finetune(config, train_data, test_data, device, ray_tune = True):
     model.device = device
     optimiser = optim.Adam(model.parameters(), lr=config["lr"])
 
-    loss_func = get_loss_function(config)
+    loss_func = get_emc_loss_function(config)
     max_epochs = config["num_of_epochs"]
 
     for epoch in range(max_epochs):
         print("training...")
-        train(model, train_loader, optimiser, loss_func, max_epochs, epoch, device)
+        train_emc(model, train_loader, optimiser, loss_func, max_epochs, epoch, device)
         accuracy = eval_classification(model, validation_loader, device)
         if ray_tune:
             tune.report(accuracy=accuracy)
 
-def train(model, train_loader, optimiser, loss_func, 
+def finetune_pretrained_pure(config, training_data_ptr, val_data_ptr, device, args, ray_tune):
+    train_loader = get_data_loader(ray.get(training_data_ptr), config["batch_size"])
+    val_loader = get_data_loader(ray.get(val_data_ptr), config["batch_size"])
+
+    loss_func = get_pure_loss_function(args, config)
+    num_of_classes, image_channels, image_size = get_loader_info(train_loader)
+
+    model, _ = load_resnet_pure(config["model_name"], num_of_classes, image_size, 
+                                image_channels, device, train_layers=config["train_layers"])
+
+    model.to(device)
+    emc_classification_setup(config, model, train_loader, val_loader, loss_func, device, ray_tune)
+
+def train_pure_pretrained(model, train_loader, optimiser, loss_func, num_epochs, current_epoch, device):
+    total_step = len(train_loader)
+
+    for i, (images, labels) in enumerate(train_loader):
+        images = images.to(device)
+        labels = labels.type(torch.LongTensor).to(device)
+
+        res = model(images)
+
+        loss = loss_func(res, labels)
+        optimiser.zero_grad()
+    
+        loss.backward()
+            
+        optimiser.step()
+
+        if (i+1) % 100 == 0 or i+1 == total_step:
+            print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.2f}' 
+                .format(current_epoch + 1, num_epochs, i + 1, total_step, loss.item()))
+
+def train_emc(model, train_loader, optimiser, loss_func, 
           num_epochs, current_epoch, device): 
     embeds_map = { v.item() : i for i, v in enumerate(train_loader.unique_targets) }
     total_step = len(train_loader)
@@ -47,7 +80,7 @@ def train(model, train_loader, optimiser, loss_func,
         class_embds = res[-model.num_of_classes:]
         
         assert len(class_embds) == model.num_of_classes
-        
+
         loss, grad = loss_func(out_embds, class_embds, [embeds_map[v.item()] for v in labels], device)
         optimiser.zero_grad()
 
@@ -98,32 +131,62 @@ def eval_classification(model, val_loader, device):
                 total += 1
         return correct / total
 
+def eval_ohe_classification(model, val_loader, device):
+    model.eval()
+    correct = 0
+    total = 0
+
+    with torch.no_grad():
+        for images, labels in val_loader:
+            images = images.to(device)
+            labels = labels.to(device)
+
+            output = model(images)
+
+            for i, pred_label in enumerate(output):
+                if torch.argmax(pred_label).item() == labels[i].item():
+                    correct += 1
+                total += 1
+        return correct / total
+
 def setup_classification_custom_model(config, training_data_ptr, val_data_ptr, device, args, ray_tune):
     train_loader = get_data_loader(ray.get(training_data_ptr), config["batch_size"])
     val_loader = get_data_loader(ray.get(val_data_ptr), config["batch_size"])
 
-    loss_func = get_loss_function(args, config)
+    loss_func = get_emc_loss_function(args, config)
     num_of_classes, image_channels, image_size = get_loader_info(train_loader)
     
     model = emb_model.Convnet(device, config["lr"], config["d"],
                               num_of_classes, config["channels"], config["kernel_size"],
                               config["stride"], image_channels, image_size, config["linear_layers"],
                               config["linear_size"]).to(device)
-    classification_setup(config, model, train_loader, val_loader, loss_func, device, ray_tune)  
+    emc_classification_setup(config, model, train_loader, val_loader, loss_func, device, ray_tune)  
 
 
-def setup_classification_pretrained(config, training_data_ptr, val_data_ptr, device, args, ray_tune):
+def setup_emc_classification_pretrained(config, training_data_ptr, val_data_ptr, device, args, ray_tune):
     train_loader = get_data_loader(ray.get(training_data_ptr), config["batch_size"])
     val_loader = get_data_loader(ray.get(val_data_ptr), config["batch_size"])
 
-    loss_func = get_loss_function(args, config)
+    loss_func = get_emc_loss_function(args, config)
     num_of_classes, image_channels, image_size = get_loader_info(train_loader)
 
     model, _ = load_pretrained(config["model_name"], num_of_classes, 
                             config["d"], image_size, 
                             image_channels, device, train_layers=config["train_layers"])
     model.to(device)
-    classification_setup(config, model, train_loader, val_loader, loss_func, device, ray_tune)
+    emc_classification_setup(config, model, train_loader, val_loader, loss_func, device, ray_tune)
+
+def setup_pure_classification_pretrained(config, training_data_ptr, val_data_ptr, device, args, ray_tune):
+    train_loader = get_data_loader(ray.get(training_data_ptr), config["batch_size"])
+    val_loader = get_data_loader(ray.get(val_data_ptr), config["batch_size"])
+
+    loss_func = get_pure_loss_function(args, config)
+    num_of_classes, image_channels, image_size = get_loader_info(train_loader)
+
+    model, _ = load_resnet_pure(config["model_name"], num_of_classes, image_size, 
+                            image_channels, device, train_layers=config["train_layers"])
+    model.to(device)
+    pure_classification_setup(config, model, train_loader, val_loader, loss_func, device, ray_tune)
 
 def get_loader_info(train_loader):
     num_of_classes = train_loader.unique_targets.size()[0]
@@ -132,18 +195,38 @@ def get_loader_info(train_loader):
     return num_of_classes,image_channels,image_size
 
 
-def classification_setup(config, model, train_loader, val_loader, loss_func, device, ray_tune = True):
+def emc_classification_setup(config, model, train_loader, val_loader, loss_func, device, ray_tune = True):
     optimiser = optim.Adam(model.parameters(), lr=config["lr"])
     max_epochs = config["max_epochs"]
 
     print("start training classification...")
     for epoch in range(max_epochs):
-        train(model, train_loader, optimiser, loss_func, max_epochs, current_epoch=epoch, device=device)
+        train_emc(model, train_loader, optimiser, loss_func, max_epochs, current_epoch=epoch, device=device)
         print("evaluating...")
-        accuracy = eval_classification(model, val_loader, device=device)
+        accuracy = classifiers["nearest_neighbour"](model, val_loader, device=device)
         
         if ray_tune:
             tune.report(accuracy=accuracy)
         else: 
             print(f"accuracy: {accuracy}")
 
+def pure_classification_setup(config, model, train_loader, val_loader, loss_func, device, ray_tune = True):
+    optimiser = optim.Adam(model.parameters(), lr=config["lr"])
+    max_epochs = config["max_epochs"]
+
+    print("start training classification...")
+    for epoch in range(max_epochs):
+        train_pure_pretrained(model, train_loader, optimiser, loss_func, max_epochs, current_epoch=epoch, device=device)
+        print("evaluating...")
+        accuracy = classifiers["one_hot_encoding"](model, val_loader, device=device)
+        
+        if ray_tune:
+            tune.report(accuracy=accuracy)
+        else: 
+            print(f"accuracy: {accuracy}")
+
+
+classifiers = {
+    "one_hot_encoding": eval_ohe_classification,
+    "nearest_neighbour": eval_classification
+}

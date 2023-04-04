@@ -2,11 +2,11 @@ import ray
 import embedding_model as emb_model
 from torch import optim
 from loader.loader import get_data_loader, k_shot_loaders
-from training_utils import find_closest_embedding, train
+from training_utils import find_closest_embedding, train_emc
 from ray import tune
 import torch
 import os
-from nn_util import get_loss_function
+from nn_util import get_emc_loss_function
 from PTM.model_loader import load_pretrained
 from ray import tune
 import json
@@ -25,7 +25,7 @@ def setup_few_shot_custom_model(config, train_data_ptr, few_shot_data_ptr, devic
     logging.debug(f"few shot support loader batches: {len(fs_sup_loaders[0])}")
     logging.debug(f"few shot querry loader batches: {len(fs_query_loader)}")
 
-    loss_func = get_loss_function(args, config)
+    loss_func = get_emc_loss_function(args, config)
     num_of_classes = train_loader.unique_targets 
     image_channels = train_loader.channels
     image_size = train_loader.image_size
@@ -42,7 +42,7 @@ def setup_few_shot_pretrained(config, train_data, few_shot_data, device, args, r
     logging.debug(f"support loaders: {len(fs_sup_loaders)}")
     logging.debug(f"few shot support loader batches: {len(fs_sup_loaders[0])}")
     logging.debug(f"few shot querry loader batches: {len(fs_query_loader)}")
-    loss_func = get_loss_function(args, config)
+    loss_func = get_emc_loss_function(args, config)
     num_of_classes = len(train_loader.unique_targets)
     model, _ = load_pretrained(config["model_name"], num_of_classes, 
                             config["d"], train_loader.image_size, 
@@ -67,7 +67,7 @@ def train_few_shot(config, train_loader, fs_sup_loaders, fs_query_load,
     last_acc = 0
     for epoch in range(max_epochs):
         print("training...")
-        train(model, train_loader, optimiser, loss_func, max_epochs, epoch, device)
+        train_emc(model, train_loader, optimiser, loss_func, max_epochs, epoch, device)
         last_acc = few_shot_eval(model, fs_sup_loaders, fs_query_load, support_images, device)
         if ray_tune:
             tune.report(accuracy = last_acc)

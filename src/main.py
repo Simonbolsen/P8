@@ -2,7 +2,7 @@ from functools import partial
 import os
 
 import numpy as np
-from training_utils import classification_setup, setup_classification_custom_model, setup_classification_pretrained
+from training_utils import emc_classification_setup, setup_classification_custom_model, setup_emc_classification_pretrained, setup_pure_classification_pretrained
 import argparse
 from loader.loader import load_data, get_data, get_fs_data, get_data_loader, transforms_dict
 from PTM.model_loader import load_pretrained
@@ -13,9 +13,9 @@ from ray import air, tune
 from ray.tune.schedulers import AsyncHyperBandScheduler
 from ray.tune.search.hyperopt import HyperOptSearch
 from hyperopt import hp
-from nn_util import cone_loss_hyperparam, simple_dist_loss, dist_and_proximity_loss, comparison_dist_loss, loss_functions
+from nn_util import cone_loss_hyperparam, simple_dist_loss, dist_and_proximity_loss, comparison_dist_loss, emc_loss_functions, pure_loss_functions
 from few_shot_utils import setup_few_shot_pretrained, setup_few_shot_custom_model
-from training_utils import train, eval_classification
+from training_utils import train_emc, eval_classification
 from bcolors import bcolors, printlc
 import logging
 from tabulate import tabulate
@@ -81,7 +81,7 @@ argparser.add_argument('--linsize', dest="linear_size", type=gtzero_int, default
 argparser.add_argument('--stride', dest='stride', type=gtzero_int, default=1, help="Stride for convolutional layers")
 argparser.add_argument('--kernsize', dest='kernel_size', type=gtzero_int, default=4, help="Size of kernal in convolutional layers")
 
-argparser.add_argument('--loss-func', dest='loss_func', default='simple-dist', choices=loss_functions.keys())
+argparser.add_argument('--loss-func', dest='loss_func', default='simple-dist', choices=list(emc_loss_functions.keys())+list(pure_loss_functions.keys()))
 argparser.add_argument('--prox-mult', dest='prox_mult', nargs="+", default=[10,100], type=gtzero_int, 
                        help="Proximity multiplier for push loss functions. Only used with the push loss function")
 argparser.add_argument('--p', dest='p', nargs="+", type=gtzero_float, default=[0, 2], help="p used in cone loss function")
@@ -91,6 +91,8 @@ argparser.add_argument('--q', dest='q', nargs="+", type=gtzero_float, default=[0
 argparser.add_argument('-pt', dest="pretrained", action='store_true', 
                        help="If training should run a pretrained model")
 argparser.add_argument('--model', dest='model', type=str, help='Model name to run for pretrained')
+argparser.add_argument('-pure', dest="pure", action='store_true', help="Flag for using pure models as opposed to emc")
+argparser.add_argument('--train-layers', dest='train_layers', type=gezero_int, default=-1, help='Number of layers of the pre-trained to train')
 
 # Few-shot
 argparser.add_argument('--shots', dest="shots", type=gtzero_int, default=5, help="Shots in few-shot learning")
@@ -142,11 +144,11 @@ def get_base_config(args):
         "batch_size": hp.choice("batch_size", args.batch_size),
         "d" : hp.uniformint("d", args.dims[0], args.dims[1]),
         "loss_func" : args.loss_func,
-        "augment_image": torch_augment_image,
+        # "augment_image": torch_augment_image,
         "train_layers": hp.uniformint("train_layers", 0, 20)
     }
     
-    loss_func = loss_functions[args.loss_func]
+    loss_func = emc_loss_functions[args.loss_func] if args.loss_func in emc_loss_functions else pure_loss_functions[args.loss_func]
 
     if not args.tuning:
         return base_config
@@ -174,6 +176,7 @@ def get_non_tune_base_config(args):
     base_config["prox_mult"] = args.prox_mult[0]
     base_config["p"] = args.p[0]
     base_config["q"] = args.q[0]
+    base_config["train_layers"] = args.train_layers
 
     return base_config
 
@@ -312,9 +315,9 @@ def custom_net_classification(args):
         setup_classification_custom_model(config=non_tune_config, training_data_ptr=train_data_ptr,
                                           val_data_ptr=val_data_ptr, device=device, args=args, ray_tune=args.tuning)
 
-def pretrained_classification(args):
+def pretrained_emc_classification(args):
     device = determine_device(1)
-    train_data, val_data, _  = get_data(args) # TODO: THIS MAYBE NEEDS TO BE FIXED???
+    train_data, val_data, _ = get_data(args) # TODO: THIS MAYBE NEEDS TO BE FIXED???
     train_data_ptr = ray.put(train_data)
     val_data_ptr = ray.put(val_data)
 
@@ -326,7 +329,7 @@ def pretrained_classification(args):
     
     space = base_config | pretrained_config
         
-    setup_func = partial(setup_classification_pretrained, training_data_ptr=train_data_ptr, 
+    setup_func = partial(setup_emc_classification_pretrained, training_data_ptr=train_data_ptr, 
                          val_data_ptr=val_data_ptr, device=device, args=args, ray_tune=args.tuning)
 
     tuner = create_tuner(args, space, setup_func)
@@ -334,8 +337,32 @@ def pretrained_classification(args):
     if args.tuning:
         start_ray_experiment(tuner)
     else:
-        non_tune_config = get_non_tune_base_config(args) | pretrained_config
-        setup_classification_pretrained(non_tune_config, training_data_ptr=train_data_ptr,
+        setup_emc_classification_pretrained(get_non_tune_base_config(args) | pretrained_config, training_data_ptr=train_data_ptr,
+                                        val_data_ptr=val_data_ptr, device=device, args=args, ray_tune=args.tuning)
+
+def pretrained_pure_classification(args):
+    device = determine_device(1)
+    train_data, val_data, _ = get_data(args) # TODO: THIS MAYBE NEEDS TO BE FIXED???
+    train_data_ptr = ray.put(train_data)
+    val_data_ptr = ray.put(val_data)
+
+    print("Training data size: ", len(train_data))
+    print("Validation data size: ", len(val_data))
+    
+    base_config = get_base_config(args)
+    pretrained_config = get_pretrained_config(args)
+    
+    space = base_config | pretrained_config
+        
+    setup_func = partial(setup_pure_classification_pretrained, train_data_ptr=train_data_ptr, 
+                         val_data_ptr=val_data_ptr, device=device, args=args, ray_tune=args.tuning)
+
+    tuner = create_tuner(args, space, setup_func)
+
+    if args.tuning:
+        start_ray_experiment(tuner)
+    else:
+        setup_pure_classification_pretrained(get_non_tune_base_config(args) | pretrained_config, training_data_ptr=train_data_ptr,
                                         val_data_ptr=val_data_ptr, device=device, args=args, ray_tune=args.tuning)
 
 def start_ray_experiment(tuner):
@@ -380,8 +407,10 @@ def run_main(args):
         else:
             custom_net_fewshot(args)
     else:
-        if args.pretrained:
-            pretrained_classification(args)
+        if args.pretrained and args.pure:
+            pretrained_pure_classification(args)
+        elif args.pretrained:
+            pretrained_emc_classification(args)
         else:
             custom_net_classification(args)
 
