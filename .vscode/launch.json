@@ -22,14 +22,14 @@
             "justMyCode": true
         },
         {
-            "name": "MNIST experiment",
+            "name": "Exp: MNIST",
             "type": "python",
             "request": "launch",
             "program": "src/main.py",
             "console": "integratedTerminal",
             "justMyCode": true,
             "args": [
-                "--dataset", "cifar10",
+                "--dataset", "mnist",
                 "--datadir", "./data",
                 "--epochs", "20", "100",
                 "--classes", "10",
@@ -42,5 +42,30 @@
                 "--gpu", "1"
             ]
         },
+        {
+            "name": "Exp: cifarfs",
+            "type": "python",
+            "request": "launch",
+            "program": "src/main.py",
+            "justMyCode": true,
+            "args": [
+                "--dataset", "cifarfs",
+                "--datadir", "./data",
+                "--epochs", "15",
+                "--batch","100",
+                "--dims","15", "400",
+                "--lr","0.00004", "0.004",
+                "--channels","32", "32", "64", "128", "256",
+                "-t",
+                "-fs", 
+                "-pt",
+                "--shots", "5",
+                "--model", "resnet101",
+                "--gpu", "0.5",
+                "--cpu", "6",
+                "--exp-name", "cifarfs_resnet101_1",
+                "--samples", "200"
+            ]
+        }
     ]
 }

@@ -4,8 +4,10 @@ from torchvision.transforms import ToTensor
 import torchvision.transforms as transforms
 from torch.utils.data import ConcatDataset, Subset, TensorDataset
 import numpy as np
+import random
 import loader.cifarfs_splits as cifarfs_splits
 import loader.cifar10fs_splits as cifar10fs_splits
+from learn2learn.vision.datasets import FC100
 
 
 dataset_dict = {
@@ -13,6 +15,7 @@ dataset_dict = {
     "mnist": lambda c: get_mnist(config=c),
     "cifar10": lambda c: get_cifar10(config=c),
     "cifar100": lambda c: get_cifar100(config=c),
+    "cifarfs": lambda c: get_cifarfs_as_classification(config=c)
 }
 
 transforms_dict = {
@@ -53,23 +56,44 @@ def get_data(config):
 
 
 def get_mnist(config):
-    train_data = datasets.MNIST(
-        root = config.data_dir,
-        train = True,                         
-        transform = transforms_dict[config.train_transforms], 
-        download = True,            
-    )
-
-    test_data = datasets.MNIST(
-        root = config.data_dir, 
-        train = False, 
-        transform = transforms_dict[config.test_transforms],
-    )
+    training_set = datasets.MNIST(
+        root=config.data_dir,
+        train=True,
+        transform=transforms_dict[config.train_transforms],
+        download=True
+    )       
     
-    # train_data = Subset(train_data, range(len(train_data)))
-    # train_data.targets = torch.unique(train_data.dataset.targets)
+    testing_set = datasets.MNIST(
+        root=config.data_dir,
+        train=False,
+        transform=transforms_dict[config.test_transforms],
+        download=True
+    )  
 
-    return train_data, test_data
+    training_set.targets = torch.from_numpy(np.array(training_set.targets))
+    testing_set.targets = torch.from_numpy(np.array(testing_set.targets))
+    
+    train_split_size = int(len(training_set) * 0.8)
+    val_split_size = int(len(training_set) * 0.2)
+
+    idx = range(len(training_set))
+    random.seed(25437890)
+    train_split_idx = random.sample(idx, k=train_split_size)
+    remaining_idx = [i for i in idx if i not in train_split_idx]
+    val_split_idx = random.sample(remaining_idx, k=val_split_size)
+
+    train_split = [training_set.data[i] for i in train_split_idx]
+    train_targets = [int(training_set.targets[i].item()) for i in train_split_idx]
+    val_split = [training_set.data[i] for i in val_split_idx]
+    val_targets = [int(training_set.targets[i].item()) for i in val_split_idx]
+
+    train = CustomCifarDataset(train_split, train_targets)
+    val = CustomCifarDataset(val_split, val_targets)
+
+    train.targets = torch.tensor(train.targets, dtype=torch.int32)
+    val.targets = torch.tensor(val.targets)
+
+    return train, val, testing_set
 
 
 def get_cifar10(config):
@@ -90,7 +114,27 @@ def get_cifar10(config):
     training_set.targets = torch.from_numpy(np.array(training_set.targets))
     testing_set.targets = torch.from_numpy(np.array(testing_set.targets))
     
-    return training_set, testing_set
+    train_split_size = int(len(training_set) * 0.8)
+    val_split_size = int(len(training_set) * 0.2)
+
+    idx = range(len(training_set))
+    random.seed(25437890)
+    train_split_idx = random.sample(idx, k=train_split_size)
+    remaining_idx = [i for i in idx if i not in train_split_idx]
+    val_split_idx = random.sample(remaining_idx, k=val_split_size)
+
+    train_split = [training_set.data[i] for i in train_split_idx]
+    train_targets = [int(training_set.targets[i].item()) for i in train_split_idx]
+    val_split = [training_set.data[i] for i in val_split_idx]
+    val_targets = [int(training_set.targets[i].item()) for i in val_split_idx]
+
+    train = CustomCifarDataset(train_split, train_targets)
+    val = CustomCifarDataset(val_split, val_targets)
+
+    train.targets = torch.tensor(train.targets, dtype=torch.int32)
+    val.targets = torch.tensor(val.targets)
+
+    return train, val, testing_set
 
 def get_omniglot(config, target_alphabets=[]):
     background_set = datasets.Omniglot(
@@ -146,11 +190,49 @@ def get_cifar100(config):
     return training_set, testing_set
 
 
+def get_cifarfs_as_classification(config):
+    train_split, val_split, _ = get_cifarfs(config)
+
+    all_data =  np.concatenate((train_split.data, val_split.data), axis=0)
+    all_targets = torch.from_numpy(np.concatenate((train_split.targets, val_split.targets), axis=0))
+
+    train_split_size = int(len(all_data) * 0.64)
+    val_split_size = int(len(all_data) * 0.16)
+    test_split_size = int(len(all_data) * 0.2)
+
+    idx = range(len(all_data))
+    random.seed(25437890)
+    train_split_idx = random.sample(idx, k=train_split_size)
+    remaining_idx = [i for i in idx if i not in train_split_idx]
+    val_split_idx = random.sample(remaining_idx, k=val_split_size)
+    remaining_idx = [i for i in remaining_idx if i not in val_split_idx]
+    test_split_idx = random.sample(remaining_idx, k=test_split_size)
+
+    train_data = [all_data[i] for i in train_split_idx]
+    train_targets = [int(all_targets[i].item()) for i in train_split_idx]
+    val_data = [all_data[i] for i in val_split_idx]
+    val_targets = [int(all_targets[i].item()) for i in val_split_idx]
+    test_data = [all_data[i] for i in test_split_idx]
+    test_targets = [int(all_targets[i].item()) for i in test_split_idx]
+
+    train = CustomCifarDataset(train_data, train_targets)
+    val = CustomCifarDataset(val_data, val_targets)
+    test = CustomCifarDataset(test_data, test_targets)
+
+    train.targets = torch.tensor(train.targets)
+    val.targets = torch.tensor(val.targets)
+    test.targets = torch.tensor(test.targets)
+
+    return train, val, test
+    
+
+
 #________________________ FEW-SHOT LAND_________________________________
 
 fs_dataset_dict = {
     "cifarfs": lambda c: get_cifarfs(config=c),
-    "cifar10": lambda c: get_cifar10_fs(config=c)
+    "cifar10": lambda c: get_cifar10_fs(config=c),
+    "fc100": lambda c: get_FC100(config=c)
 }
 
 def get_fs_data(config):
@@ -220,6 +302,30 @@ def get_cifar10_fs(config):
     return train_split, val_split, test_split 
 
 
+def get_FC100(config):
+    try:
+        training_set = FC100(root=config.data_dir, mode='train', transform=transforms_dict[config.train_transforms], download=True)
+        validation_set = FC100(root=config.data_dir, mode='validation', transform=transforms_dict[config.train_transforms], download=True)
+        test_set = FC100(root=config.data_dir, mode='test', transform=transforms_dict[config.test_transforms], download=True)
+    except Exception:
+        training_set = FC100(root=config.data_dir, mode='train', transform=transforms_dict[config.train_transforms], download=True)
+        validation_set = FC100(root=config.data_dir, mode='validation', transform=transforms_dict[config.train_transforms], download=True)
+        test_set = FC100(root=config.data_dir, mode='test', transform=transforms_dict[config.test_transforms], download=True)
+
+    training_set.data = training_set.images
+    validation_set.data = validation_set.images
+    test_set.data = test_set.images
+
+    training_set.targets = torch.from_numpy(np.array(training_set.labels))
+    validation_set.targets = torch.from_numpy(np.array(validation_set.labels))
+    test_set.targets = torch.from_numpy(np.array(test_set.labels))
+
+    return training_set, validation_set, test_set
+
+def get_CUB200(config):
+    pass
+
+
 # Create loaders for each class in support data 
 # with batch size of shots.
 # Creates loader for queries which contain the rest of the data
@@ -247,8 +353,9 @@ def k_shot_loaders(support_data, shots, query_batch_size=100):
     return support_loaders, query_loader
 
 if __name__ == '__main__':
-    train, test = get_omniglot(0, ["Arcadian", "Armenian"])
-    print(0)
+    get_FC100()
+    # train, test = get_omniglot(0, ["Arcadian", "Armenian"])
+    # print(0)
 
 
 

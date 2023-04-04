@@ -24,7 +24,7 @@ class Convnet(nn.Module):
         self.in_size = in_dimensions
         self.pic_size = img_size
 
-        self.middle_layers = [self.channels, self.channels, self.channels, self.channels]
+        self.middle_layers = self.channels
         self.final_conv_out_size = nn_util.conv_final_out_size(len(self.middle_layers), self.k_size, self.stride, self.padding, self.pic_size)
         
         self.linear_layers = linear_layers

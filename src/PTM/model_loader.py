@@ -12,7 +12,7 @@ import os
 import copy
 import re
 
-def load_pretrained(model_name, num_classes, embedding_dim_count, image_size, img_channels, feature_extract=False):
+def load_pretrained(model_name, num_classes, embedding_dim_count, image_size, img_channels, device, feature_extract=False, train_layers=-1):
     """
     Fine-tune a pretrained model
     :param model_name: name of the pretrained model requested
@@ -39,10 +39,10 @@ def load_pretrained(model_name, num_classes, embedding_dim_count, image_size, im
 
     #split the model name upon first non letter encountered
     split_name = re.split(r'(\d+)', model_name, 1)
-    set_parameter_requires_grad(model, feature_extract)
+    set_parameter_requires_grad(model, feature_extract, train_layers)
     
-    """for param in model.parameters():
-        print (param.data)"""
+    # for param in model.parameters():
+    #     print (param.data)
 
     if split_name[0] == "resnet":
         model.conv1 = nn.Conv2d(img_channels, 64, kernel_size=7, stride=2, padding=3, bias=False)
@@ -53,7 +53,7 @@ def load_pretrained(model_name, num_classes, embedding_dim_count, image_size, im
         
         def forward(x):
             x = model._forward_impl(x)
-            y = model.embeddings(torch.tensor(range(num_classes), device=model.device))
+            y = model.embeddings(torch.tensor(range(num_classes), device=device))
             return torch.cat((x, y), dim=0)
         model.forward = forward
 
@@ -71,7 +71,7 @@ def load_pretrained(model_name, num_classes, embedding_dim_count, image_size, im
             x = model.avgpool(x)
             x = torch.flatten(x, 1)
             x = model.classifier(x)
-            y = model.embeddings(torch.tensor(range(num_classes), device=model.device))
+            y = model.embeddings(torch.tensor(range(num_classes), device=device))
             return torch.cat((x, y), dim=0)
         model.forward = forward
 
@@ -88,9 +88,19 @@ def load_pretrained(model_name, num_classes, embedding_dim_count, image_size, im
     return model, input_size
 
 
-def set_parameter_requires_grad(model, feature_extracting):
-    if feature_extracting:
-        for param in model.parameters():
+def set_parameter_requires_grad(model, feature_extracting, train_layers=-1):
+    for param in model.parameters():
             param.requires_grad = False
+
+    if not feature_extracting:
+        for param in model.parameters():
+            param.requires_grad = True
+    else:
+        if train_layers > 0:
+            model_layers = [layer for layer in model.children if isinstance(layer, nn.Sequential) or isinstance(layer, nn.Linear) or isinstance(layer, nn.Conv2d)]
+            for idx in range(max(train_layers, len(model_layers))):
+                for param in model_layers[idx].parameters():
+                    param.requires_grad = True
+
 
 # load_pretrained("resnet18", 10)
