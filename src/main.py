@@ -18,6 +18,7 @@ from few_shot_utils import setup_few_shot_pretrained, setup_few_shot_custom_mode
 from training_utils import train, eval_classification
 from bcolors import bcolors, printlc
 import logging
+from logging_utils import setup_logger
 from tabulate import tabulate
 
 def gezero_int(x):
@@ -279,6 +280,7 @@ def pretrained_fewshot(args):
     if args.tuning:
         start_ray_experiment(tuner)
     else:
+        print("==> starting non tune pretrained fewshot")
         non_tune_config = get_non_tune_base_config(args) | few_shot_config | pretrained_config
         setup_few_shot_pretrained(non_tune_config, train_data=train_data_ptr,
                          few_shot_data=val_data_ptr, args=args, device=device, ray_tune=args.tuning)
@@ -362,17 +364,17 @@ def create_tuner(args, space, setup_func):
 def run_main(args):
     if (not legal_args(args)):
         raise argparse.ArgumentError("Illegal config")
+
+    args_pretty_print(args)
     
     if args.log_level:
         numeric_level = getattr(logging, args.log_level.upper(), None)
         if not isinstance(numeric_level, int):
             logging.error('incorrect logging level... exiting...')
-            os.exit(1)
-        logging.basicConfig(level=numeric_level)
+            os.quit(1)
+        setup_logger(args.log_level.upper()) 
         print('Setting log level to: ', args.log_level)
 
-    args_pretty_print(args)
-    # print(args.dataset)
 
     if args.few_shot:
         if args.pretrained:

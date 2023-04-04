@@ -10,8 +10,8 @@ from nn_util import get_loss_function
 from PTM.model_loader import load_pretrained
 from ray import tune
 import json
-import logging
 import sys
+import logging 
 
 def get_few_shot_loaders(config, train_data, few_shot_data):
     train_loader = get_data_loader(train_data, config["batch_size"])
@@ -55,12 +55,13 @@ def setup_few_shot_pretrained(config, train_data, few_shot_data, device, args, r
 def train_few_shot(config, train_loader, fs_sup_loaders, fs_query_load, 
                    model, loss_func, device, ray_tune):
     
-    logging.debug("extracting support images...")
+    # logging.debug("extracting support images...")
+    print("extracing support images...")
     support_images = extract_support_images(fs_sup_loaders)
     
     optimiser = optim.Adam(model.parameters(), lr=config["lr"])
     
-    max_epochs = config["max_epochs"]
+    max_epochs = config["epochs"]
 
     snapshot_embeddings = []
     
@@ -78,11 +79,13 @@ def train_few_shot(config, train_loader, fs_sup_loaders, fs_query_load,
             snapshot_embeddings.append(get_few_shot_embedding_result(train_loader, fs_sup_loaders, fs_query_load, model, config, last_acc, device))
     
     if not ray_tune:
+        print("==> saving embeddings..")
         save_to_json('embeddingData', 'few_shot_test_data.json', snapshot_embeddings)
 
 def extract_support_images(fs_sup_loaders):
     batches = []
-    for loader in fs_sup_loaders:
+    for i, loader in enumerate(fs_sup_loaders):
+        logging.debug("extracting support for loader: %s", i)
         images, _ = next(iter(loader))
         batches.append(images)
         
@@ -214,7 +217,13 @@ def get_few_shot_embedding_result(train_loader, support_loaders, query_loader, m
     return embeddings
 
 def save_to_json(folder, file_name, object):
-    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', folder, file_name), 'w+') as outfile:
+    folder_path = os.path.join(os.path.realpath(__file__), '..', folder)
+
+    if not os.path.exists(folder_path):
+        print("==> folder to save embedding does not exist... creating folder...")
+        os.mkdir(folder_path)
+    
+    with open(os.path.join(folder_path, file_name), 'w+') as outfile:
         json.dump(json.dumps(object), outfile)
 
 """ {
