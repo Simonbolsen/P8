@@ -12,7 +12,7 @@ import os
 import copy
 import re
 
-def load_resnet_pure(model_name, num_classes, image_size, img_channels, device, feature_extract=True, train_layers=-1):
+def load_resnet_pure(model_name, num_classes, image_size, img_channels, device, feature_extract=False, train_layers=-1):
     model = models.get_model(model_name)
     model.num_of_classes = num_classes
     input_size = 0
