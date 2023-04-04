@@ -225,16 +225,16 @@ def dist_and_proximity_loss(proximity_multiplier: float or int):
     )
 
 
-loss_functions = {
+emc_loss_functions = {
     "simple-dist": simple_dist_loss,
     "class-push": dist_and_proximity_loss,
     "comp-dist-loss": comparison_dist_loss,
-    "cone_loss": cone_loss_hyperparam
+    "cone_loss": cone_loss_hyperparam,
 }
 
 
-def get_loss_function(args, config):
-    loss_func = loss_functions[args.loss_func]
+def get_emc_loss_function(args, config):
+    loss_func = emc_loss_functions[args.loss_func]
 
     if args.loss_func == "class-push":
         return loss_func(config["prox_mult"])
@@ -242,3 +242,10 @@ def get_loss_function(args, config):
         return loss_func(config["p"], config["q"])
 
     return loss_func
+
+pure_loss_functions = {
+    "cross_entropy": nn.CrossEntropyLoss()
+}
+
+def get_pure_loss_function(args, config):
+    return pure_loss_functions[args.loss_func]
