@@ -92,7 +92,7 @@ argparser.add_argument('-pt', dest="pretrained", action='store_true',
                        help="If training should run a pretrained model")
 argparser.add_argument('--model', dest='model', type=str, help='Model name to run for pretrained')
 argparser.add_argument('-pure', dest="pure", action='store_true', help="Flag for using pure models as opposed to emc")
-argparser.add_argument('--train-layers', dest='train_layers', type=gezero_int, default=-1, help='Number of layers of the pre-trained to train')
+argparser.add_argument('--train-layers', dest='train_layers', nargs='+', type=gezero_int, default=[-1, 0], help='Number of layers of the pre-trained to train')
 
 # Few-shot
 argparser.add_argument('--shots', dest="shots", type=gtzero_int, default=5, help="Shots in few-shot learning")
@@ -145,7 +145,7 @@ def get_base_config(args):
         "d" : hp.uniformint("d", args.dims[0], args.dims[1]),
         "loss_func" : args.loss_func,
         # "augment_image": torch_augment_image,
-        "train_layers": hp.uniformint("train_layers", 0, 20)
+        "train_layers": hp.uniformint("train_layers", args.train_layers[0], args.train_layers[1])
     }
     
     loss_func = emc_loss_functions[args.loss_func] if args.loss_func in emc_loss_functions else pure_loss_functions[args.loss_func]
@@ -176,7 +176,7 @@ def get_non_tune_base_config(args):
     base_config["prox_mult"] = args.prox_mult[0]
     base_config["p"] = args.p[0]
     base_config["q"] = args.q[0]
-    base_config["train_layers"] = args.train_layers
+    base_config["train_layers"] = args.train_layers[0]
 
     return base_config
 
@@ -354,7 +354,7 @@ def pretrained_pure_classification(args):
     
     space = base_config | pretrained_config
         
-    setup_func = partial(setup_pure_classification_pretrained, train_data_ptr=train_data_ptr, 
+    setup_func = partial(setup_pure_classification_pretrained, training_data_ptr=train_data_ptr, 
                          val_data_ptr=val_data_ptr, device=device, args=args, ray_tune=args.tuning)
 
     tuner = create_tuner(args, space, setup_func)
