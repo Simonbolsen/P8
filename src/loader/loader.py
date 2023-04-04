@@ -42,7 +42,13 @@ transforms_dict = {
         transforms.CenterCrop(224),
         transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-    ])
+    ]),
+    "resnet": transforms.Compose([
+                        transforms.Resize(256),
+                        transforms.CenterCrop(224),
+                        transforms.ToTensor(),
+                        transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+                    ]),
 }
 
 def load_data(train_data, test_data, batch_size=100):
