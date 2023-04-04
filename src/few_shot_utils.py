@@ -61,7 +61,7 @@ def train_few_shot(config, train_loader, fs_sup_loaders, fs_query_load,
     
     optimiser = optim.Adam(model.parameters(), lr=config["lr"])
     
-    max_epochs = config["epochs"]
+    max_epochs = config["max_epochs"]
 
     snapshot_embeddings = []
     
@@ -76,6 +76,7 @@ def train_few_shot(config, train_loader, fs_sup_loaders, fs_query_load,
             print(f"Validation accuracy: {last_acc}")
 
         if not ray_tune:
+            # TODO: make this faster using previous calculated support_images
             snapshot_embeddings.append(get_few_shot_embedding_result(train_loader, fs_sup_loaders, fs_query_load, model, config, last_acc, device))
     
     if not ray_tune:
@@ -221,6 +222,7 @@ def save_to_json(folder, file_name, object):
 
     if not os.path.exists(folder_path):
         print("==> folder to save embedding does not exist... creating folder...")
+        print("   ==> folder path: ", folder_path)
         os.mkdir(folder_path)
     
     with open(os.path.join(folder_path, file_name), 'w+') as outfile:
