@@ -17,6 +17,13 @@ def read_json_file(path_to_json_file):
 def argmin(iterable):
     return min(enumerate(iterable), key=lambda x: x[1])[0]
 
+def hyper_sphere_volume(radius, dimensions):
+    if dimensions == 0:
+        return 1
+    if dimensions == 1:
+        return 2 * radius
+    return radius * radius * 2 * np.pi / dimensions * hyper_sphere_volume(radius, dimensions - 2)
+
 train_embeddings = []
 test_embeddings  = []
 class_embeddings = []
@@ -54,6 +61,21 @@ def print_distance_matrix(embeddings):
     print("")
     for i in range(len(embeddings)):
         print(f"  {i}", end="  ")
+    print("")
+    for index, i in enumerate(embeddings):
+        print(f"{index}", end=" ")
+        for ii in embeddings:
+            print(f"{np.linalg.norm(np.array(i) - np.array(ii)):.2f}",end=" ")
+        print("")
+
+def print_distance_matrix(embeddings):
+    center = np.zeros(len(embeddings[0]))
+    print("")
+    for i, embedding in enumerate(embeddings):
+        center = center + np.array(embedding)
+        print(f"  {i}", end="  ")
+
+    center = center / len(embeddings)
     print("")
     for index, i in enumerate(embeddings):
         print(f"{index}", end=" ")
@@ -123,8 +145,8 @@ def get_sim_dists(dims, radius, samples):
     return dists
 
 def plot_distance_distribution():
-    test_dists = get_dists(test_embeddings, test_labels)
-    train_dists = get_dists(train_embeddings, train_labels)
+    test_dists = get_dists(test_embeddings, test_labels, class_embeddings)
+    train_dists = get_dists(train_embeddings, train_labels, class_embeddings)
     #sim_dists = get_sim_dists(4, 0.25, 10000)
     num_buckets = 100
 
@@ -185,7 +207,7 @@ def plot_center_class_projection():
     plot.plot_points_series_2d(xs, ys)
 
 if __name__ == '__main__':
-    data = read_json_file(os.path.dirname(__file__) + "/../../embeddingData/few_shot_test_data.json")
+    data = read_json_file(os.path.dirname(__file__) + "/../../embeddingData/json_data.json")
 
     train_embeddings = data["train_embeddings"]
     test_embeddings  = data["test_embeddings"]
@@ -194,7 +216,7 @@ if __name__ == '__main__':
     train_labels = data["train_labels"]
 
 
-    #print_distance_matrix()
+    #print_distance_matrix(class_embeddings)
     #print_distances_from_center()
     #plot_series()
     #plot_pcas()

@@ -13,11 +13,12 @@ from ray import air, tune
 from ray.tune.schedulers import AsyncHyperBandScheduler
 from ray.tune.search.hyperopt import HyperOptSearch
 from hyperopt import hp
-from nn_util import simple_dist_loss, dist_and_proximity_loss, comparison_dist_loss, emc_loss_functions, pure_loss_functions
+from nn_util import cone_loss_hyperparam, simple_dist_loss, dist_and_proximity_loss, comparison_dist_loss, emc_loss_functions, pure_loss_functions
 from few_shot_utils import setup_few_shot_pretrained, setup_few_shot_custom_model
 from training_utils import train_emc, eval_classification
 from bcolors import bcolors, printlc
 import logging
+from tabulate import tabulate
 
 def gezero_int(x):
     x = int()
@@ -42,6 +43,10 @@ def gtzero_float(x):
     if x <= 0:
         raise argparse.ArgumentTypeError("Minimum value is >0")
     return x
+
+def args_pretty_print(args):    
+    print(tabulate(vars(args).items(), headers=["arg", "value"], missingval=f"{bcolors.WARNING}None{bcolors.ENDC}"))
+    print("\n")
 
 datasets = {"mnist": 0, 
             "omniglot": 1, 
@@ -79,12 +84,15 @@ argparser.add_argument('--kernsize', dest='kernel_size', type=gtzero_int, defaul
 argparser.add_argument('--loss-func', dest='loss_func', default='simple-dist', choices=list(emc_loss_functions.keys())+list(pure_loss_functions.keys()))
 argparser.add_argument('--prox-mult', dest='prox_mult', nargs="+", default=[10,100], type=gtzero_int, 
                        help="Proximity multiplier for push loss functions. Only used with the push loss function")
+argparser.add_argument('--p', dest='p', nargs="+", type=gtzero_float, default=[0, 2], help="p used in cone loss function")
+argparser.add_argument('--q', dest='q', nargs="+", type=gtzero_float, default=[0, 0.68], help="q used in cone loss function")
 
 # Pretrained
 argparser.add_argument('-pt', dest="pretrained", action='store_true', 
                        help="If training should run a pretrained model")
 argparser.add_argument('--model', dest='model', type=str, help='Model name to run for pretrained')
 argparser.add_argument('-pure', dest="pure", action='store_true', help="Flag for using pure models as opposed to emc")
+argparser.add_argument('--train-layers', dest='train_layers', type=gezero_int, default=-1, help='Number of layers of the pre-trained to train')
 
 # Few-shot
 argparser.add_argument('--shots', dest="shots", type=gtzero_int, default=5, help="Shots in few-shot learning")
@@ -136,14 +144,26 @@ def get_base_config(args):
         "batch_size": hp.choice("batch_size", args.batch_size),
         "d" : hp.uniformint("d", args.dims[0], args.dims[1]),
         "loss_func" : args.loss_func,
-        "augment_image": torch_augment_image,
+        # "augment_image": torch_augment_image,
         "train_layers": hp.uniformint("train_layers", 0, 20)
     }
+    
+    loss_func = emc_loss_functions[args.loss_func] if args.loss_func in emc_loss_functions else pure_loss_functions[args.loss_func]
 
-    if args.loss_func == "class-push" and args.tuning:
-        printlc(f"using class-push loss function... with prox_mult: {args.prox_mult}", bcolors.OKCYAN)
+    if not args.tuning:
+        return base_config
+
+    if loss_func is dist_and_proximity_loss:
+        printlc(f"==> using class-push loss function... with prox_mult: {args.prox_mult}", bcolors.OKCYAN)
         base_config |= {
             "prox_mult" : hp.uniformint("prox_mult", args.prox_mult[0], args.prox_mult[1])
+        }
+    elif loss_func is cone_loss_hyperparam:
+        printlc(f"==> using cone loss function with p = {args.p} and q = {args.q}", bcolors.OKBLUE)
+        # TODO: possibly make this loguniform
+        base_config |= {
+            "q": hp.uniform("q", args.q[0], args.q[1]),
+            "p": hp.uniform("p", args.p[0], args.p[1])
         }
     
     return base_config
@@ -154,8 +174,9 @@ def get_non_tune_base_config(args):
     base_config["d"] = args.dims[0]
     base_config["batch_size"] = args.batch_size[0]
     base_config["prox_mult"] = args.prox_mult[0]
-    base_config["p"] = 0 # TODO: DONT HARD CODE
-    base_config["q"] = 0.68
+    base_config["p"] = args.p[0]
+    base_config["q"] = args.q[0]
+    base_config["train_layers"] = args.train_layers
 
     return base_config
 
@@ -261,7 +282,8 @@ def pretrained_fewshot(args):
     if args.tuning:
         start_ray_experiment(tuner)
     else:
-        setup_few_shot_pretrained(get_non_tune_base_config(args) | few_shot_config | pretrained_config, train_data=train_data_ptr,
+        non_tune_config = get_non_tune_base_config(args) | few_shot_config | pretrained_config
+        setup_few_shot_pretrained(non_tune_config, train_data=train_data_ptr,
                          few_shot_data=val_data_ptr, args=args, device=device, ray_tune=args.tuning)
 
 def custom_net_classification(args):
@@ -279,7 +301,7 @@ def custom_net_classification(args):
     space = base_config | custom_net_config
     
     setup_func = partial(setup_classification_custom_model, 
-                         train_data_ptr=train_data_ptr,
+                         training_data_ptr=train_data_ptr,
                          val_data_ptr=val_data_ptr, device=device, args=args, ray_tune=args.tuning)
     
     tuner = create_tuner(args, space, setup_func)
@@ -307,7 +329,7 @@ def pretrained_emc_classification(args):
     
     space = base_config | pretrained_config
         
-    setup_func = partial(setup_emc_classification_pretrained, train_data_ptr=train_data_ptr, 
+    setup_func = partial(setup_emc_classification_pretrained, training_data_ptr=train_data_ptr, 
                          val_data_ptr=val_data_ptr, device=device, args=args, ray_tune=args.tuning)
 
     tuner = create_tuner(args, space, setup_func)
@@ -376,7 +398,8 @@ def run_main(args):
         logging.basicConfig(level=numeric_level)
         print('Setting log level to: ', args.log_level)
 
-    print(args.dataset)
+    args_pretty_print(args)
+    # print(args.dataset)
 
     if args.few_shot:
         if args.pretrained:
