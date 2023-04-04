@@ -91,6 +91,7 @@ argparser.add_argument('--q', dest='q', nargs="+", type=gtzero_float, default=[0
 argparser.add_argument('-pt', dest="pretrained", action='store_true', 
                        help="If training should run a pretrained model")
 argparser.add_argument('--model', dest='model', type=str, help='Model name to run for pretrained')
+argparser.add_argument('--train-layers', dest='train_layers', type=gezero_int, help='Number of layers of the pre-trained to train')
 
 # Few-shot
 argparser.add_argument('--shots', dest="shots", type=gtzero_int, default=5, help="Shots in few-shot learning")
@@ -174,6 +175,7 @@ def get_non_tune_base_config(args):
     base_config["prox_mult"] = args.prox_mult[0]
     base_config["p"] = args.p[0]
     base_config["q"] = args.q[0]
+    base_config["train_layers"] = args.train_layers
 
     return base_config
 
