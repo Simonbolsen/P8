@@ -45,6 +45,7 @@ def load_pretrained(model_name, num_classes, embedding_dim_count, image_size, im
     #     print (param.data)
 
     if split_name[0] == "resnet":
+        #model = torch.hub.load('pytorch/vision:v0.10.0', 'resnet18', pretrained=True)
         model.conv1 = nn.Conv2d(img_channels, 64, kernel_size=7, stride=2, padding=3, bias=False)
 
         num_ftrs = model.fc.in_features
