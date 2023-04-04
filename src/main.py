@@ -152,12 +152,12 @@ def get_base_config(args):
     if not args.tuning:
         return base_config
 
-    if loss_func == dist_and_proximity_loss:
+    if loss_func is dist_and_proximity_loss:
         printlc(f"==> using class-push loss function... with prox_mult: {args.prox_mult}", bcolors.OKCYAN)
         base_config |= {
             "prox_mult" : hp.uniformint("prox_mult", args.prox_mult[0], args.prox_mult[1])
         }
-    elif loss_func == cone_loss_hyperparam:
+    elif loss_func is cone_loss_hyperparam:
         printlc(f"==> using cone loss function with p = {args.p} and q = {args.q}", bcolors.OKBLUE)
         # TODO: possibly make this loguniform
         base_config |= {
@@ -281,7 +281,8 @@ def pretrained_fewshot(args):
     if args.tuning:
         start_ray_experiment(tuner)
     else:
-        setup_few_shot_pretrained(get_non_tune_base_config(args) | few_shot_config | pretrained_config, train_data=train_data_ptr,
+        non_tune_config = get_non_tune_base_config(args) | few_shot_config | pretrained_config
+        setup_few_shot_pretrained(non_tune_config, train_data=train_data_ptr,
                          few_shot_data=val_data_ptr, args=args, device=device, ray_tune=args.tuning)
 
 def custom_net_classification(args):
@@ -299,7 +300,7 @@ def custom_net_classification(args):
     space = base_config | custom_net_config
     
     setup_func = partial(setup_classification_custom_model, 
-                         train_data_ptr=train_data_ptr,
+                         training_data_ptr=train_data_ptr,
                          val_data_ptr=val_data_ptr, device=device, args=args, ray_tune=args.tuning)
     
     tuner = create_tuner(args, space, setup_func)
@@ -315,7 +316,7 @@ def custom_net_classification(args):
 
 def pretrained_classification(args):
     device = determine_device(1)
-    train_data, val_data  = get_data(args) # TODO: THIS MAYBE NEEDS TO BE FIXED???
+    train_data, val_data, _  = get_data(args) # TODO: THIS MAYBE NEEDS TO BE FIXED???
     train_data_ptr = ray.put(train_data)
     val_data_ptr = ray.put(val_data)
 
@@ -327,7 +328,7 @@ def pretrained_classification(args):
     
     space = base_config | pretrained_config
         
-    setup_func = partial(setup_classification_pretrained, train_data_ptr=train_data_ptr, 
+    setup_func = partial(setup_classification_pretrained, training_data_ptr=train_data_ptr, 
                          val_data_ptr=val_data_ptr, device=device, args=args, ray_tune=args.tuning)
 
     tuner = create_tuner(args, space, setup_func)
@@ -335,7 +336,8 @@ def pretrained_classification(args):
     if args.tuning:
         start_ray_experiment(tuner)
     else:
-        setup_classification_pretrained(get_non_tune_base_config(args) | pretrained_config, training_data_ptr=train_data_ptr,
+        non_tune_config = get_non_tune_base_config(args) | pretrained_config
+        setup_classification_pretrained(non_tune_config, training_data_ptr=train_data_ptr,
                                         val_data_ptr=val_data_ptr, device=device, args=args, ray_tune=args.tuning)
 
 def start_ray_experiment(tuner):

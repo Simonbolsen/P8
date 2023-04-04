@@ -10,7 +10,7 @@ import matplotlib.cm as cm
 import math
 import embedding_visualization as ev
 
-data = ev.read_json_file(os.path.dirname(__file__) + "/../../embeddingData/few_shot_test_data.json")
+data = ev.read_json_file(os.path.dirname(__file__) + "/../../embeddingData/json_data.json") #few_shot_test_data
 def min_pair(iterable):
     m = float("inf")
     k = "ERROR"
@@ -143,12 +143,12 @@ def deep_filter(l, lvls, func, start_value):
 
 def plot_distance_distribution():
     train_embeddings = data["train_embeddings"]
-    vq_embeddings  = data["val_query_embeddings"]
+    vq_embeddings  = data["test_embeddings"] #data["val_query_embeddings"]
 
     train_labels = data["train_labels"]
-    vq_labels = data["val_query_labels"]
+    vq_labels = data["test_labels"]#data["val_query_labels"]
 
-    class_embeddings = get_full_class_list()
+    class_embeddings = data["class_embeddings"]#get_full_class_list()
 
     test_dists = get_dists_by_label(vq_embeddings, vq_labels, class_embeddings)
     train_dists = get_dists_by_label(train_embeddings, train_labels, class_embeddings)
@@ -159,17 +159,31 @@ def plot_distance_distribution():
     maximum = deep_filter(all_dists, 2, max, float("-inf"))
     minimum = deep_filter(all_dists, 2, min, float("inf"))
 
+    dim = 3 #data["config"]["d"]
+    bucket_dists = [((i + 1) * (maximum - minimum) / (num_buckets) + minimum) for i in range(num_buckets)]
     buckets = []
-    for dists in all_dists:
-        buckets.append(ev.get_buckets(dists, maximum, minimum, num_buckets))
-    
 
-    #plot.plot_line_2d([(i * (maximum - minimum) / (num_buckets) + minimum) for i in range(num_buckets)], buckets, 
-    #                  [f"Class {i}" + (f" is val" if i == 0 or i == 6 else "") for i in range(10)], lambda x:x)
+    sphere_bucket = []
+    inner_shpere = ev.hyper_sphere_volume(np.exp(minimum), dim)
+    for dist in bucket_dists:
+        outer_sphere = ev.hyper_sphere_volume(np.exp(dist), dim)
+        diff = (outer_sphere - inner_shpere)
+        diff = diff if diff < 0.14 else 0.14
+        sphere_bucket.append(diff)
+        inner_shpere = outer_sphere
+
+    for dists in all_dists:
+        bucket = ev.get_buckets(dists, maximum, minimum, num_buckets)
+        buckets.append(bucket)
+    
+    buckets.append(sphere_bucket)
+
+    plot.plot_line_2d(bucket_dists, buckets, 
+                      [f"Class {i}" + (f" is val" if i == 0 or i == 6 else "") for i in range(10)] + [f"{dim} Dim Sphere"], 
+                      lambda x:x)
 
     COLOR = plot.get_colors(10)
     series = [{"marker": ".", "color": COLOR[i], "label": f"{i}", "points":b} for i, b in enumerate(buckets)]
-
 
 
 if __name__ == '__main__':
