@@ -78,7 +78,12 @@ def load_pretrained(model_name, num_classes, embedding_dim_count, image_size, im
         input_size = 224
     
     elif model_name == "densenet":
-        "Nicht implementiert"
+        num_ftrs = model.classifier.in_features
+        model.classifier = nn.Linear(num_ftrs, embedding_dim_count)
+        model.embeddings = nn.Embedding(num_classes, embedding_dim_count)
+
+
+        input_size = 224
 
     return model, input_size
 
