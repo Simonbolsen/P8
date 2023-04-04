@@ -143,7 +143,7 @@ def get_base_config(args):
         "batch_size": hp.choice("batch_size", args.batch_size),
         "d" : hp.uniformint("d", args.dims[0], args.dims[1]),
         "loss_func" : args.loss_func,
-        "augment_image": torch_augment_image,
+        # "augment_image": torch_augment_image,
         "train_layers": hp.uniformint("train_layers", 0, 20)
     }
     
