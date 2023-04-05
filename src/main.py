@@ -58,7 +58,7 @@ datasets = {"mnist": 0,
 argparser = argparse.ArgumentParser()
 argparser.add_argument('--dataset', dest="dataset", type=str, default="mnist", choices=datasets.keys(),
                         help="Determines the dataset on which training occurs. Choose between: ".format(datasets.keys()))
-
+# Transformations to apply to the training and test data respectively
 argparser.add_argument('--train_transforms', dest="train_transforms", type=str, default="toTensor", choices=transforms_dict.keys(),
                         help="Determines the transforms applied to the training data. Choose between: ".format(transforms_dict.keys()))
 argparser.add_argument('--test_transforms', dest="test_transforms", type=str, default="toTensor", choices=transforms_dict.keys(),
