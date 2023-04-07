@@ -29,17 +29,23 @@
             "console": "integratedTerminal",
             "justMyCode": true,
             "args": [
-                "--dataset", "mnist",
+                "--dataset", "cub200",
                 "--datadir", "./data",
-                "--epochs", "20", "100",
-                "--classes", "10",
+                "--epochs", "30",
                 "--batch","100",
-                "--dims","15", "400",
-                "--lr","0.0004", "0.004",
-                "--channels","32", "32", "64", "128", "256",
-                "--layers","5",
-                "-t",
-                "--gpu", "1"
+                "--lr","0.004", "0.04",
+                "--train-layers","1","10",
+                "-pure", 
+                "-pt",
+                "--model", "resnet18",
+                "--gpu", "0.5",
+                "--cpu", "6",
+                "--loss-func", "cross_entropy",
+                "--exp-name", "cl_pure_res_small_cub_200",
+                "--train_transforms", "resnet",
+                "--test_transforms", "resnet",
+                "",
+                "--samples", "200"
             ]
         },
         {
