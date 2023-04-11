@@ -42,7 +42,8 @@ def finetune_pretrained_pure(config, training_data_ptr, val_data_ptr, device, ar
     num_of_classes, image_channels, image_size = get_loader_info(train_loader)
 
     model, _ = load_resnet_pure(config["model_name"], num_of_classes, image_size, 
-                                image_channels, device, train_layers=config["train_layers"])
+                                image_channels, device, feature_extract=config["feature_extract"], 
+                                train_layers=config["train_layers"])
 
     model.to(device)
     emc_classification_setup(config, model, train_loader, val_loader, loss_func, device, ray_tune)
@@ -187,7 +188,7 @@ def setup_pure_classification_pretrained(config, training_data_ptr, val_data_ptr
     num_of_classes, image_channels, image_size = get_loader_info(train_loader)
 
     model, _ = load_resnet_pure(config["model_name"], num_of_classes, image_size, 
-                            image_channels, device, train_layers=config["train_layers"])
+                            image_channels, device, feature_extract=config["feature_extract"], train_layers=config["train_layers"])
     model.to(device)
     pure_classification_setup(config, model, train_loader, val_loader, loss_func, device, ray_tune)
 

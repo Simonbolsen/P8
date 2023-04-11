@@ -11,8 +11,9 @@ import time
 import os
 import copy
 import re
+import logging
 
-def load_resnet_pure(model_name, num_classes, image_size, img_channels, device, feature_extract=False, train_layers=-1):
+def load_resnet_pure(model_name, num_classes, image_size, img_channels, device, feature_extract, train_layers):
     model = models.get_model(model_name)
     model.num_of_classes = num_classes
     input_size = 0
@@ -34,7 +35,7 @@ def load_resnet_pure(model_name, num_classes, image_size, img_channels, device, 
 
     return model, input_size
 
-def load_pretrained(model_name, num_classes, embedding_dim_count, image_size, img_channels, device, feature_extract=False, train_layers=-1):
+def load_pretrained(model_name, num_classes, embedding_dim_count, image_size, img_channels, device, feature_extract, train_layers):
     """
     Fine-tune a pretrained model
     :param model_name: name of the pretrained model requested
@@ -111,17 +112,19 @@ def load_pretrained(model_name, num_classes, embedding_dim_count, image_size, im
     return model, input_size
 
 
-def set_parameter_requires_grad(model, feature_extracting, train_layers=-1):
+def set_parameter_requires_grad(model, feature_extracting, train_layers):
     for param in model.parameters():
             param.requires_grad = False
 
     if not feature_extracting:
+        logging.debug("not using feature extraction")
         for param in model.parameters():
             param.requires_grad = True
     else:
+        logging.debug("using train layers %s", train_layers)
         if train_layers > 0:
-            model_layers = [layer for layer in model.children if isinstance(layer, nn.Sequential) or isinstance(layer, nn.Linear) or isinstance(layer, nn.Conv2d)]
-            for idx in range(max(train_layers, len(model_layers))):
+            model_layers = [layer for layer in model.children() if isinstance(layer, nn.Sequential) or isinstance(layer, nn.Linear) or isinstance(layer, nn.Conv2d)]
+            for idx in range(min(train_layers, len(model_layers))):
                 for param in model_layers[idx].parameters():
                     param.requires_grad = True
 

@@ -45,7 +45,7 @@ def setup_few_shot_pretrained(config, train_data, few_shot_data, device, args, r
     num_of_classes = len(train_loader.unique_targets)
     model, _ = load_pretrained(config["model_name"], num_of_classes, 
                             config["d"], train_loader.image_size, 
-                            train_loader.channels, device, train_layers=config["train_layers"])
+                            train_loader.channels, device, feature_extract=config["feature_extract"], train_layers=config["train_layers"])
     model.to(device)
    
     train_few_shot(config, train_loader, fs_sup_loaders, fs_query_loader, 
