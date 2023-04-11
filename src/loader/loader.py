@@ -285,10 +285,10 @@ def get_cub200(config):
     remaining_idx = [i for i in idx if i not in train_split_idx]
     val_split_idx = random.sample(remaining_idx, k=val_split_size)
 
-    train_split = [np.asarray(training_set[i].cpu().detach().numpy(), dtype=np.uint8) for i in train_split_idx]
-    train_targets = [int(training_set.targets[i].item()) for i in train_split_idx]
-    val_split = [np.asarray(training_set[i].cpu().detach().numpy(), dtype=np.uint8) for i in val_split_idx]
-    val_targets = [int(training_set.targets[i].item()) for i in val_split_idx]
+    train_split = [np.asarray(training_set[i][0].cpu().detach().numpy(), dtype=np.uint8) for i in train_split_idx]
+    train_targets = [int(training_set[i][1].item()) for i in train_split_idx]
+    val_split = [np.asarray(training_set[i][0].cpu().detach().numpy(), dtype=np.uint8) for i in val_split_idx]
+    val_targets = [int(training_set[i][1].item()) for i in val_split_idx]
 
     train = CustomCifarDataset(train_split, train_targets)
     val = CustomCifarDataset(val_split, val_targets)

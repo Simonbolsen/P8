@@ -51,6 +51,7 @@ def train_pure_pretrained(model, train_loader, optimiser, loss_func, num_epochs,
     total_step = len(train_loader)
 
     for i, (images, labels) in enumerate(train_loader):
+        images = images.view(-1, train_loader.channels, train_loader.image_size, train_loader.image_size)
         images = images.to(device)
         labels = labels.type(torch.LongTensor).to(device)
 
