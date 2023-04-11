@@ -10,6 +10,7 @@ import torch
 from torchvision import datasets, transforms
 import ray
 from ray import air, tune
+from ray.tune.stopper import TrialPlateauStopper
 from ray.tune.schedulers import AsyncHyperBandScheduler
 from ray.tune.search.hyperopt import HyperOptSearch
 from hyperopt import hp
@@ -205,10 +206,13 @@ def get_run_config(args, metric_columens = ["accuracy", "training_iteration"]):
         metric_columns=metric_columens
     )
     
+    stopper = TrialPlateauStopper(metric="accuracy", grace_period=args.grace, mode="max", num_results=6, std=0.005)
+    
     return air.RunConfig(
             name=args.exp_name,
             progress_reporter=reporter,
-            verbose=args.verbosity
+            verbose=args.verbosity,
+            stop=stopper
     )
 
 
