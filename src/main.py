@@ -108,7 +108,7 @@ argparser.add_argument('--dims', dest="dims", nargs="+", type=gtzero_int, defaul
 # Raytune arguments
 argparser.add_argument('--gpu', dest="gpu", type=gtzero_float, default=0.25, help="GPU resources")
 argparser.add_argument('--cpu', dest="cpu", type=gtzero_float, default=3, help="CPU resources")
-argparser.add_argument('--grace', dest="grace", type=gtzero_int, default=4, help="Grace period before early stopping")
+argparser.add_argument('--grace', dest="grace", type=gtzero_int, default=10, help="Grace period before early stopping")
 argparser.add_argument('-t', dest="tuning", action="store_true", help="Tuning flag")
 argparser.add_argument('--samples', dest='samples', type=gtzero_int, default=1, help='Samples to run for experiment')
 argparser.add_argument('--exp-name', dest='exp_name', type=str, help='Name for raytune experiement')
