@@ -19,7 +19,7 @@ class Cub200(Dataset):
     
     checksum = "97eceeb196236b17998738112f37df78"
 
-    def __init__(self, root, download=False, train=True, transform=None):
+    def __init__(self, root, download=False, train=True, transform=ToTensor()):
         if root.startswith("'") and root.endswith("'"):
             root = root[1:-1]
         self.root = root
@@ -86,7 +86,7 @@ class Cub200(Dataset):
         if self.transform is not None:
             img = self.transform(img)
 
-        return img
+        return img.permute((1, 2, 0)), self.targets[index] - 1
 
     def __len__(self):
         return len(self.data)

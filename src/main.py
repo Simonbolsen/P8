@@ -170,6 +170,20 @@ def get_base_config(args):
     
     return base_config
     
+def get_pure_base_config(args):
+    base_config = {
+        "lr": hp.loguniform("lr", np.log(args.lr[0]), np.log(args.lr[1])),
+        "max_epochs": args.epochs,
+        "batch_size": hp.choice("batch_size", args.batch_size),
+        "loss_func" : args.loss_func,
+        # "augment_image": torch_augment_image,
+        "train_layers": hp.uniformint("train_layers", args.train_layers[0], args.train_layers[1])
+    }
+    
+    loss_func = pure_loss_functions[args.loss_func]
+
+    return base_config
+
 def get_non_tune_base_config(args):
     base_config = get_base_config(args)
     base_config["lr"] = args.lr[0]
@@ -352,7 +366,7 @@ def pretrained_pure_classification(args):
     print("Training data size: ", len(train_data))
     print("Validation data size: ", len(val_data))
     
-    base_config = get_base_config(args)
+    base_config = get_pure_base_config(args)
     pretrained_config = get_pretrained_config(args)
     
     space = base_config | pretrained_config
