@@ -96,6 +96,7 @@ argparser.add_argument('-pt', dest="pretrained", action='store_true',
 argparser.add_argument('--model', dest='model', type=str, help='Model name to run for pretrained')
 argparser.add_argument('-pure', dest="pure", action='store_true', help="Flag for using pure models as opposed to emc")
 argparser.add_argument('--train-layers', dest='train_layers', nargs='+', type=int, default=[-1, 0], help='Number of layers of the pre-trained to train')
+argparser.add_argument('-fe', dest='feature_extract', action='store_true', help="Flag for feature extraction")
 
 # Few-shot
 argparser.add_argument('--shots', dest="shots", type=gtzero_int, default=5, help="Shots in few-shot learning")
@@ -148,7 +149,7 @@ def get_base_config(args):
         "d" : hp.uniformint("d", args.dims[0], args.dims[1]),
         "loss_func" : args.loss_func,
         # "augment_image": torch_augment_image,
-        "train_layers": hp.uniformint("train_layers", args.train_layers[0], args.train_layers[1])
+        # "train_layers": hp.uniformint("train_layers", args.train_layers[0], args.train_layers[1])
     }
     
     loss_func = emc_loss_functions[args.loss_func] if args.loss_func in emc_loss_functions else pure_loss_functions[args.loss_func]
@@ -274,9 +275,22 @@ def custom_net_fewshot(args):
         os.exit(1)
 
 def get_pretrained_config(args):
-    return {
+    pretrained_config = {
         "model_name" : args.model
     }
+ 
+    if args.feature_extract:
+        pretrained_config |= {
+            "train_layers": hp.uniformint("train_layers", args.train_layers[0], args.train_layers[1]),
+            "feature_extract": True
+        }
+    else:
+        pretrained_config |= {
+            "train_layers": -1,
+            "feature_extract": False
+        }
+
+    return pretrained_config
 
 def pretrained_fewshot(args):
     print("Running pretrained few shot")
