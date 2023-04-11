@@ -53,13 +53,13 @@
                 "--datadir", "'./data'",
                 "--epochs", "30",
                 "--batch","100",
-                "--lr","0.004", "0.04",
-                "--train-layers","1","10",
+                "--lr","0.00001", "0.001",
+                "--train-layers","0","10",
                 "-pure", 
                 "-pt",
                 "--model", "resnet18",
-                "--gpu", "0.5",
-                "--cpu", "6",
+                "--gpu", "0.33",
+                "--cpu", "5",
                 "--loss-func", "cross_entropy",
                 "--exp-name", "cl_pure_res_small_cifar_10",
                 "--train_transforms", "resnet",
@@ -87,13 +87,13 @@
                 "--datadir", "'./data'",
                 "--epochs", "30",
                 "--batch","100",
-                "--lr","0.004", "0.04",
-                "--train-layers","1","10",
+                "--lr","0.00001", "0.001",
+                "--train-layers","0","10",
                 "-pure", 
                 "-pt",
                 "--model", "resnet18",
-                "--gpu", "0.5",
-                "--cpu", "6",
+                "--gpu", "0.33",
+                "--cpu", "5",
                 "--loss-func", "cross_entropy",
                 "--exp-name", "cl_pure_res_small_cifar_100",
                 "--train_transforms", "resnet",
@@ -121,15 +121,150 @@
                 "--datadir", "'./data'",
                 "--epochs", "30",
                 "--batch","100",
-                "--lr","0.004", "0.04",
-                "--train-layers","1","10",
+                "--lr","0.00001", "0.001",
+                "--train-layers","0","10",
                 "-pure", 
                 "-pt",
                 "--model", "resnet18",
-                "--gpu", "0.5",
-                "--cpu", "6",
+                "--gpu", "0.33",
+                "--cpu", "5",
                 "--loss-func", "cross_entropy",
                 "--exp-name", "cl_pure_res_small_cub_200",
+                "--train_transforms", "resnet",
+                "--test_transforms", "resnet",
+                "-t",
+                "--samples", "200"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: CIFAR10 Pure ResNet Medium",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar10",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.00001", "0.001",
+                "--train-layers","0","25",
+                "-pure", 
+                "-pt",
+                "--model", "resnet50",
+                "--gpu", "0.33",
+                "--cpu", "5",
+                "--loss-func", "cross_entropy",
+                "--exp-name", "cl_pure_res_med_cifar_10",
+                "--train_transforms", "resnet",
+                "--test_transforms", "resnet",
+                "-t",
+                "--samples", "200"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: CIFAR100 Pure ResNet Medium",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar100",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.00001", "0.001",
+                "--train-layers","0","25",
+                "-pure", 
+                "-pt",
+                "--model", "resnet50",
+                "--gpu", "0.33",
+                "--cpu", "5",
+                "--loss-func", "cross_entropy",
+                "--exp-name", "cl_pure_res_med_cifar_100",
+                "--train_transforms", "resnet",
+                "--test_transforms", "resnet",
+                "-t",
+                "--samples", "200"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: CUB200 Pure ResNet Medium",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cub200",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.00001", "0.001",
+                "--train-layers","0","25",
+                "-pure", 
+                "-pt",
+                "--model", "resnet50",
+                "--gpu", "0.33",
+                "--cpu", "5",
+                "--loss-func", "cross_entropy",
+                "--exp-name", "cl_pure_res_med_cub_200",
+                "--train_transforms", "resnet",
+                "--test_transforms", "resnet",
+                "-t",
+                "--samples", "200"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },{
+            "label": "CL: CIFAR10 Pure ResNet Large",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar10",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.00001", "0.001",
+                "--train-layers","0","50",
+                "-pure", 
+                "-pt",
+                "--model", "resnet101",
+                "--gpu", "0.33",
+                "--cpu", "5",
+                "--loss-func", "cross_entropy",
+                "--exp-name", "cl_pure_res_large_cifar_10",
                 "--train_transforms", "resnet",
                 "--test_transforms", "resnet",
                 "-t",
@@ -160,8 +295,8 @@
                 "-pure", 
                 "-pt",
                 "--model", "resnet101",
-                "--gpu", "0.5",
-                "--cpu", "6",
+                "--gpu", "0.33",
+                "--cpu", "5",
                 "--loss-func", "cross_entropy",
                 "--exp-name", "cl_pure_res_large_cifar_100",
                 "--train_transforms", "resnet",
@@ -174,6 +309,40 @@
                 "panel": "new",
                 "focus": true
             }
-        }
+        },
+        {
+            "label": "CL: CUB200 Pure ResNet Large",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cub200",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.00001", "0.001",
+                "--train-layers","0","50",
+                "-pure", 
+                "-pt",
+                "--model", "resnet101",
+                "--gpu", "0.33",
+                "--cpu", "5",
+                "--loss-func", "cross_entropy",
+                "--exp-name", "cl_pure_res_large_cub_200",
+                "--train_transforms", "resnet",
+                "--test_transforms", "resnet",
+                "-t",
+                "--samples", "200"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
     ]
 }

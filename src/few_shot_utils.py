@@ -5,13 +5,12 @@ from loader.loader import get_data_loader, k_shot_loaders
 from training_utils import find_closest_embedding, train_emc
 from ray import tune
 import torch
-import os
 from nn_util import get_emc_loss_function
 from PTM.model_loader import load_pretrained
 from ray import tune
-import json
-import sys
-import logging 
+import logging
+import embedding_util as eu
+import json_util as ju
 
 def get_few_shot_loaders(config, train_data, few_shot_data):
     train_loader = get_data_loader(train_data, config["batch_size"])
@@ -77,11 +76,11 @@ def train_few_shot(config, train_loader, fs_sup_loaders, fs_query_load,
 
         if not ray_tune:
             # TODO: make this faster using previous calculated support_images
-            snapshot_embeddings.append(get_few_shot_embedding_result(train_loader, fs_sup_loaders, fs_query_load, model, config, last_acc, device))
+            snapshot_embeddings.append(eu.get_few_shot_embedding_result(train_loader, fs_sup_loaders, fs_query_load, model, config, last_acc, device))
     
     if not ray_tune:
         print("==> saving embeddings..")
-        save_to_json('embeddingData', 'few_shot_test_data.json', snapshot_embeddings)
+        ju.save_to_json('embeddingData', 'few_shot_test_data.json', snapshot_embeddings)
 
 def extract_support_images(fs_sup_loaders):
     batches = []
@@ -108,7 +107,7 @@ def few_shot_eval(model, support_loaders, query_loader, support_images, device):
         total = [0] * num_of_new_classes
 
         logging.debug("calculating new embeddings...")
-        new_class_embeddings = get_few_shot_embeddings(support_images, model, device)
+        new_class_embeddings = eu.get_few_shot_embeddings(support_images, model, device)
         
         # average embeddings for class
         new_class_embeddings = [sum(item) / len(item) for item in new_class_embeddings]
@@ -142,91 +141,7 @@ def find_few_shot_targets(support_loaders):
         few_shot_targets.extend(loader.unique_targets)
     return few_shot_targets
 
-def get_few_shot_embeddings(support_images, model, device):
-    new_class_embeddings = []
-    
-    image_size = support_images[0].size()[2]
-    channels = support_images[0].size()[1]
-    
-    logging.debug("image_size: ", image_size)
-    logging.debug("channels ", channels)
-        
-    for support_batch in support_images:
-        images = support_batch.view(-1, channels, image_size, image_size).float().to(device)
-        few_shot_output = model(images)
 
-        new_class_embeddings.append(few_shot_output[:-model.num_of_classes])
-    
-    return new_class_embeddings
-
-def find_closest_embedding(query, class_embeddings):
-    smallest_sqr_dist = sys.maxsize
-    closest_target_index = 0
-    for i, embedding in enumerate(class_embeddings):
-        squared_dist = (embedding - query).pow(2).sum(0)
-        if squared_dist < smallest_sqr_dist:
-            smallest_sqr_dist = squared_dist
-            closest_target_index = i
-    
-    return closest_target_index
-
-
-def get_few_shot_embedding_result(train_loader, support_loaders, query_loader, model, config, accuracy, device):
-    print("saving few shot embedding results")
-    train_embeddings = []
-    val_support_embeddings = []
-    val_query_embeddings = []
-
-    model.eval()
-
-    train_labels = []
-    val_support_labels = []
-    val_query_labels = []
-
-    class_embeds = []
-    first_it = True
-
-    for images, labels in train_loader: 
-        if (first_it):
-            first_it = False
-            class_embeds = model(images.to(device)).tolist()[len(-train_loader.unique_targets):]
-        train_embeddings.extend(model(images.to(device)).tolist())
-        train_labels.extend(labels.tolist())
-    
-    for support_loader in support_loaders:
-        for images, labels in support_loader: 
-            val_support_embeddings.extend(model(images.to(device)).tolist())
-            val_support_labels.extend(labels.tolist())
-
-    for images, labels in query_loader:
-        val_query_embeddings.extend(model(images.to(device)).tolist())
-        val_query_labels.extend(labels.tolist())
-
-    new_class_embeds = []
-    extracted_images = extract_support_images(support_loaders)
-    few_shot_embeds = get_few_shot_embeddings(extracted_images, model, device)
-    few_shot_embeds = [sum(item) / len(item) for item in few_shot_embeds]
-    for few_shot_embed in few_shot_embeds:
-        new_class_embeds.append(few_shot_embed.tolist())
-
-    embeddings = {"train_embeddings": train_embeddings, "train_labels": train_labels, 
-                  "val_support_embeddings": val_support_embeddings, "val_support_labels": val_support_labels,
-                  "val_query_embeddings": val_query_embeddings, "val_query_labels": val_query_labels,
-                  "new_class_embeddings": new_class_embeds,
-                  "class_embeddings": class_embeds, "accuracy" : accuracy, "config" : config}
-
-    return embeddings
-
-def save_to_json(folder, file_name, object):
-    folder_path = os.path.join(os.path.realpath(__file__), '..', folder)
-
-    if not os.path.exists(folder_path):
-        print("==> folder to save embedding does not exist... creating folder...")
-        print("   ==> folder path: ", folder_path)
-        os.mkdir(folder_path)
-    
-    with open(os.path.join(folder_path, file_name), 'w+') as outfile:
-        json.dump(json.dumps(object), outfile)
 
 """ {
     "train_embeddings", "train_labels", val_support_embeddings, val_support_labels, 

@@ -9,6 +9,8 @@ import embedding_model as emb_model
 from ray import tune
 from PTM.model_loader import load_pretrained, load_resnet_pure
 from nn_util import get_emc_loss_function, get_pure_loss_function
+import embedding_util as eu
+import json_util as ju
 
 def setup_and_finetune(config, train_data, test_data, device, ray_tune = True):
     train_loader = get_data_loader(train_data, batch_size=config["batch_size"])
@@ -216,6 +218,10 @@ def pure_classification_setup(config, model, train_loader, val_loader, loss_func
     optimiser = optim.Adam(model.parameters(), lr=config["lr"])
     max_epochs = config["max_epochs"]
 
+    snapshots = []
+    if not ray_tune:
+        print("Save embeddings: True")
+
     print("start training classification...")
     for epoch in range(max_epochs):
         train_pure_pretrained(model, train_loader, optimiser, loss_func, max_epochs, current_epoch=epoch, device=device)
@@ -226,6 +232,11 @@ def pure_classification_setup(config, model, train_loader, val_loader, loss_func
             tune.report(accuracy=accuracy)
         else: 
             print(f"accuracy: {accuracy}")
+            snapshots.append(eu.get_pure_classification_embedding_result(train_loader, val_loader, model, config, accuracy, device))
+
+    if not ray_tune:
+        print("==> saving embeddings..")
+        ju.save_to_json('embeddingData', 'classification_test_data.json', snapshots)
 
 
 classifiers = {
