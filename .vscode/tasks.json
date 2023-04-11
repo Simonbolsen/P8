@@ -140,6 +140,40 @@
                 "panel": "new",
                 "focus": true
             }
+        },
+        {
+            "label": "CL: CIFAR100 Pure ResNet Large",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar100",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.00001", "0.001",
+                "--train-layers","0","50",
+                "-pure", 
+                "-pt",
+                "--model", "resnet101",
+                "--gpu", "0.5",
+                "--cpu", "6",
+                "--loss-func", "cross_entropy",
+                "--exp-name", "cl_pure_res_large_cifar_100",
+                "--train_transforms", "resnet",
+                "--test_transforms", "resnet",
+                "-t",
+                "--samples", "200"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
         }
     ]
 }
