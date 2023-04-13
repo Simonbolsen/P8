@@ -130,6 +130,6 @@ dmypy.json
 
 data
 .idea/
-task_ignored.json
+tasks_ignored.json
 EmbeddingData
 embeddingData
