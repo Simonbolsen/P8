@@ -133,3 +133,5 @@ data
 tasks_ignored.json
 EmbeddingData
 embeddingData
+
+*.secret
