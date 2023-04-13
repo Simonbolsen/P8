@@ -21,6 +21,7 @@ from bcolors import bcolors, printlc
 import logging
 from logging_utils import setup_logger
 from tabulate import tabulate
+from discord.status_setter import send_discord_message
 
 def gezero_int(x):
     x = int()
@@ -452,5 +453,8 @@ def run_main(args):
 
 if __name__ == '__main__':
     args = argparser.parse_args()
+    send_discord_message(token_path="discord_token.secret", channel_id=1095627677848834128, message="Started")
     run_main(args)
+    send_discord_message(token_path="discord_token.secret", channel_id=1095627677848834128, message="Done")
+
    
