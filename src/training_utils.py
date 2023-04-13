@@ -10,7 +10,6 @@ from ray import tune
 from PTM.model_loader import load_pretrained, load_resnet_pure
 from nn_util import get_emc_loss_function, get_pure_loss_function
 import embedding_util as eu
-import json_util as ju
 
 def setup_and_finetune(config, train_data, test_data, device, ray_tune = True):
     train_loader = get_data_loader(train_data, batch_size=config["batch_size"])
@@ -231,10 +230,9 @@ def pure_classification_setup(config, model, train_loader, val_loader, loss_func
             tune.report(accuracy=accuracy)
         else: 
             print(f"accuracy: {accuracy}")
-            results = eu.get_pure_classification_embedding_result(train_loader, val_loader, model, config, accuracy, device)
+            eu.save_pure_classification_embedding_result(train_loader, val_loader, model, config, accuracy, epoch, device)
 
-            print(f"Saving results: {results['train_embeddings'].shape}")
-            ju.save_to_json('embeddingData', f'classification_test_data_{epoch}.json', results)
+
 
 
 classifiers = {
