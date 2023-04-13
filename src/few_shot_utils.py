@@ -10,7 +10,7 @@ from PTM.model_loader import load_pretrained
 from ray import tune
 import logging
 import embedding_util as eu
-import json_util as ju
+import file_util as fu
 
 def get_few_shot_loaders(config, train_data, few_shot_data):
     train_loader = get_data_loader(train_data, config["batch_size"])
@@ -80,7 +80,7 @@ def train_few_shot(config, train_loader, fs_sup_loaders, fs_query_load,
     
     if not ray_tune:
         print("==> saving embeddings..")
-        ju.save_to_json('embeddingData', 'few_shot_test_data.json', snapshot_embeddings)
+        fu.save_to_json('embeddingData', 'few_shot_test_data.json', snapshot_embeddings)
 
 def extract_support_images(fs_sup_loaders):
     batches = []

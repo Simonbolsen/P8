@@ -1,5 +1,7 @@
 import logging
 import sys
+import file_util as fu
+import torch
 
 def extract_support_images(fs_sup_loaders):
     batches = []
@@ -85,41 +87,31 @@ def get_few_shot_embedding_result(train_loader, support_loaders, query_loader, m
 
     return embeddings
 
-def get_pure_classification_embedding_result(train_loader, val_loader, model, config, accuracy, device):
+def save_pure_classification_embedding_result(train_loader, val_loader, model, config, accuracy, epoch, device):
     print("Extracting embedding results")
-    train_embeddings = []
-    val_embeddings = []
 
     model.eval()
 
-    train_labels = []
-    val_labels = []
-
-    class_embeds = []
 
     embeddings_dict = {}
     def hook(model, input, output):
-        embeddings_dict["e"] = output.detach().tolist()
+        embeddings_dict["e"] = torch.squeeze(output.detach()).tolist()
     model.avgpool.register_forward_hook(hook)
 
-    print("Train")
+    save_pure_classification_embeddings("train", train_loader, model, config, accuracy, epoch, embeddings_dict, device)
+    save_pure_classification_embeddings("val", val_loader, model, config, accuracy, epoch, embeddings_dict, device)    
 
-    for images, labels in train_loader:
-        model(images.to(device))
-        train_embeddings.extend(embeddings_dict["e"])
-        train_labels.extend(labels.tolist())
-        embeddings_dict = {}
+def save_pure_classification_embeddings(prefix, loader, model, config, accuracy, epoch, embeddings_dict, device):
+    embeddings = []
+    all_labels = []
+    predictions = []
+    for images, labels in loader:
+        predictions.extend(model(images.to(device)).tolist())
+        embeddings.extend(embeddings_dict["e"])
+        all_labels.extend(labels.tolist())
 
-    print("Val")
-
-    for images, labels in val_loader:
-        model(images.to(device))
-        val_embeddings.extend(embeddings_dict["e"])
-        val_labels.extend(labels.tolist())
-        embeddings_dict = {}
-
-    results = {"train_embeddings": train_embeddings, "train_labels": train_labels, 
-                  "val_embeddings": val_embeddings, "val_labels": val_labels,
-                  "class_embeddings": class_embeds, "accuracy" : accuracy, "config" : config}
-
-    return results
+    results = {prefix + "_embeddings": embeddings, prefix + "_labels": all_labels,
+                  "accuracy" : accuracy, "config" : config}
+    
+    print(f"Saving {prefix}: {len(embeddings)} {len(embeddings[0])}")
+    fu.save_to_pickle('embeddingData', f'classification_data_{prefix}_{epoch}.p', results)
