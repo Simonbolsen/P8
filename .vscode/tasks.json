@@ -87,7 +87,7 @@
                 "--datadir", "'./data'",
                 "--epochs", "30",
                 "--batch","100",
-                "--lr","0.00001", "0.001",
+                "--lr","0.0001", "0.001",
                 "--train-layers","0","10",
                 "-pure", 
                 "-pt",
@@ -99,7 +99,8 @@
                 "--train_transforms", "resnet",
                 "--test_transforms", "resnet",
                 "-t",
-                "--samples", "200"
+                "--samples", "100",
+                "-fe"
             ],
             "presentation": {
                 "reveal": "always",
