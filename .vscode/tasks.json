@@ -302,7 +302,8 @@
                 "--train_transforms", "resnet",
                 "--test_transforms", "resnet",
                 "-t",
-                "--samples", "200"
+                "--samples", "200",
+                "-fe"
             ],
             "presentation": {
                 "reveal": "always",
