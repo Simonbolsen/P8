@@ -455,6 +455,6 @@ if __name__ == '__main__':
     args = argparser.parse_args()
     send_discord_message(token_path="discord_token.secret", channel_id=1095627677848834128, message="Started")
     run_main(args)
-    send_discord_message(token_path="discord_token.secret", channel_id=1095627677848834128, message="Done")
+    send_discord_message(token_path="discord_token.secret", channel_id=1095627677848834128, message="Done @everyone")
 
    
