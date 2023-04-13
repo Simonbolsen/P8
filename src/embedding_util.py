@@ -86,7 +86,7 @@ def get_few_shot_embedding_result(train_loader, support_loaders, query_loader, m
     return embeddings
 
 def get_pure_classification_embedding_result(train_loader, val_loader, model, config, accuracy, device):
-    print("saving few shot embedding results")
+    print("Extracting embedding results")
     train_embeddings = []
     val_embeddings = []
 
@@ -99,14 +99,18 @@ def get_pure_classification_embedding_result(train_loader, val_loader, model, co
 
     embeddings_dict = {}
     def hook(model, input, output):
-        embeddings_dict["e"] = output.detach()
+        embeddings_dict["e"] = output.detach().tolist()
     model.avgpool.register_forward_hook(hook)
+
+    print("Train")
 
     for images, labels in train_loader:
         model(images.to(device))
         train_embeddings.extend(embeddings_dict["e"])
         train_labels.extend(labels.tolist())
         embeddings_dict = {}
+
+    print("Val")
 
     for images, labels in val_loader:
         model(images.to(device))

@@ -218,7 +218,6 @@ def pure_classification_setup(config, model, train_loader, val_loader, loss_func
     optimiser = optim.Adam(model.parameters(), lr=config["lr"])
     max_epochs = config["max_epochs"]
 
-    snapshots = []
     if not ray_tune:
         print("Save embeddings: True")
 
@@ -232,11 +231,10 @@ def pure_classification_setup(config, model, train_loader, val_loader, loss_func
             tune.report(accuracy=accuracy)
         else: 
             print(f"accuracy: {accuracy}")
-            snapshots.append(eu.get_pure_classification_embedding_result(train_loader, val_loader, model, config, accuracy, device))
+            results = eu.get_pure_classification_embedding_result(train_loader, val_loader, model, config, accuracy, device)
 
-    if not ray_tune:
-        print("==> saving embeddings..")
-        ju.save_to_json('embeddingData', 'classification_test_data.json', snapshots)
+            print(f"Saving results: {results['train_embeddings'].shape}")
+            ju.save_to_json('embeddingData', f'classification_test_data_{epoch}.json', results)
 
 
 classifiers = {
