@@ -87,7 +87,7 @@ class discord_status:
         # await self.channel.send("Done")
 
 
-def send_discord_message(token_path:str, channel_id:int, message:str) -> typing.Awaitable:
+def send_discord_message_async(token_path:str, channel_id:int, message:str) -> typing.Awaitable:
     token = None
     if exists(token_path):
         with open(token_path) as f:
@@ -102,7 +102,10 @@ def send_discord_message(token_path:str, channel_id:int, message:str) -> typing.
     async def on_ready():
         channel = bot.get_channel(channel_id)
         await channel.send(message)
-        await bot.close()
+        try:
+            await bot.close()
+        except asyncio.CancelledError:
+            pass
         future.set_result(None)
     
     bot.on_ready = on_ready
@@ -110,3 +113,22 @@ def send_discord_message(token_path:str, channel_id:int, message:str) -> typing.
     asyncio.run(bot.start(token))
 
     return future
+
+
+def send_discord_message(token_path:str, channel_id:int, message:str) -> None:
+    token = None
+    if exists(token_path):
+        with open(token_path) as f:
+            token = f.read()
+
+        intents = discord.Intents.default()
+        bot = discord.Client(intents=intents)
+        async def on_ready():
+            channel = bot.get_channel(channel_id)
+            await channel.send(message)
+            try:
+                await bot.close()
+            except asyncio.CancelledError:
+                pass
+        bot.on_ready = on_ready
+        bot.run(token)
