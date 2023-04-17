@@ -175,7 +175,8 @@ def setup_emc_classification_pretrained(config, training_data_ptr, val_data_ptr,
 
     model, _ = load_pretrained(config["model_name"], num_of_classes, 
                             config["d"], image_size, 
-                            image_channels, device, train_layers=config["train_layers"])
+                            image_channels, device, feature_extract=config["feature_extract"], 
+                            train_layers=config["train_layers"])
     model.to(device)
     emc_classification_setup(config, model, train_loader, val_loader, loss_func, device, ray_tune)
 
