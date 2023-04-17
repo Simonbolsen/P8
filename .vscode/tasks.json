@@ -347,7 +347,7 @@
             }
         },
         {
-            "label": "CL: CIFAR10 EMBED ResNet Small",
+            "label": "CL: CIFAR10 EMBED SIMPLE DIST ResNet Small",
             "command": "${command:python.interpreterPath}",
             "type": "shell",
             "group": {
@@ -367,7 +367,7 @@
                 "--gpu", "0.33",
                 "--cpu", "5",
                 "--loss-func", "simple-dist",
-                "--exp-name", "cl_embed_res_small_cifar_10",
+                "--exp-name", "cl_embed_simple_res_small_cifar_10",
                 "--train_transforms", "resnet",
                 "--test_transforms", "resnet",
                 "-t",
@@ -380,7 +380,7 @@
             }
         },        
         {
-            "label": "CL: CIFAR100 EMBED ResNet Small",
+            "label": "CL: CIFAR100 EMBED SIMPLE DIST ResNet Small",
             "command": "${command:python.interpreterPath}",
             "type": "shell",
             "group": {
@@ -400,7 +400,7 @@
                 "--gpu", "0.33",
                 "--cpu", "5",
                 "--loss-func", "simple-dist",
-                "--exp-name", "cl_embed_res_small_cifar_100",
+                "--exp-name", "cl_embed_simple_res_small_cifar_100",
                 "--train_transforms", "resnet",
                 "--test_transforms", "resnet",
                 "-t",
@@ -413,7 +413,7 @@
             }
         },
         {
-            "label": "CL: CUB200 EMBED ResNet Small",
+            "label": "CL: CUB200 EMBED SIMPLE DIST ResNet Small",
             "command": "${command:python.interpreterPath}",
             "type": "shell",
             "group": {
@@ -433,7 +433,7 @@
                 "--gpu", "0.33",
                 "--cpu", "5",
                 "--loss-func", "simple-dist",
-                "--exp-name", "cl_embed_res_small_cub_200",
+                "--exp-name", "cl_embed_simple_res_small_cub_200",
                 "--train_transforms", "resnet",
                 "--test_transforms", "resnet",
                 "-t",
@@ -446,7 +446,7 @@
             }
         },
         {
-            "label": "CL: CIFAR10 EMBED ResNet Medium",
+            "label": "CL: CIFAR10 EMBED SIMPLE DIST ResNet Medium",
             "command": "${command:python.interpreterPath}",
             "type": "shell",
             "group": {
@@ -466,7 +466,7 @@
                 "--gpu", "0.33",
                 "--cpu", "5",
                 "--loss-func", "simple-dist",
-                "--exp-name", "cl_embed_res_med_cifar_10",
+                "--exp-name", "cl_embed_simple_res_med_cifar_10",
                 "--train_transforms", "resnet",
                 "--test_transforms", "resnet",
                 "-t",
@@ -479,7 +479,7 @@
             }
         },
         {
-            "label": "CL: CIFAR100 EMBED ResNet Medium",
+            "label": "CL: CIFAR100 EMBED SIMPLE DIST ResNet Medium",
             "command": "${command:python.interpreterPath}",
             "type": "shell",
             "group": {
@@ -499,7 +499,7 @@
                 "--gpu", "0.33",
                 "--cpu", "5",
                 "--loss-func", "simple-dist",
-                "--exp-name", "cl_embed_res_med_cifar_100",
+                "--exp-name", "cl_embed_simple_res_med_cifar_100",
                 "--train_transforms", "resnet",
                 "--test_transforms", "resnet",
                 "-t",
@@ -512,7 +512,7 @@
             }
         },
         {
-            "label": "CL: CUB200 EMBED ResNet Medium",
+            "label": "CL: CUB200 EMBED SIMPLE DIST ResNet Medium",
             "command": "${command:python.interpreterPath}",
             "type": "shell",
             "group": {
@@ -532,7 +532,7 @@
                 "--gpu", "0.33",
                 "--cpu", "5",
                 "--loss-func", "simple-dist",
-                "--exp-name", "cl_embed_res_med_cub_200",
+                "--exp-name", "cl_embed_simple_res_med_cub_200",
                 "--train_transforms", "resnet",
                 "--test_transforms", "resnet",
                 "-t",
