@@ -47,9 +47,9 @@ def gtzero_float(x):
         raise argparse.ArgumentTypeError("Minimum value is >0")
     return x
 
-def args_pretty_print(args):    
-    print(tabulate(vars(args).items(), headers=["arg", "value"], missingval=f"{bcolors.WARNING}None{bcolors.ENDC}"))
-    print("\n")
+def args_pretty_print(args):
+    tab = tabulate(vars(args).items(), headers=["arg", "value"], missingval=f"{bcolors.WARNING}None{bcolors.ENDC}")
+    return tab
 
 datasets = {"mnist": 0, 
             "omniglot": 1, 
@@ -378,6 +378,8 @@ def pretrained_emc_classification(args):
 
 def pretrained_pure_classification(args):
     device = determine_device(1)
+    # device = "cpu" # TODO: REMOVE THIS
+    # printlc("USING CPU HARDCODED REMOVE THIS WHEN EXPERIMENT DONE!!!!!!!", bcolors.FAIL)
     train_data, val_data, _ = get_data(args) # TODO: THIS MAYBE NEEDS TO BE FIXED???
     train_data_ptr = ray.put(train_data)
     val_data_ptr = ray.put(val_data)
@@ -426,7 +428,8 @@ def run_main(args):
     if (not legal_args(args)):
         raise argparse.ArgumentError("Illegal config")
 
-    args_pretty_print(args)
+    print(args_pretty_print(args))
+    print("\n")
     
     if args.log_level:
         numeric_level = getattr(logging, args.log_level.upper(), None)
@@ -453,7 +456,7 @@ def run_main(args):
 
 if __name__ == '__main__':
     args = argparser.parse_args()
-    send_discord_message(token_path="discord_token.secret", channel_id=1095627677848834128, message="Started")
+    send_discord_message(token_path="discord_token.secret", channel_id=1095627677848834128, message="Started\n" + str(args_pretty_print(args)))
     run_main(args)
     send_discord_message(token_path="discord_token.secret", channel_id=1095627677848834128, message="Done @here")
 
