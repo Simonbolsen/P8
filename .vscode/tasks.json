@@ -512,7 +512,7 @@
             }
         },
         {
-            "label": "CL: CUB200 Pure ResNet Medium",
+            "label": "CL: CUB200 EMBED ResNet Medium",
             "command": "${command:python.interpreterPath}",
             "type": "shell",
             "group": {
