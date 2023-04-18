@@ -10,6 +10,9 @@ from ray import tune
 from PTM.model_loader import load_pretrained, load_resnet_pure
 from nn_util import get_emc_loss_function, get_pure_loss_function
 import embedding_util as eu
+import logging
+from timeit import default_timer as timer
+from datetime import timedelta
 
 def setup_and_finetune(config, train_data, test_data, device, ray_tune = True):
     train_loader = get_data_loader(train_data, batch_size=config["batch_size"])
@@ -111,6 +114,7 @@ def find_closest_embedding(query, class_embeddings):
     return closest_target_index   
 
 def eval_classification(model, val_loader, device):
+    start = timer()
     index_to_target = { i : v.item() for i, v in enumerate(val_loader.unique_targets) }
     model.eval()
     correct = 0
@@ -123,15 +127,28 @@ def eval_classification(model, val_loader, device):
             test_output = model(images)
             
             class_embeddings = test_output[-model.num_of_classes:]
-    
-            for i, output_embedding in enumerate(test_output[:-model.num_of_classes]):
-                closest_target_index = find_closest_embedding(output_embedding, class_embeddings)
-                # predicted_target = val_loader.unique_targets[closest_target_index]
-                predicted_target = index_to_target[closest_target_index]
+            image_embeds = test_output[:-model.num_of_classes]
+            
+            distances = torch.cdist(image_embeds, class_embeddings)
+            closest_target_indexs = torch.min(distances, 1).indices
+            
+            for i, closest_target_index in enumerate(closest_target_indexs):
+                predicted_target = index_to_target[closest_target_index.item()]
                 
                 if predicted_target == labels[i].item():
                     correct += 1
                 total += 1
+    
+            # for i, output_embedding in enumerate(image_embeds):
+            #     closest_target_index = find_closest_embedding(output_embedding, class_embeddings)
+            #     # predicted_target = val_loader.unique_targets[closest_target_index]
+            #     predicted_target = index_to_target[closest_target_index]
+                
+            #     if predicted_target == labels[i].item():
+            #         correct += 1
+            #     total += 1
+        end = timer()
+        logging.debug(f"elapsed time for evaluation: {timedelta(seconds=end - start)}")
         return correct / total
 
 def eval_ohe_classification(model, val_loader, device):
