@@ -72,23 +72,30 @@ def simple_dist_loss(output_embds, class_embeds, targets, device):
     acc_loss = torch.tensor(0.0, requires_grad=True, device=device)
     acc_loss_div = torch.zeros(torch.Size([output_embds.size()[0] + class_embeds.size()[0], output_embds.size()[1]]), device=device, dtype=torch.float)
 
-    # num_of_classes = len(class_embeds)
+    # # num_of_classes = len(class_embeds)
+    actual_embeds = class_embeds[targets]
+    # # class_indexs = targets + output_embds.size()[0]
+    diffs = output_embds - actual_embeds
+    squared_dists = torch.norm(diffs, dim=1, p=2) ** 2
+    # #squared_dist_divs = diffs
+    
+    acc_loss = squared_dists.sum()
 
-    for i, output_embedding in enumerate(output_embds):
-        actual_index = targets[i]
-        actual_embedding = class_embeds[actual_index]
-        actual_index = actual_index + output_embds.size()[0]
+    # for i, output_embedding in enumerate(output_embds):
+    #     actual_index = targets[i]
+    #     actual_embedding = class_embeds[actual_index]
+    #     actual_index = actual_index + output_embds.size()[0]
 
-        diff = output_embedding - actual_embedding
-        squared_dist = (diff).pow(2).sum(0)
-        squared_dist_div = diff
+    #     diff = output_embedding - actual_embedding
+    #     squared_dist = (diff).pow(2).sum(0)
+    #     squared_dist_div = diff
 
-        acc_loss_div[i] = squared_dist_div
-        acc_loss_div[actual_index] = acc_loss_div[actual_index] - squared_dist_div
+    #     acc_loss_div[i] = squared_dist_div
+    #     acc_loss_div[actual_index] = acc_loss_div[actual_index] - squared_dist_div
 
-        acc_loss = acc_loss + squared_dist
+    #     acc_loss = acc_loss + squared_dist
 
-    return acc_loss, acc_loss_div
+    return acc_loss, None#, acc_loss_div
 
 
 def cone_loss(p, q, output_embeds, class_embeds, targets, device):
