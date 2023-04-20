@@ -170,6 +170,7 @@ class FashionMNIST(Dataset):
         if self.transform is not None:
             img = self.transform(img)
 
+        assert data_point.target == self.targets[index]
         return img, self.targets[index]
 
     def __len__(self):
@@ -177,6 +178,27 @@ class FashionMNIST(Dataset):
 
     def _load_img(self, img_path):
         return io.imread(img_path)
+
+class MNIST(FashionMNIST):
+    folder_name = "MNIST"
+
+    def _download(self):
+        if (self._check_exists()):
+            print("Files already downloaded")
+            return
+        
+        datasets.MNIST(
+            root=self.root,
+            train=True,
+            download=True
+        )       
+        
+        datasets.MNIST(
+            root=self.root,
+            train=False,
+            download=True
+        ) 
+    
 
 
 if __name__ == "__main__":
