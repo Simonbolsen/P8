@@ -57,7 +57,8 @@ datasets = {"mnist": 0,
             "cifar100": 3,
             "cifarfs": 4,
             "fc100": 5,
-            "cub200": 6}
+            "cub200": 6,
+            "fashion": 7}
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument('--dataset', dest="dataset", type=str, default="mnist", choices=datasets.keys(),
