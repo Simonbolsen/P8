@@ -75,6 +75,8 @@ def train_emc(model, train_loader, optimiser, loss_func,
           num_epochs, current_epoch, device): 
     embeds_map = { v.item() : i for i, v in enumerate(train_loader.unique_targets) }
     total_step = len(train_loader)
+    
+    start = timer()
 
     for i, (images, labels) in enumerate(train_loader):
         images = images.to(device)
@@ -91,8 +93,10 @@ def train_emc(model, train_loader, optimiser, loss_func,
         optimiser.zero_grad()
 
         if grad is None:
+            # logging.debug("using torch autograd")
             loss.backward()
         else:
+            # logging.debug("using manual grad")
             res.backward(gradient = grad)
             
         optimiser.step()
@@ -100,6 +104,9 @@ def train_emc(model, train_loader, optimiser, loss_func,
         if (i+1) % 100 == 0 or i+1 == total_step:
             print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.2f}' 
                 .format(current_epoch + 1, num_epochs, i + 1, total_step, loss.item()))
+            
+    end = timer()
+    logging.debug(f"training estimated wall time: {timedelta(seconds=end - start)}")
 
 
 def find_closest_embedding(query, class_embeddings):
@@ -148,7 +155,7 @@ def eval_classification(model, val_loader, device):
             #         correct += 1
             #     total += 1
         end = timer()
-        logging.debug(f"elapsed time for evaluation: {timedelta(seconds=end - start)}")
+        logging.debug(f"evaluation estimated wall time: {timedelta(seconds=end - start)}")
         return correct / total
 
 def eval_ohe_classification(model, val_loader, device):
