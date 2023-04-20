@@ -115,17 +115,20 @@ def send_discord_message_async(token_path:str, channel_id:int, message:str) -> t
     return future
 
 
-def send_discord_message(token_path:str, channel_id:int, message:str) -> None:
+def send_discord_message(token_path:str, channel_id:int, message:str, files:dict[str,int]=None) -> None:
     token = None
     if exists(token_path):
         with open(token_path) as f:
             token = f.read()
 
+        if files != None:
+            files = [discord.File(fp, filename=name) for (name, fp) in files.items()]
+
         intents = discord.Intents.default()
         bot = discord.Client(intents=intents)
         async def on_ready():
             channel = bot.get_channel(channel_id)
-            await channel.send(message)
+            await channel.send(message, files=files)
             try:
                 await bot.close()
             except asyncio.CancelledError:

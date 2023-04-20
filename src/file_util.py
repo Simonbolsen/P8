@@ -22,3 +22,27 @@ def save_to_pickle(folder, file_name, object):
         os.mkdir(folder_path)
     
     pickle.dump(object, open(os.path.join(folder_path, file_name), "wb"))
+
+class get_files_dict():
+    files:dict[str, int] = dict()
+
+    def __init__(self, dir) -> None:
+        self.dir = dir
+
+    def __enter__(self) -> dict[str, int]:
+        if not os.path.exists(self.dir):
+            return dict()
+
+        for entry in os.scandir(path=self.dir):
+            if entry.is_file():
+                file = os.open(entry.path, os.O_RDONLY)
+                self.files[entry.name] = file
+
+        return self.files
+
+    def __exit__(self, *args, **kwargs):
+        for file in self.files.values():
+            try: # Close if possible. Had issues with Discord bot closing the filepointers implicitly
+                os.close(file)
+            except:
+                pass
