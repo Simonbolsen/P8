@@ -31,7 +31,8 @@
                 "--cpu", "5",
                 "--loss-func", "cross_entropy",
                 "--exp-name", "cifar10_clf_resnet50_pure_2",
-                "--samples", "200"
+                "--samples", "200",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
@@ -66,7 +67,8 @@
                 "--test_transforms", "resnet",
                 "-t",
                 "--samples", "100",
-                "-fe"
+                "-fe",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
@@ -101,7 +103,8 @@
                 "--test_transforms", "resnet",
                 "-t",
                 "--samples", "100",
-                "-fe"
+                "-fe",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
@@ -136,7 +139,8 @@
                 "--test_transforms", "resnet",
                 "-t",
                 "--samples", "100",
-                "-fe"
+                "-fe",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
@@ -171,7 +175,8 @@
                 "--test_transforms", "resnet",
                 "-t",
                 "--samples", "100",
-                "-fe"
+                "-fe",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
@@ -206,7 +211,8 @@
                 "--test_transforms", "resnet",
                 "-t",
                 "--samples", "100",
-                "-fe"
+                "-fe",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
@@ -241,7 +247,8 @@
                 "--test_transforms", "resnet",
                 "-t",
                 "--samples", "100",
-                "-fe"
+                "-fe",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
@@ -276,7 +283,8 @@
                 "--test_transforms", "resnet",
                 "-t",
                 "--samples", "100",
-                "-fe"
+                "-fe",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
@@ -311,7 +319,8 @@
                 "--test_transforms", "resnet",
                 "-t",
                 "--samples", "200",
-                "-fe"
+                "-fe",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
@@ -346,7 +355,8 @@
                 "--test_transforms", "resnet",
                 "-t",
                 "--samples", "100",
-                "-fe"
+                "-fe",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
@@ -380,7 +390,8 @@
                 "--train_transforms", "resnet",
                 "--test_transforms", "resnet",
                 "-t",
-                "--samples", "100"
+                "--samples", "100",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
@@ -414,7 +425,8 @@
                 "--train_transforms", "resnet",
                 "--test_transforms", "resnet",
                 "-t",
-                "--samples", "100"
+                "--samples", "100",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
@@ -447,7 +459,8 @@
                 "--train_transforms", "resnet",
                 "--test_transforms", "resnet",
                 "-t",
-                "--samples", "100"
+                "--samples", "100",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
@@ -480,7 +493,8 @@
                 "--train_transforms", "resnet",
                 "--test_transforms", "resnet",
                 "-t",
-                "--samples", "100"
+                "--samples", "100",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
@@ -513,7 +527,8 @@
                 "--train_transforms", "resnet",
                 "--test_transforms", "resnet",
                 "-t",
-                "--samples", "100"
+                "--samples", "100",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
@@ -546,7 +561,8 @@
                 "--train_transforms", "resnet",
                 "--test_transforms", "resnet",
                 "-t",
-                "--samples", "100"
+                "--samples", "100",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
@@ -580,6 +596,7 @@
                 "--test_transforms", "resnet",
                 "-t",
                 "--samples", "100",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
@@ -613,6 +630,7 @@
                 "--test_transforms", "resnet",
                 "-t",
                 "--samples", "100",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
@@ -645,7 +663,8 @@
                 "--train_transforms", "resnet",
                 "--test_transforms", "resnet",
                 "-t",
-                "--samples", "100"
+                "--samples", "100",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
