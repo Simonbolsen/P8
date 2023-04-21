@@ -146,17 +146,21 @@ autoAugment = transforms.AutoAugment(transforms.AutoAugmentPolicy.IMAGENET)
 def torch_augment_image(img: torch.Tensor) -> torch.Tensor:
     return autoAugment.forward(img)
 
-
-def get_base_config(args):
+def get_base_base_config(args):
     base_config = {
         "lr": hp.loguniform("lr", np.log(args.lr[0]), np.log(args.lr[1])),
         "max_epochs": args.epochs,
         "batch_size": hp.choice("batch_size", args.batch_size),
-        "d" : hp.uniformint("d", args.dims[0], args.dims[1]),
         "loss_func" : args.loss_func,
-        # "augment_image": torch_augment_image,
-        # "train_layers": hp.uniformint("train_layers", args.train_layers[0], args.train_layers[1])
+        "exp_name": args.exp_name,
+        "dataset": args.dataset
     }
+
+    return base_config
+
+def get_base_config(args):
+    base_config = get_base_base_config(args)
+    base_config["d"] = hp.uniformint("d", args.dims[0], args.dims[1]),
     
     loss_func = emc_loss_functions[args.loss_func] if args.loss_func in emc_loss_functions else pure_loss_functions[args.loss_func]
 
@@ -179,15 +183,9 @@ def get_base_config(args):
     return base_config
     
 def get_pure_base_config(args):
-    base_config = {
-        "lr": hp.loguniform("lr", np.log(args.lr[0]), np.log(args.lr[1])),
-        "max_epochs": args.epochs,
-        "batch_size": hp.choice("batch_size", args.batch_size),
-        "loss_func" : args.loss_func,
-        # "augment_image": torch_augment_image,
-        "train_layers": hp.uniformint("train_layers", args.train_layers[0], args.train_layers[1])
-    }
+    base_config = get_base_base_config(args)
     
+    base_config["train_layers"] = hp.uniformint("train_layers", args.train_layers[0], args.train_layers[1])
     loss_func = pure_loss_functions[args.loss_func]
 
     return base_config
