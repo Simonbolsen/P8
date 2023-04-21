@@ -103,7 +103,8 @@ def save_pure_classification_embedding_result(train_loader, val_loader, model, c
     save_pure_classification_embeddings("val", val_loader, model, config, epoch, embeddings_dict, device)    
 
 def make_embedding_data_folder(config):
-    data_folder = os.path.join(os.path.realpath(__file__), '..', 'embeddingData', config.exp_name)
+    data_folder = os.path.join(os.path.realpath(__file__), '..', '..', 'embeddingData', config["exp_name"])
+    print("Making dir: " + data_folder)
     if not os.path.exists(data_folder):
         os.makedirs(data_folder)
     else:
@@ -112,8 +113,8 @@ def make_embedding_data_folder(config):
 
 def save_embedding_meta_data(config, accuracies):
     data = {'config': config, 'accuracies': accuracies}
-    path = os.path.join('embeddingData', config.exp_name)
-    fu.save_as_json(path, 'meta_data.json', data)
+    path = os.path.join('embeddingData', config["exp_name"])
+    fu.save_to_json(path, 'meta_data.json', data)
 
 def save_pure_classification_embeddings(prefix, loader, model, config, epoch, embeddings_dict, device):
     embeddings = []
@@ -128,4 +129,4 @@ def save_pure_classification_embeddings(prefix, loader, model, config, epoch, em
                   "predictions": predictions}
     
     print(f"Saving {prefix}: {len(embeddings)} {len(embeddings[0])}")
-    fu.save_to_pickle(os.path.join('embeddingData', config.exp_name), f'classification_data_{prefix}_{epoch}.p', results)
+    fu.save_to_pickle(os.path.join('embeddingData', config["exp_name"]), f'classification_data_{prefix}_{epoch}.p', results)
