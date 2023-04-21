@@ -31,26 +31,29 @@ def get_class_centers(embeddings, labels):
 def save_class_centers(train_embeddings, train_labels, val_class_embeddings, val_labels, path, center_path):
     class_centers = {"train": get_class_centers(train_embeddings, train_labels), "val": get_class_centers(val_class_embeddings, val_labels)}
     
-    print("Saving Class Centers...")
+    print(f"Saving {center_path}...")
     fu.save_to_pickle(path, center_path, class_centers)
     print("Class Centers Saved")
     return class_centers
 
-def load_pure_data(epoch, data_folder = "embeddings_cifar10_medium") :
+def load_pure_data(epoch, data_folder) :
     path = os.path.dirname(__file__) + "/../../embeddingData/" + data_folder
-    data = fu.read_pickle_file(path + f"/classification_data_train_{epoch}.json")
+    data = fu.read_pickle_file(path + f"/classification_data_train_{epoch}.p")
     train_embeddings = data["train_embeddings"]
     train_labels = data["train_labels"]
 
-    data = fu.read_pickle_file(path + f"/classification_data_val_{epoch}.json")
+    data = fu.read_pickle_file(path + f"/classification_data_val_{epoch}.p")
     val_embeddings = data["val_embeddings"]
     val_labels = data["val_labels"]
 
-    center_path = "class_centers.p"
-    if os.path.exists(path + center_path):
-        class_centers = fu.read_pickle_file(path + center_path)[epoch]
+    center_path = f"class_centers_{epoch}.p"
+    if os.path.exists(path + "/" + center_path):
+        class_centers = fu.read_pickle_file(path + "/" + center_path)
     else:
         class_centers = save_class_centers(train_embeddings, train_labels, val_embeddings, val_labels, path, center_path)
+
+    data = fu.read_json_file(path + "/meta_data.json")
+
     return train_embeddings, train_labels, val_embeddings, val_labels, data, class_centers["val"], class_centers["train"]
 
 def pca_pure_classification(data_folder):
@@ -73,7 +76,6 @@ def pca_pure_classification(data_folder):
                       [scores], 
                       ["PCA Scores"], lambda x:x)
     
-
 def plot_pure_distances_to_class_centers():
     all_dists = []
 
@@ -184,13 +186,16 @@ def plot_acc_by_dist_funcs_and_epoch(data_folder):
     ed_acc = []
     cod_acc = []
     cacd_acc = []
-    acc = []
+    codun_acc = []
+    cacdun_acc = []
     epochs = range(0, 30)
     for epoch in epochs:
         print(f"\n{epoch + 1} / 30.", end="")
         euclidean_misclassified = 0
         cosine_origo_misclassified = 0
         cosine_avg_center_misclassified = 0
+        cosine_origo_un_misclassified = 0
+        cosine_avg_center_un_misclassified = 0
         
         train_embeddings, train_labels, val_embeddings, val_labels, data, val_class_embeddings, train_class_embeddings = load_pure_data(epoch, data_folder)
 
@@ -207,28 +212,44 @@ def plot_acc_by_dist_funcs_and_epoch(data_folder):
             def cosine_origo_dist(c,v): 
                 cnp = np.array(c)
                 vnp = np.array(v)
-                return 1 - vnp.dot(cnp) #/ (np.linalg.norm(vnp) * np.linalg.norm(cnp))
+                return -vnp.dot(cnp) / (np.linalg.norm(vnp) * np.linalg.norm(cnp))
 
             def cosine_avg_center_dist(c, b):
                 cnp = np.array(c) - center
                 vnp = np.array(v) - center
-                return 1 - vnp.dot(cnp) #/ (np.linalg.norm(vnp) * np.linalg.norm(cnp))
+                return -vnp.dot(cnp) / (np.linalg.norm(vnp) * np.linalg.norm(cnp))
+
+            def cosine_origo_un_dist(c,v): 
+                cnp = np.array(c)
+                vnp = np.array(v)
+                return -vnp.dot(cnp)
+
+            def cosine_avg_center_un_dist(c, b):
+                cnp = np.array(c) - center
+                vnp = np.array(v) - center
+                return -vnp.dot(cnp)
 
             clossest_ed_class = au.argmin([eucledian_dist(c,v) for c in train_class_embeddings])
             clossest_cod_class = au.argmin([cosine_origo_dist(c,v) for c in train_class_embeddings])
             clossest_cacd_class = au.argmin([cosine_avg_center_dist(c,v) for c in train_class_embeddings])
+            clossest_codun_class = au.argmin([cosine_origo_un_dist(c,v) for c in train_class_embeddings])
+            clossest_cacdun_class = au.argmin([cosine_avg_center_un_dist(c,v) for c in train_class_embeddings])
 
             euclidean_misclassified += 0 if clossest_ed_class == label else 1
             cosine_origo_misclassified += 0 if clossest_cod_class == label else 1
             cosine_avg_center_misclassified += 0 if clossest_cacd_class == label else 1
+            cosine_origo_un_misclassified += 0 if clossest_codun_class == label else 1
+            cosine_avg_center_un_misclassified += 0 if clossest_cacdun_class == label else 1
 
         print(end=".")
-        ed_acc.append(1.0 - euclidean_misclassified/len(val_embeddings))
-        cod_acc.append(1.0 - cosine_origo_misclassified/len(val_embeddings))
-        cacd_acc.append(1.0 - cosine_avg_center_misclassified/len(val_embeddings))
-        acc.append(data["accuracy"])
+        ed_acc.append(plot.round_scale(1.0 - euclidean_misclassified/len(val_embeddings)))
+        cod_acc.append(plot.round_scale(1.0 - cosine_origo_misclassified/len(val_embeddings)))
+        cacd_acc.append(plot.round_scale(1.0 - cosine_avg_center_misclassified/len(val_embeddings)))
+        codun_acc.append(plot.round_scale(1.0 - cosine_origo_un_misclassified/len(val_embeddings)))
+        cacdun_acc.append(plot.round_scale(1.0 - cosine_avg_center_un_misclassified/len(val_embeddings)))
     
-    plot.plot_line_2d([i for i in epochs], [ed_acc, cod_acc, cacd_acc, acc], ["Euclidean", "Cosine Origo UN", "Cosine avg Center UN", "Pure"], lambda x:x) #Closest class center classification
+    plot.plot_line_2d([i for i in epochs], [ed_acc, cod_acc, cacd_acc, codun_acc, cacdun_acc, [plot.round_scale(data["accuracies"][i]) for i in epochs]], 
+                      ["Euclidean", "Cosine Origo", "Cosine avg Center","Cosine Origo UN", "Cosine avg Center UN", "Pure"]) #Closest class center classification
 
 def plot_pure_distance_distribution():
     num_buckets = 30
@@ -335,9 +356,9 @@ if __name__ == '__main__':
 
 
     #USEFUL:
-    data_folder = "embeddings_cifar10_medium"
-    pca_pure_classification(data_folder)
+    data_folder = "cifar10_medium_pure_embeddings"
+    #pca_pure_classification(data_folder)
     plot_acc_by_dist_funcs_and_epoch(data_folder)
-    plot_pure_dist_median(data_folder)
+    #plot_pure_dist_median(data_folder)
 
     print("Done")

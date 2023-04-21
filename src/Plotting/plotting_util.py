@@ -9,6 +9,9 @@ from pathlib import Path
 def inv(x):
     return math.sqrt(1 - (1 - x)**2)
 
+def round_scale(x):
+    return 1 - math.sqrt(1 - x**2)
+
 def plot_simple_line_2d(ys, function = inv):
     axe = plt.axes()
     axe.plot(range(len(ys)), ys)
