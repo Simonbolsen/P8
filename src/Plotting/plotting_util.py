@@ -158,32 +158,27 @@ def plotPoints(xs, ys, zs, axis_names = ["", "", ""], legend = True, num_of_seri
 
 class axis():
     label:str
-    data:list
-    def __init__(self, label:str, data:list) -> None:
+    data:list[list]
+    def __init__(self, label:str, data:list[list] = []) -> None:
         self.label = label
         self.data = data
 
-def plotPoints2d(xs:axis, ys:axis, colors:axis=None, legend = True, num_of_series = 1, series_labels=[], function = inv, marker = "o"):
+def plotPoints2d(xs:axis, ys:axis, legend = True, num_of_series = 1, series_labels=[], function = inv, marker = "o"):
     mpl.rcParams['legend.fontsize'] = 10
 
     if series_labels == []: 
         series_labels = [ys.label[2] for _ in range(num_of_series)]
 
-    # if(not isinstance(xs[0], list)):
-    #     xs = [xs]
-    #     ys = [ys]
+    x_min, x_max = get_min_max(xs.data)
+    y_min, y_max = get_min_max(ys.data)
 
-    x_min, x_max = get_min_max([xs.data])
-    y_min, y_max = get_min_max([ys.data])
-    color_min, color_max = get_min_max([colors.data])
-
-    COLOR = get_list_colors(colors.data, color_min, color_max)
+    COLOR = get_colors(num_of_series)
     fig = plt.figure()
     axe = plt.axes()
 
     for series in range(num_of_series):
         # axe.plot(xs.data[series], ys.data[series], marker=marker, color=COLOR[series], label=series_labels[series])
-        axe.plot(xs.data[series], ys.data[series], marker=marker, label=series_labels[series])
+        axe.scatter(xs.data[series], ys.data[series], marker=marker, label=series_labels[series])
 
     axe.set_xlabel(xs.label)
     axe.set_ylabel(ys.label)
