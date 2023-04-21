@@ -9,6 +9,7 @@ import numpy as np
 import matplotlib.cm as cm
 import math
 import embedding_visualization as ev
+import analysis_util as au
 
 data = ev.read_json_file(os.path.dirname(__file__) + "/../../embeddingData/json_data.json") #few_shot_test_data
 def min_pair(iterable):
@@ -126,21 +127,6 @@ def get_dists_by_label(embeddings, labels, class_embeddings):
         dists[labels[i]].append(np.log(np.linalg.norm(np.array(class_embedding) - np.array(embedding))))
     return dists
 
-def get_zipped(l, h):
-    output = []
-    for i, e in enumerate(l):
-        output.append(e + h[i])
-    return output
-
-def deep_filter(l, lvls, func, start_value):
-    if lvls == 0:
-        return l
-    else:
-        value = start_value
-        for v in l:
-            value = func(value, deep_filter(v, lvls - 1, func, start_value))
-        return value
-
 def plot_distance_distribution():
     train_embeddings = data["train_embeddings"]
     vq_embeddings  = data["test_embeddings"] #data["val_query_embeddings"]
@@ -152,12 +138,12 @@ def plot_distance_distribution():
 
     test_dists = get_dists_by_label(vq_embeddings, vq_labels, class_embeddings)
     train_dists = get_dists_by_label(train_embeddings, train_labels, class_embeddings)
-    all_dists = get_zipped(test_dists, train_dists)
+    all_dists = au.get_zipped(test_dists, train_dists)
 
     num_buckets = 30
 
-    maximum = deep_filter(all_dists, 2, max, float("-inf"))
-    minimum = deep_filter(all_dists, 2, min, float("inf"))
+    maximum = au.deep_filter(all_dists, 2, max, float("-inf"))
+    minimum = au.deep_filter(all_dists, 2, min, float("inf"))
 
     dim = 3 #data["config"]["d"]
     bucket_dists = [((i + 1) * (maximum - minimum) / (num_buckets) + minimum) for i in range(num_buckets)]

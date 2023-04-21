@@ -28,9 +28,16 @@ def plot_points_2d(xs, ys):
     plt.legend()
     plt.show()
 
-def plot_points_series_2d(xs, ys):
+def plot_points_series_2d(xs, ys, x_title, y_title, labels, size = 5):
+
+    axe = plt.axes()
+
     for i in range(len(xs)):
-        plt.scatter(xs[i], ys[i], marker="o", s = [1 for _ in range(len(xs[i]))])
+        plt.scatter(xs[i], ys[i], marker="o", s = [size for _ in range(len(xs[i]))], label= labels[i])
+
+    axe.set_xlabel(x_title)
+    axe.set_ylabel(y_title)
+
     plt.legend()
     plt.show()
 
