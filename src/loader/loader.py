@@ -152,15 +152,17 @@ def get_fashion_mnist(config):
     val_split_idx.sort()
     val_targets = [int(training_set.targets[i].item()) for i in val_split_idx]
 
-    train = GenericMNISTDataset(train_split, train_targets, training_set.transform)
-    val = GenericMNISTDataset(val_split, val_targets, training_set.transform)
+    train = GenericMNISTDataset(training_set.root, training_set.train, train_split, train_targets, training_set.transform)
+    val = GenericMNISTDataset(training_set.root, training_set.train, val_split, val_targets, training_set.transform)
 
     train.targets = torch.tensor(train.targets, dtype=torch.int32)
     val.targets = torch.tensor(val.targets)
     return train, val, testing_set
 
 class GenericMNISTDataset(FashionMNIST):
-    def __init__(self, data, data_targets, transform):
+    def __init__(self, root, train, data, data_targets, transform):
+        self.root = root
+        self.train = train
         self.data = data
         self.targets = data_targets
         self.transform = transform      
