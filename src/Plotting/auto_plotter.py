@@ -4,6 +4,7 @@ from Plotting.plotting_util import axis
 import Plotting.results_analysis_util as analysis
 import math
 import os
+import numbers
 
 # parameters = {
 #     "lr": "Learning Rate log_10(lr)",
@@ -26,13 +27,13 @@ bin1_size = 0.5
 bin2_size = 10
 binColer_size = 3
 
-def insert_append(l, i, e):
+def insert_append(l:list[list], i:int, e):
     if i < len(l):
         l[i].append(e)
     else:
         while i > len(l):
-            l.append(None)
-        l.append(e)
+            l.append([])
+        l.append([e])
 
 
 
@@ -52,29 +53,24 @@ def make_config_plots(experiment_id:str, save_location:str = None) -> None:
     inv_visual_func = lambda x: math.sqrt(1 - (1 -  x)**2)
 
     data = {}
-    index = 0
     for k, result in best_results.items():
-        insert_append(accuracies, index, result["data"]["accuracy"])
-        insert_append(colors.data, index, int(result["data"]["training_iteration"] / binColer_size))
+        color_index = int(result["data"]["training_iteration"] / binColer_size)
+        insert_append(accuracies, color_index, result["data"]["accuracy"])
 
         for key, value in result["config"].items():
+            if not isinstance(value, numbers.Number):
+                continue
+    
             if not key in data.keys():
                 data[key] = []
 
-            insert_append(data[key], index, value)
-
-        index += 1
+            insert_append(data[key], color_index, value)
 
     for key, value in data.items():
-
-        if value[0] == str(value[0]):
-            continue
-
         figure = make_2d_plot(
             axis1=axis(key, value),
             # axis2=axis("Accuracy", [visual_func(x) for x in accuracies])
-            axis2=axis("Accuracy", accuracies),
-            colors=colors
+            axis2=axis("Accuracy", accuracies)
         )
         
         if save_location != None:
@@ -86,12 +82,11 @@ def make_config_plots(experiment_id:str, save_location:str = None) -> None:
         print("Plotted: " + key)
 
     
-def make_2d_plot(axis1:axis, axis2:axis, colors:axis=None) -> plot:
+def make_2d_plot(axis1:axis, axis2:axis) -> plot:
 
     figure = plot.plotPoints2d(
         xs=axis1,
         ys=axis2,
-        colors=colors,
         legend=True,
         num_of_series=len(axis2.data),
         series_labels=[f"{i * binColer_size}" for i in range(len(axis2.data))]
@@ -103,5 +98,6 @@ def make_2d_plot(axis1:axis, axis2:axis, colors:axis=None) -> plot:
 if __name__ == '__main__':
     
     title = "cl_pure_res_large_cub_200"
-    make_plots(title, os.path.expanduser("~/ray_results/plots/") + title + "/")
+    make_plots(title)#, os.path.expanduser("~/ray_results/plots/") + title + "/")
 
+    print("done")

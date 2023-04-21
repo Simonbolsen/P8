@@ -163,7 +163,9 @@ class FashionMNIST(Dataset):
     def __getitem__(self, index):
         data_point = self.data.iloc[index]
 
-        img = self._load_img(data_point.full_name)
+        img_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'data', self.folder_name, 'training' if self.train else 'testing', str(data_point['target']), data_point['img_name'])
+
+        img = self._load_img(img_path)
         img = Image.fromarray(img).convert('L')
         img = Image.merge('RGB', (img,img,img))
 
