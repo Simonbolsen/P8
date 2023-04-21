@@ -99,8 +99,8 @@ def save_pure_classification_embedding_result(train_loader, val_loader, model, c
         embeddings_dict["e"] = torch.squeeze(output.detach()).tolist()
     model.avgpool.register_forward_hook(hook)
 
-    save_pure_classification_embeddings("train", train_loader, model, config, accuracy, epoch, embeddings_dict, device)
-    save_pure_classification_embeddings("val", val_loader, model, config, accuracy, epoch, embeddings_dict, device)    
+    save_pure_classification_embeddings("train", train_loader, model, config, epoch, embeddings_dict, device)
+    save_pure_classification_embeddings("val", val_loader, model, config, epoch, embeddings_dict, device)    
 
 def make_embedding_data_folder(config):
     data_folder = os.path.join(os.path.realpath(__file__), '..', 'embeddingData', config.exp_name)
@@ -115,7 +115,7 @@ def save_embedding_meta_data(config, accuracies):
     path = os.path.join('embeddingData', config.exp_name)
     fu.save_as_json(path, 'meta_data.json', data)
 
-def save_pure_classification_embeddings(prefix, loader, model, config, accuracy, epoch, embeddings_dict, device):
+def save_pure_classification_embeddings(prefix, loader, model, config, epoch, embeddings_dict, device):
     embeddings = []
     all_labels = []
     predictions = []
