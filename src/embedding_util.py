@@ -111,7 +111,7 @@ def save_pure_classification_embeddings(prefix, loader, model, config, accuracy,
         all_labels.extend(labels.tolist())
 
     results = {prefix + "_embeddings": embeddings, prefix + "_labels": all_labels,
-                  "accuracy" : accuracy, "config" : config}
+                  "accuracy" : accuracy, "config" : config, "predictions": predictions}
     
     print(f"Saving {prefix}: {len(embeddings)} {len(embeddings[0])}")
     fu.save_to_pickle('embeddingData', f'classification_data_{prefix}_{epoch}.p', results)
