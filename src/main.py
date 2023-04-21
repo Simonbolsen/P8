@@ -376,7 +376,9 @@ def pretrained_emc_classification(args):
     if args.tuning:
         start_ray_experiment(tuner)
     else:
-        setup_emc_classification_pretrained(get_non_tune_base_config(args) | pretrained_config, training_data_ptr=train_data_ptr,
+        non_tune_config =  pretrained_config | get_non_tune_base_config(args)
+        print("==> pretrained embed classification config: ", non_tune_config)
+        setup_emc_classification_pretrained(non_tune_config, training_data_ptr=train_data_ptr,
                                         val_data_ptr=val_data_ptr, device=device, args=args, ray_tune=args.tuning)
 
 def pretrained_pure_classification(args):
