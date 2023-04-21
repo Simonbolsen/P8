@@ -88,6 +88,33 @@ def get_few_shot_embedding_result(train_loader, support_loaders, query_loader, m
 
     return embeddings
 
+def save_emc_classification_embedding_result(train_loader, val_loader, model, config, epoch, device):
+    print("Extracting embedding results")
+    model.eval()
+
+    save_emc_classification_embeddings("train", train_loader, model, config, epoch, device)
+    save_emc_classification_embeddings("val", val_loader, model, config, epoch, device)
+
+
+def save_emc_classification_embeddings(prefix, loader, model, config, epoch, device):
+    embeddings = []
+    class_embeddings = []
+    all_labels = []
+    first_it = True
+    
+    for images, labels in loader: 
+        if (first_it):
+            first_it = False
+            class_embeddings = model(images.to(device)).tolist()[-len(loader.unique_targets):]
+        embeddings.extend(model(images.to(device)).tolist()[:-len(loader.unique_targets)])
+        all_labels.extend(labels.tolist())
+
+    results = {prefix + "_embeddings": embeddings, prefix + "_labels": all_labels,
+                  prefix + "_class_embeddings": class_embeddings}
+    
+    print(f"Saving {prefix}: {len(embeddings)} {len(embeddings[0])}")
+    fu.save_to_pickle(os.path.join('embeddingData', config["exp_name"]), f'classification_data_{prefix}_{epoch}.p', results)
+
 def save_pure_classification_embedding_result(train_loader, val_loader, model, config, accuracy, epoch, device):
     print("Extracting embedding results")
 
