@@ -1,6 +1,7 @@
 from torch import nn
 import math as Math
 import torch
+import logging
 
 
 def create_n_linear_layers(n, first_in, size):
@@ -72,23 +73,30 @@ def simple_dist_loss(output_embds, class_embeds, targets, device):
     acc_loss = torch.tensor(0.0, requires_grad=True, device=device)
     acc_loss_div = torch.zeros(torch.Size([output_embds.size()[0] + class_embeds.size()[0], output_embds.size()[1]]), device=device, dtype=torch.float)
 
-    # num_of_classes = len(class_embeds)
+    # # num_of_classes = len(class_embeds)
+    actual_embeds = class_embeds[targets]
+    # # class_indexs = targets + output_embds.size()[0]
+    diffs = output_embds - actual_embeds
+    squared_dists = torch.norm(diffs, dim=1, p=2) ** 2
+    # #squared_dist_divs = diffs
+    
+    acc_loss = squared_dists.sum()
 
-    for i, output_embedding in enumerate(output_embds):
-        actual_index = targets[i]
-        actual_embedding = class_embeds[actual_index]
-        actual_index = actual_index + output_embds.size()[0]
+    # for i, output_embedding in enumerate(output_embds):
+    #     actual_index = targets[i]
+    #     actual_embedding = class_embeds[actual_index]
+    #     actual_index = actual_index + output_embds.size()[0]
 
-        diff = output_embedding - actual_embedding
-        squared_dist = (diff).pow(2).sum(0)
-        squared_dist_div = diff
+    #     diff = output_embedding - actual_embedding
+    #     squared_dist = (diff).pow(2).sum(0)
+    #     squared_dist_div = diff
 
-        acc_loss_div[i] = squared_dist_div
-        acc_loss_div[actual_index] = acc_loss_div[actual_index] - squared_dist_div
+    #     acc_loss_div[i] = squared_dist_div
+    #     acc_loss_div[actual_index] = acc_loss_div[actual_index] - squared_dist_div
 
-        acc_loss = acc_loss + squared_dist
+    #     acc_loss = acc_loss + squared_dist
 
-    return acc_loss, acc_loss_div
+    return acc_loss, None#, acc_loss_div
 
 
 def cone_loss(p, q, output_embeds, class_embeds, targets, device):
@@ -204,13 +212,19 @@ def _move_away_from_other_near_classes_class_loss(
         label = label.item()
         push_from_other_classes[label] = get_push_from_other_classes(label)
 
-    for predicted_embedding, target_label in zip(predicted_embeddings, target_labels):
-        dist = torch.linalg.norm(
-            predicted_embedding - class_embeddings[target_label]
-        ).pow(2)
-        push_from_class = push_from_other_classes[target_label.item()]
+    target_embeds = class_embeddings[target_labels]
+    diffs = predicted_embeddings - target_embeds
+    dists = torch.norm(diffs, dim=1, p=2) ** 2
+    pushes_from_classes_sum = torch.tensor([push_from_other_classes[label.item()] for label in target_labels]).sum()
+    loss = dists.sum() + pushes_from_classes_sum
 
-        loss = loss + dist + push_from_class
+    # for predicted_embedding, target_label in zip(predicted_embeddings, target_labels):
+    #     dist = torch.linalg.norm(
+    #         predicted_embedding - class_embeddings[target_label]
+    #     ).pow(2)
+    #     push_from_class = push_from_other_classes[target_label.item()]
+
+    #     loss = loss + dist + push_from_class
 
     return loss, None
 
@@ -237,8 +251,10 @@ def get_emc_loss_function(args, config):
     loss_func = emc_loss_functions[args.loss_func]
 
     if args.loss_func == "class-push":
+        logging.debug(f'class-push loss: using prox mult: {config["prox_mult"]}')
         return loss_func(config["prox_mult"])
     if args.loss_func == "cone_loss":
+        logging.debug(f'cone loss: using values p: {config["p"]}, q: {config["q"]}')
         return loss_func(config["p"], config["q"])
 
     return loss_func

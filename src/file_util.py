@@ -33,3 +33,27 @@ def read_pickle_file(path):
     with open(path, 'rb') as file:
         data = pickle.load(file)
         return data
+    
+class get_files_dict():
+    files:dict[str, int] = dict()
+
+    def __init__(self, dir) -> None:
+        self.dir = dir
+
+    def __enter__(self) -> dict[str, int]:
+        if not os.path.exists(self.dir):
+            return dict()
+
+        for entry in os.scandir(path=self.dir):
+            if entry.is_file():
+                file = os.open(entry.path, os.O_RDONLY)
+                self.files[entry.name] = file
+
+        return self.files
+
+    def __exit__(self, *args, **kwargs):
+        for file in self.files.values():
+            try: # Close if possible. Had issues with Discord bot closing the filepointers implicitly
+                os.close(file)
+            except:
+                pass

@@ -13,15 +13,15 @@
             },
             "args": [
                 "./src/main.py",
-                "--dataset", "cifar10",
+                "--dataset", "cifar100",
                 "--datadir", "'./data'",
-                "--train_transforms","cifar10_train",
-                "--test_transforms","cifar10_val",
+                "--train_transforms","resnet",
+                "--test_transforms","resnet",
                 "--epochs", "30",
                 "--batch","100",
                 "--dims","15", "16",
-                "--lr","0.00031702780101901885", "0.001",
-                "--train-layers","8","25",
+                "--lr","0.0008438447464830231", "0.001",
+                "--train-layers","12","25",
                 "--channels","32", "32", "64", "128", "256",
                 "-pure", 
                 "-pt",
@@ -31,7 +31,8 @@
                 "--cpu", "5",
                 "--loss-func", "cross_entropy",
                 "--exp-name", "cifar10_clf_resnet50_pure_2",
-                "--samples", "200"
+                "--samples", "200",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
@@ -53,7 +54,7 @@
                 "--datadir", "'./data'",
                 "--epochs", "30",
                 "--batch","100",
-                "--lr","0.00001", "0.001",
+                "--lr","0.0001", "0.001",
                 "--train-layers","0","10",
                 "-pure", 
                 "-pt",
@@ -65,7 +66,9 @@
                 "--train_transforms", "resnet",
                 "--test_transforms", "resnet",
                 "-t",
-                "--samples", "200"
+                "--samples", "100",
+                "-fe",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
@@ -87,7 +90,7 @@
                 "--datadir", "'./data'",
                 "--epochs", "30",
                 "--batch","100",
-                "--lr","0.00001", "0.001",
+                "--lr","0.0001", "0.001",
                 "--train-layers","0","10",
                 "-pure", 
                 "-pt",
@@ -99,7 +102,9 @@
                 "--train_transforms", "resnet",
                 "--test_transforms", "resnet",
                 "-t",
-                "--samples", "200"
+                "--samples", "100",
+                "-fe",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
@@ -121,7 +126,7 @@
                 "--datadir", "'./data'",
                 "--epochs", "30",
                 "--batch","100",
-                "--lr","0.00001", "0.001",
+                "--lr","0.0001", "0.001",
                 "--train-layers","0","10",
                 "-pure", 
                 "-pt",
@@ -133,7 +138,9 @@
                 "--train_transforms", "resnet",
                 "--test_transforms", "resnet",
                 "-t",
-                "--samples", "200"
+                "--samples", "100",
+                "-fe",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
@@ -155,7 +162,7 @@
                 "--datadir", "'./data'",
                 "--epochs", "30",
                 "--batch","100",
-                "--lr","0.00001", "0.001",
+                "--lr","0.0001", "0.001",
                 "--train-layers","0","25",
                 "-pure", 
                 "-pt",
@@ -167,7 +174,9 @@
                 "--train_transforms", "resnet",
                 "--test_transforms", "resnet",
                 "-t",
-                "--samples", "200"
+                "--samples", "100",
+                "-fe",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
@@ -189,7 +198,7 @@
                 "--datadir", "'./data'",
                 "--epochs", "30",
                 "--batch","100",
-                "--lr","0.00001", "0.001",
+                "--lr","0.0001", "0.001",
                 "--train-layers","0","25",
                 "-pure", 
                 "-pt",
@@ -201,7 +210,9 @@
                 "--train_transforms", "resnet",
                 "--test_transforms", "resnet",
                 "-t",
-                "--samples", "200"
+                "--samples", "100",
+                "-fe",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
@@ -223,26 +234,29 @@
                 "--datadir", "'./data'",
                 "--epochs", "30",
                 "--batch","100",
-                "--lr","0.00001", "0.001",
+                "--lr","0.0001", "0.001",
                 "--train-layers","0","25",
                 "-pure", 
                 "-pt",
                 "--model", "resnet50",
-                "--gpu", "0.33",
-                "--cpu", "5",
+                "--gpu", "1",
+                "--cpu", "16",
                 "--loss-func", "cross_entropy",
                 "--exp-name", "cl_pure_res_med_cub_200",
                 "--train_transforms", "resnet",
                 "--test_transforms", "resnet",
                 "-t",
-                "--samples", "200"
+                "--samples", "100",
+                "-fe",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
                 "panel": "new",
                 "focus": true
             }
-        },{
+        },
+        {
             "label": "CL: CIFAR10 Pure ResNet Large",
             "command": "${command:python.interpreterPath}",
             "type": "shell",
@@ -256,7 +270,7 @@
                 "--datadir", "'./data'",
                 "--epochs", "30",
                 "--batch","100",
-                "--lr","0.00001", "0.001",
+                "--lr","0.0001", "0.001",
                 "--train-layers","0","50",
                 "-pure", 
                 "-pt",
@@ -268,7 +282,9 @@
                 "--train_transforms", "resnet",
                 "--test_transforms", "resnet",
                 "-t",
-                "--samples", "200"
+                "--samples", "100",
+                "-fe",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
@@ -302,7 +318,9 @@
                 "--train_transforms", "resnet",
                 "--test_transforms", "resnet",
                 "-t",
-                "--samples", "200"
+                "--samples", "200",
+                "-fe",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
@@ -323,20 +341,22 @@
                 "--dataset", "cub200",
                 "--datadir", "'./data'",
                 "--epochs", "30",
-                "--batch","100",
-                "--lr","0.00001", "0.001",
+                "--batch","64",
+                "--lr","0.0001", "0.001",
                 "--train-layers","0","50",
                 "-pure", 
                 "-pt",
                 "--model", "resnet101",
-                "--gpu", "0.33",
-                "--cpu", "5",
+                "--gpu", "1",
+                "--cpu", "15",
                 "--loss-func", "cross_entropy",
                 "--exp-name", "cl_pure_res_large_cub_200",
                 "--train_transforms", "resnet",
                 "--test_transforms", "resnet",
                 "-t",
-                "--samples", "200"
+                "--samples", "100",
+                "-fe",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
@@ -344,5 +364,314 @@
                 "focus": true
             }
         },
+        {
+            "label": "CL: CIFAR10 EMBED SIMPLE DIST ResNet Small",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar10",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.0001",
+                "--train-layers", "0", "10",
+                "-pt",
+                "--dims", "80", "2000",
+                "--model", "resnet18",
+                "--gpu", "0.33",
+                "--cpu", "5",
+                "--loss-func", "simple-dist",
+                "--exp-name", "cl_embed_simple_res_small_cifar_10",
+                "--train_transforms", "resnet",
+                "--test_transforms", "resnet",
+                "-t",
+                "--samples", "100",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },        
+        {
+            "label": "CL: CIFAR100 EMBED SIMPLE DIST ResNet Small",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar100",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.0001", "0.001",
+                "--train-layers", "0", "10",
+                "-pt",
+                "--dims", "80", "2000",
+                "--model", "resnet18",
+                "--gpu", "0.33",
+                "--cpu", "5",
+                "--loss-func", "simple-dist",
+                "--exp-name", "cl_embed_simple_res_small_cifar_100",
+                "--train_transforms", "resnet",
+                "--test_transforms", "resnet",
+                "-t",
+                "--samples", "100",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: CUB200 EMBED SIMPLE DIST ResNet Small",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cub200",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.0001", "0.001",
+                "--train-layers", "0", "10",
+                "-pt",
+                "--model", "resnet18",
+                "--gpu", "0.33",
+                "--cpu", "5",
+                "--loss-func", "simple-dist",
+                "--exp-name", "cl_embed_simple_res_small_cub_200",
+                "--train_transforms", "resnet",
+                "--test_transforms", "resnet",
+                "-t",
+                "--samples", "100",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: CIFAR10 EMBED SIMPLE DIST ResNet Medium",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar10",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.0001", "0.001",
+                "--train-layers","0","25",
+                "-pt",
+                "--model", "resnet50",
+                "--gpu", "0.33",
+                "--cpu", "5",
+                "--loss-func", "simple-dist",
+                "--exp-name", "cl_embed_simple_res_med_cifar_10",
+                "--train_transforms", "resnet",
+                "--test_transforms", "resnet",
+                "-t",
+                "--samples", "100",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: CIFAR100 EMBED SIMPLE DIST ResNet Medium",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar100",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.0001", "0.001",
+                "--train-layers","0","25",
+                "-pt",
+                "--model", "resnet50",
+                "--gpu", "0.33",
+                "--cpu", "5",
+                "--loss-func", "simple-dist",
+                "--exp-name", "cl_embed_simple_res_med_cifar_100",
+                "--train_transforms", "resnet",
+                "--test_transforms", "resnet",
+                "-t",
+                "--samples", "100",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: CUB200 EMBED SIMPLE DIST ResNet Medium",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cub200",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.0001", "0.001",
+                "--train-layers","0","25",
+                "-pt",
+                "--model", "resnet50",
+                "--gpu", "0.33",
+                "--cpu", "5",
+                "--loss-func", "simple-dist",
+                "--exp-name", "cl_embed_simple_res_med_cub_200",
+                "--train_transforms", "resnet",
+                "--test_transforms", "resnet",
+                "-t",
+                "--samples", "100",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: CIFAR10 EMBED SIMPLE DIST ResNet Large",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar10",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.0001", "0.001",
+                "--train-layers","0","50",
+                "-pt",
+                "--model", "resnet101",
+                "--gpu", "0.33",
+                "--cpu", "5",
+                "--loss-func", "simple-dist",
+                "--exp-name", "cl_embed_simple_res_large_cifar_10",
+                "--train_transforms", "resnet",
+                "--test_transforms", "resnet",
+                "-t",
+                "--samples", "100",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: CIFAR100 EMBED SIMPLE DIST ResNet Large",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar100",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.0001", "0.001",
+                "--train-layers","0","50",
+                "-pt",
+                "--model", "resnet101",
+                "--gpu", "0.33",
+                "--cpu", "5",
+                "--loss-func", "simple-dist",
+                "--exp-name", "cl_embed_simple_res_large_cifar_100",
+                "--train_transforms", "resnet",
+                "--test_transforms", "resnet",
+                "-t",
+                "--samples", "100",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: CUB200 EMBED SIMPLE DIST ResNet Large",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cub200",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.0001", "0.001",
+                "--train-layers","0","50",
+                "-pt",
+                "--model", "resnet101",
+                "--gpu", "0.33",
+                "--cpu", "5",
+                "--loss-func", "simple-dist",
+                "--exp-name", "cl_embed_simple_large_cub_200",
+                "--train_transforms", "resnet",
+                "--test_transforms", "resnet",
+                "-t",
+                "--samples", "100",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+
     ]
 }

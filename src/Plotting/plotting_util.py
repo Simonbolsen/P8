@@ -44,6 +44,9 @@ def plot_points_series_2d(xs, ys, x_title, y_title, labels, size = 5):
 def get_colors(num):
     return cm.rainbow(np.linspace(0, 1, num))
 
+def get_list_colors(values:list[int], min_value:int, max_value:int):
+    return [cm.rainbow(np.linspace(min_value, max_value, val)) for val in values] 
+
 def plotHeatMap(xs, ys, width, height, label):
     x_max = max(xs)
     x_min = min(xs)
@@ -151,6 +154,49 @@ def plotPoints(xs, ys, zs, axis_names = ["", "", ""], legend = True, num_of_seri
         axe.legend()
 
     plt.show()
+
+
+class axis():
+    label:str
+    data:list
+    def __init__(self, label:str, data:list) -> None:
+        self.label = label
+        self.data = data
+
+def plotPoints2d(xs:axis, ys:axis, colors:axis=None, legend = True, num_of_series = 1, series_labels=[], function = inv, marker = "o"):
+    mpl.rcParams['legend.fontsize'] = 10
+
+    if series_labels == []: 
+        series_labels = [ys.label[2] for _ in range(num_of_series)]
+
+    # if(not isinstance(xs[0], list)):
+    #     xs = [xs]
+    #     ys = [ys]
+
+    x_min, x_max = get_min_max([xs.data])
+    y_min, y_max = get_min_max([ys.data])
+    color_min, color_max = get_min_max([colors.data])
+
+    COLOR = get_list_colors(colors.data, color_min, color_max)
+    fig = plt.figure()
+    axe = plt.axes()
+
+    for series in range(num_of_series):
+        # axe.plot(xs.data[series], ys.data[series], marker=marker, color=COLOR[series], label=series_labels[series])
+        axe.plot(xs.data[series], ys.data[series], marker=marker, label=series_labels[series])
+
+    axe.set_xlabel(xs.label)
+    axe.set_ylabel(ys.label)
+
+    axe.set_xbound(x_min, x_max)
+    axe.set_ybound(y_min, y_max)
+    # axe.w_zaxis.set_major_formatter(plt.FuncFormatter(lambda x, pos: f"{function(x):.3f}"))
+
+    if legend:
+        axe.legend()
+
+    # plt.show()
+    return plt
 
 #Takes an array of dictionaries that contain keys label, marker, color, points, xs, ys zs, 
 # all keys are optional but the dictionaries should contain either points or both xs, ys, and zs
