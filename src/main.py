@@ -152,7 +152,8 @@ def get_base_base_config(args):
         "max_epochs": args.epochs,
         "batch_size": hp.choice("batch_size", args.batch_size),
         "loss_func" : args.loss_func,
-        "exp_name": args.exp_name
+        "exp_name": args.exp_name,
+        "dataset": args.dataset
     }
 
     return base_config
