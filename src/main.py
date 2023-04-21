@@ -2,6 +2,8 @@ from functools import partial
 import os
 
 import numpy as np
+from Plotting.auto_plotter import make_plots
+from file_util import get_files_dict
 from training_utils import emc_classification_setup, setup_classification_custom_model, setup_emc_classification_pretrained, setup_pure_classification_pretrained
 import argparse
 from loader.loader import load_data, get_data, get_fs_data, get_data_loader, transforms_dict
@@ -57,7 +59,8 @@ datasets = {"mnist": 0,
             "cifar100": 3,
             "cifarfs": 4,
             "fc100": 5,
-            "cub200": 6}
+            "cub200": 6,
+            "fashion": 7}
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument('--dataset', dest="dataset", type=str, default="mnist", choices=datasets.keys(),
@@ -116,6 +119,8 @@ argparser.add_argument('--exp-name', dest='exp_name', type=str, help='Name for r
 argparser.add_argument('--verbosity', dest='verbosity', type=gezero_int, default=2, help='Verbosity level for raytune reporter.')
 argparser.add_argument('--log', dest='log_level', type=str, help='Set log level for logger. See https://docs.python.org/3/howto/logging.html for levels.')
 
+# Visualization Arguments
+argparser.add_argument('--plot', dest="make_plots", action="store_true", help="Whether plots should be generated to output folder")
 
 def legal_args(args):
     if (args.tuning):
@@ -453,11 +458,18 @@ def run_main(args):
         else:
             custom_net_classification(args)
 
+    if args.make_plots:
+        make_plots(args.exp_name, os.path.expanduser("~/ray_results/plots/") + args.exp_name + "/")
 
 if __name__ == '__main__':
     args = argparser.parse_args()
     send_discord_message(token_path="discord_token.secret", channel_id=1095627677848834128, message="Started\n" + str(args_pretty_print(args)))
     run_main(args)
-    send_discord_message(token_path="discord_token.secret", channel_id=1095627677848834128, message="Done @here")
+
+    if args.make_plots:
+        with get_files_dict(os.path.expanduser("~/ray_results/plots/") + args.exp_name) as plots:
+            send_discord_message(token_path="discord_token.secret", channel_id=1095627677848834128, message="Done @here", files=plots)
+    else:
+        send_discord_message(token_path="discord_token.secret", channel_id=1095627677848834128, message="Done @here")
 
    

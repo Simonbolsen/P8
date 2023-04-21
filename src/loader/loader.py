@@ -11,6 +11,7 @@ import loader.cifarfs_splits as cifarfs_splits
 import loader.cifar10fs_splits as cifar10fs_splits
 from learn2learn.vision.datasets import FC100
 from loader.cub200_dataset import Cub200
+from loader.mnist_loader import FashionMNIST, MNIST
 
 
 dataset_dict = {
@@ -19,7 +20,8 @@ dataset_dict = {
     "cifar10": lambda c: get_cifar10(config=c),
     "cifar100": lambda c: get_cifar100(config=c),
     "cifarfs": lambda c: get_cifarfs_as_classification(config=c),
-    "cub200": lambda c: get_cub200(config=c)
+    "cub200": lambda c: get_cub200(config=c),
+    "fashion": lambda c: get_fashion_mnist(config=c)
 }
 
 transforms_dict = {
@@ -75,23 +77,21 @@ def get_data_loader(data, batch_size=100):
 def get_data(config):
     return dataset_dict[config.dataset](config)
 
-
-
 def get_mnist(config):
-    training_set = datasets.MNIST(
+    training_set = MNIST(
         root=config.data_dir,
         train=True,
         transform=transforms_dict[config.train_transforms],
         download=True
     )       
     
-    testing_set = datasets.MNIST(
+    testing_set = MNIST(
         root=config.data_dir,
         train=False,
         transform=transforms_dict[config.test_transforms],
         download=True
-    )  
-
+    )       
+    
     training_set.targets = torch.from_numpy(np.array(training_set.targets))
     testing_set.targets = torch.from_numpy(np.array(testing_set.targets))
     
@@ -104,19 +104,66 @@ def get_mnist(config):
     remaining_idx = [i for i in idx if i not in train_split_idx]
     val_split_idx = random.sample(remaining_idx, k=val_split_size)
 
-    train_split = [training_set.data[i] for i in train_split_idx]
+    train_split = training_set.data[training_set.data['i'].isin(train_split_idx)]
+    train_split_idx.sort()
     train_targets = [int(training_set.targets[i].item()) for i in train_split_idx]
-    val_split = [training_set.data[i] for i in val_split_idx]
+    val_split = training_set.data[training_set.data['i'].isin(val_split_idx)]
+    val_split_idx.sort()
     val_targets = [int(training_set.targets[i].item()) for i in val_split_idx]
 
-    train = CustomCifarDataset(train_split, train_targets)
-    val = CustomCifarDataset(val_split, val_targets)
+    train = GenericMNISTDataset(train_split, train_targets, training_set.transform)
+    val = GenericMNISTDataset(val_split, val_targets, training_set.transform)
 
     train.targets = torch.tensor(train.targets, dtype=torch.int32)
     val.targets = torch.tensor(val.targets)
-
     return train, val, testing_set
 
+def get_fashion_mnist(config):
+    training_set = FashionMNIST(
+        root=config.data_dir,
+        train=True,
+        transform=transforms_dict[config.train_transforms],
+        download=True
+    )       
+    
+    testing_set = FashionMNIST(
+        root=config.data_dir,
+        train=False,
+        transform=transforms_dict[config.test_transforms],
+        download=True
+    )       
+    
+    training_set.targets = torch.from_numpy(np.array(training_set.targets))
+    testing_set.targets = torch.from_numpy(np.array(testing_set.targets))
+    
+    train_split_size = int(len(training_set) * 0.8)
+    val_split_size = int(len(training_set) * 0.2)
+
+    idx = range(len(training_set))
+    random.seed(25437890)
+    train_split_idx = random.sample(idx, k=train_split_size)
+    remaining_idx = [i for i in idx if i not in train_split_idx]
+    val_split_idx = random.sample(remaining_idx, k=val_split_size)
+
+    train_split = training_set.data[training_set.data['i'].isin(train_split_idx)]
+    train_split_idx.sort()
+    train_targets = [int(training_set.targets[i].item()) for i in train_split_idx]
+    val_split = training_set.data[training_set.data['i'].isin(val_split_idx)]
+    val_split_idx.sort()
+    val_targets = [int(training_set.targets[i].item()) for i in val_split_idx]
+
+    train = GenericMNISTDataset(train_split, train_targets, training_set.transform)
+    val = GenericMNISTDataset(val_split, val_targets, training_set.transform)
+
+    train.targets = torch.tensor(train.targets, dtype=torch.int32)
+    val.targets = torch.tensor(val.targets)
+    return train, val, testing_set
+
+class GenericMNISTDataset(FashionMNIST):
+    def __init__(self, data, data_targets, transform):
+        self.data = data
+        self.targets = data_targets
+        self.transform = transform      
 
 def get_cifar10(config):
     training_set = datasets.CIFAR10(
@@ -270,7 +317,7 @@ def get_cifarfs_as_classification(config):
 
 def get_cub200(config):
     training_set = Cub200(root=config.data_dir, download=True, train=True, transform=transforms_dict[config.train_transforms])
-    testing_set = Cub200(root=config.data_dir, download=True, train=False, transform=transforms_dict[config.train_transforms])
+    testing_set = Cub200(root=config.data_dir, download=True, train=False, transform=transforms_dict[config.test_tranforms])
 
 
     training_set.targets = torch.from_numpy(np.array(training_set.targets))
