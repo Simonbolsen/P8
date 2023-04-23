@@ -2,6 +2,7 @@ import logging
 import sys
 import file_util as fu
 import torch
+import os
 
 def extract_support_images(fs_sup_loaders):
     batches = []
@@ -87,6 +88,33 @@ def get_few_shot_embedding_result(train_loader, support_loaders, query_loader, m
 
     return embeddings
 
+def save_emc_classification_embedding_result(train_loader, val_loader, model, config, epoch, device):
+    print("Extracting embedding results")
+    model.eval()
+
+    save_emc_classification_embeddings("train", train_loader, model, config, epoch, device)
+    save_emc_classification_embeddings("val", val_loader, model, config, epoch, device)
+
+
+def save_emc_classification_embeddings(prefix, loader, model, config, epoch, device):
+    embeddings = []
+    class_embeddings = []
+    all_labels = []
+    first_it = True
+    
+    for images, labels in loader: 
+        if (first_it):
+            first_it = False
+            class_embeddings = model(images.to(device)).tolist()[-len(loader.unique_targets):]
+        embeddings.extend(model(images.to(device)).tolist()[:-len(loader.unique_targets)])
+        all_labels.extend(labels.tolist())
+
+    results = {prefix + "_embeddings": embeddings, prefix + "_labels": all_labels,
+                  prefix + "_class_embeddings": class_embeddings}
+    
+    print(f"Saving {prefix}: {len(embeddings)} {len(embeddings[0])}")
+    fu.save_to_pickle(os.path.join('embeddingData', config["exp_name"]), f'classification_data_{prefix}_{epoch}.p', results)
+
 def save_pure_classification_embedding_result(train_loader, val_loader, model, config, accuracy, epoch, device):
     print("Extracting embedding results")
 
@@ -98,10 +126,24 @@ def save_pure_classification_embedding_result(train_loader, val_loader, model, c
         embeddings_dict["e"] = torch.squeeze(output.detach()).tolist()
     model.avgpool.register_forward_hook(hook)
 
-    save_pure_classification_embeddings("train", train_loader, model, config, accuracy, epoch, embeddings_dict, device)
-    save_pure_classification_embeddings("val", val_loader, model, config, accuracy, epoch, embeddings_dict, device)    
+    save_pure_classification_embeddings("train", train_loader, model, config, epoch, embeddings_dict, device)
+    save_pure_classification_embeddings("val", val_loader, model, config, epoch, embeddings_dict, device)    
 
-def save_pure_classification_embeddings(prefix, loader, model, config, accuracy, epoch, embeddings_dict, device):
+def make_embedding_data_folder(config):
+    data_folder = os.path.join(os.path.realpath(__file__), '..', '..', 'embeddingData', config["exp_name"])
+    print("Making dir: " + data_folder)
+    if not os.path.exists(data_folder):
+        os.makedirs(data_folder)
+    else:
+        logging.ERROR("Cannot save embeddings as folder already exists: " + data_folder)
+        sys.exit()
+
+def save_embedding_meta_data(config, accuracies):
+    data = {'config': config, 'accuracies': accuracies}
+    path = os.path.join('embeddingData', config["exp_name"])
+    fu.save_to_json(path, 'meta_data.json', data)
+
+def save_pure_classification_embeddings(prefix, loader, model, config, epoch, embeddings_dict, device):
     embeddings = []
     all_labels = []
     predictions = []
@@ -111,7 +153,7 @@ def save_pure_classification_embeddings(prefix, loader, model, config, accuracy,
         all_labels.extend(labels.tolist())
 
     results = {prefix + "_embeddings": embeddings, prefix + "_labels": all_labels,
-                  "accuracy" : accuracy, "config" : config, "predictions": predictions}
+                  "predictions": predictions}
     
     print(f"Saving {prefix}: {len(embeddings)} {len(embeddings[0])}")
-    fu.save_to_pickle('embeddingData', f'classification_data_{prefix}_{epoch}.p', results)
+    fu.save_to_pickle(os.path.join('embeddingData', config["exp_name"]), f'classification_data_{prefix}_{epoch}.p', results)

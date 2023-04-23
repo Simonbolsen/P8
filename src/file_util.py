@@ -3,7 +3,7 @@ import json
 import pickle
 
 def save_to_json(folder, file_name, object):
-    folder_path = os.path.join(os.path.realpath(__file__), '..', folder)
+    folder_path = os.path.join(os.path.realpath(__file__), '..', '..', folder)
 
     if not os.path.exists(folder_path):
         print("==> folder to save embedding does not exist... creating folder...")
@@ -14,7 +14,7 @@ def save_to_json(folder, file_name, object):
         json.dump(json.dumps(object), outfile)
 
 def save_to_pickle(folder, file_name, object):
-    folder_path = os.path.join(os.path.realpath(__file__), '..', folder)
+    folder_path = os.path.join(os.path.realpath(__file__), '..', '..', folder)
 
     if not os.path.exists(folder_path):
         print("==> folder to save embedding does not exist... creating folder...")
