@@ -78,9 +78,9 @@ def make_config_plots(experiment_id:str, save_location:str = None) -> None:
         )
         
         if save_location != None:
-            savePath = save_location + key
-            os.makedirs(os.path.dirname(savePath), exist_ok=True)
-            figure.savefig(save_location + key)
+            save_path = os.path.join(save_location, key)
+            os.makedirs(os.path.dirname(save_path), exist_ok=True)
+            figure.savefig(save_path)
         else:
             figure.show()
         print("Plotted: " + key)
