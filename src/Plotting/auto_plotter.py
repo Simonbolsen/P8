@@ -1,11 +1,15 @@
 from ray import tune
-import Plotting.plotting_util as plot
-from Plotting.plotting_util import axis
-import Plotting.results_analysis_util as analysis
 import math
 import os
 import numbers
-
+if __name__ == '__main__':
+    import plotting_util as plot
+    from plotting_util import axis
+    import results_analysis_util as analysis
+else:
+    import Plotting.plotting_util as plot
+    from Plotting.plotting_util import axis
+    import Plotting.results_analysis_util as analysis
 # parameters = {
 #     "lr": "Learning Rate log_10(lr)",
 #     "d" : "Dimensions d",
