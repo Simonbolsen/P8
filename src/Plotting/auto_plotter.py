@@ -101,7 +101,21 @@ def make_2d_plot(axis1:axis, axis2:axis) -> plot:
 
 if __name__ == '__main__':
     
-    title = "cl_pure_res_large_cub_200"
-    make_plots(title)#, os.path.expanduser("~/ray_results/plots/") + title + "/")
+    user_dir = os.path.expanduser("~")
 
-    print("done")
+    data_path = os.path.join(user_dir, "ray_results")
+    save_path = os.path.join(user_dir, "ray_plots")
+
+    for entry in os.scandir(path=data_path):
+        if entry.is_dir():
+            try:
+                print("Plotting: " + entry.name)
+                make_plots(entry.name, os.path.join(save_path, entry.name))
+            except:
+                print("Failed to plot: " + entry.name)
+
+
+    # title = "cl_pure_res_large_cub_200"
+    # make_plots(title)#, os.path.expanduser("~/ray_results/plots/") + title + "/")
+
+    # print("done")
