@@ -13,15 +13,16 @@
             },
             "args": [
                 "./src/main.py",
-                "--dataset", "cifar100",
+                "--dataset", "cifar10",
                 "--datadir", "'./data'",
                 "--train_transforms","resnet",
                 "--test_transforms","resnet",
                 "--epochs", "30",
                 "--batch","100",
                 "--dims","15", "16",
-                "--lr","0.0008438447464830231", "0.001",
-                "--train-layers","12","25",
+                "--lr","0.0007391208356282593", "0.001",
+                "-fe",
+                "--train-layers","13","25",
                 "--channels","32", "32", "64", "128", "256",
                 "-pure", 
                 "-pt",
@@ -30,9 +31,8 @@
                 "--gpu", "0.33",
                 "--cpu", "5",
                 "--loss-func", "cross_entropy",
-                "--exp-name", "cifar10_clf_resnet50_pure_2",
-                "--samples", "200",
-                "--plot"
+                "--exp-name", "cifar10_medium_pure_embeddings",
+                "--samples", "200"
             ],
             "presentation": {
                 "reveal": "always",
@@ -59,14 +59,14 @@
                 "-pure", 
                 "-pt",
                 "--model", "resnet18",
-                "--gpu", "1",
-                "--cpu", "16",
+                "--gpu", "0.5",
+                "--cpu", "8",
                 "--loss-func", "cross_entropy",
                 "--exp-name", "cl_pure_res_small_fashion_mnist",
                 "--train_transforms", "resnet",
                 "--test_transforms", "resnet",
                 "-t",
-                "--samples", "100"
+                "--samples", "50"
             ],
             "presentation": {
                 "reveal": "always",
@@ -183,6 +183,40 @@
             }
         },
         {
+            "label": "CL: FASHION MNIST Pure ResNet Medium",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "fashion",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.0001", "0.001",
+                "--train-layers","0","25",
+                "-pure", 
+                "-pt",
+                "--model", "resnet50",
+                "--gpu", "1",
+                "--cpu", "16",
+                "--loss-func", "cross_entropy",
+                "--exp-name", "cl_pure_res_med_fashion_mnist",
+                "--train_transforms", "resnet",
+                "--test_transforms", "resnet",
+                "-t",
+                "--samples", "50"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
             "label": "CL: CIFAR10 Pure ResNet Medium",
             "command": "${command:python.interpreterPath}",
             "type": "shell",
@@ -283,6 +317,40 @@
                 "--samples", "100",
                 "-fe",
                 "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: FASHION MNIST Pure ResNet Large",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "fashion",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","64",
+                "--lr","0.0001", "0.001",
+                "--train-layers","0","50",
+                "-pure", 
+                "-pt",
+                "--model", "resnet101",
+                "--gpu", "1",
+                "--cpu", "16",
+                "--loss-func", "cross_entropy",
+                "--exp-name", "cl_pure_res_large_fashion_mnist",
+                "--train_transforms", "resnet",
+                "--test_transforms", "resnet",
+                "-t",
+                "--samples", "50"
             ],
             "presentation": {
                 "reveal": "always",
@@ -714,6 +782,14 @@
                 "focus": true
             }
         },
-
+        {
+            "label": "Run Queue",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "CL: FASHION MNIST Pure ResNet Small",
+                "CL: FASHION MNIST Pure ResNet Medium",
+                "CL: FASHION MNIST Pure ResNet Large" 
+            ]
+        }
     ]
 }

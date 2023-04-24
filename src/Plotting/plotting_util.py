@@ -9,6 +9,9 @@ from pathlib import Path
 def inv(x):
     return math.sqrt(1 - (1 - x)**2)
 
+def round_scale(x):
+    return 1 - math.sqrt(1 - x**2)
+
 def plot_simple_line_2d(ys, function = inv):
     axe = plt.axes()
     axe.plot(range(len(ys)), ys)
@@ -69,7 +72,6 @@ def plotHeatMap(xs, ys, width, height, label):
                 [i * (y_max - y_min) / (height - 1) + y_min for i in range(height)], "y",
                 num_of_surfaces=1, surfaceLabels=[label])
 
-
 def plotSurface(heights, zTitle, xAxis, xTitle, yAxis, yTitle, num_of_surfaces, surfaceLabels):
     mpl.rcParams['legend.fontsize'] = 10
 
@@ -107,7 +109,6 @@ def plotSurface(heights, zTitle, xAxis, xTitle, yAxis, yTitle, num_of_surfaces, 
     axe.legend()
 
     plt.show()
-
 
 def get_min_max(xs): 
     x_max = -math.inf
@@ -154,7 +155,6 @@ def plotPoints(xs, ys, zs, axis_names = ["", "", ""], legend = True, num_of_seri
         axe.legend()
 
     plt.show()
-
 
 class axis():
     label:str

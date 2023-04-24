@@ -226,23 +226,35 @@ def get_loader_info(train_loader):
 def emc_classification_setup(config, model, train_loader, val_loader, loss_func, device, ray_tune = True):
     optimiser = optim.Adam(model.parameters(), lr=config["lr"])
     max_epochs = config["max_epochs"]
+    accuracies = []
+
+    if not ray_tune:
+        eu.make_embedding_data_folder(config)
+        print("Save embeddings: True")
 
     print("start training classification...")
     for epoch in range(max_epochs):
         train_emc(model, train_loader, optimiser, loss_func, max_epochs, current_epoch=epoch, device=device)
         print("evaluating...")
         accuracy = classifiers["nearest_neighbour"](model, val_loader, device=device)
+        accuracies.append(accuracy)
         
         if ray_tune:
             tune.report(accuracy=accuracy)
         else: 
             print(f"accuracy: {accuracy}")
+            eu.save_emc_classification_embedding_result(train_loader, val_loader, model, config, epoch, device)
+
+    if not ray_tune:
+        eu.save_embedding_meta_data(config, accuracies)
 
 def pure_classification_setup(config, model, train_loader, val_loader, loss_func, device, ray_tune = True):
     optimiser = optim.Adam(model.parameters(), lr=config["lr"])
     max_epochs = config["max_epochs"]
+    accuracies = []
 
     if not ray_tune:
+        eu.make_embedding_data_folder(config)
         print("Save embeddings: True")
 
     print("start training classification...")
@@ -250,13 +262,16 @@ def pure_classification_setup(config, model, train_loader, val_loader, loss_func
         train_pure_pretrained(model, train_loader, optimiser, loss_func, max_epochs, current_epoch=epoch, device=device)
         print("evaluating...")
         accuracy = classifiers["one_hot_encoding"](model, val_loader, device=device)
+        accuracies.append(accuracy)
         
         if ray_tune:
             tune.report(accuracy=accuracy)
         else: 
             print(f"accuracy: {accuracy}")
             eu.save_pure_classification_embedding_result(train_loader, val_loader, model, config, accuracy, epoch, device)
-
+    
+    if not ray_tune:
+        eu.save_embedding_meta_data(config, accuracies)
 
 
 

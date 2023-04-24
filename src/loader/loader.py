@@ -319,7 +319,7 @@ def get_cifarfs_as_classification(config):
 
 def get_cub200(config):
     training_set = Cub200(root=config.data_dir, download=True, train=True, transform=transforms_dict[config.train_transforms])
-    testing_set = Cub200(root=config.data_dir, download=True, train=False, transform=transforms_dict[config.test_tranforms])
+    testing_set = Cub200(root=config.data_dir, download=True, train=False, transform=transforms_dict[config.test_transforms])
 
 
     training_set.targets = torch.from_numpy(np.array(training_set.targets))

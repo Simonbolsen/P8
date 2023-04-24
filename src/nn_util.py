@@ -238,12 +238,23 @@ def dist_and_proximity_loss(proximity_multiplier: float or int):
         device=device,
     )
 
+def cosine_loss(output_embeds, class_embeds, targets, device):
+    target_embds = class_embeds[targets]
+    dotproducts = (output_embeds * target_embds).sum(dim=1)
+    
+    embeds_norms = torch.norm(output_embeds, dim=1)
+    target_norms = torch.norm(target_embds, dim=1)
+    
+    loss = (1 - (dotproducts / (embeds_norms * target_norms))).sum()
+    
+    return loss, None
 
 emc_loss_functions = {
     "simple-dist": simple_dist_loss,
     "class-push": dist_and_proximity_loss,
     "comp-dist-loss": comparison_dist_loss,
     "cone_loss": cone_loss_hyperparam,
+    "cosine-loss": cosine_loss
 }
 
 
