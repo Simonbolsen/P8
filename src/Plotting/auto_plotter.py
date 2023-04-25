@@ -1,11 +1,15 @@
 from ray import tune
-import Plotting.plotting_util as plot
-from Plotting.plotting_util import axis
-import Plotting.results_analysis_util as analysis
 import math
 import os
 import numbers
-
+if __name__ == '__main__':
+    import plotting_util as plot
+    from plotting_util import axis
+    import results_analysis_util as analysis
+else:
+    import Plotting.plotting_util as plot
+    from Plotting.plotting_util import axis
+    import Plotting.results_analysis_util as analysis
 # parameters = {
 #     "lr": "Learning Rate log_10(lr)",
 #     "d" : "Dimensions d",
@@ -74,9 +78,9 @@ def make_config_plots(experiment_id:str, save_location:str = None) -> None:
         )
         
         if save_location != None:
-            savePath = save_location + key
-            os.makedirs(os.path.dirname(savePath), exist_ok=True)
-            figure.savefig(save_location + key)
+            save_path = os.path.join(save_location, key)
+            os.makedirs(os.path.dirname(save_path), exist_ok=True)
+            figure.savefig(save_path)
         else:
             figure.show()
         print("Plotted: " + key)
@@ -97,7 +101,21 @@ def make_2d_plot(axis1:axis, axis2:axis) -> plot:
 
 if __name__ == '__main__':
     
-    title = "cl_pure_res_large_cub_200"
-    make_plots(title)#, os.path.expanduser("~/ray_results/plots/") + title + "/")
+    user_dir = os.path.expanduser("~")
 
-    print("done")
+    data_path = os.path.join(user_dir, "ray_results")
+    save_path = os.path.join(user_dir, "ray_plots")
+
+    for entry in os.scandir(path=data_path):
+        if entry.is_dir():
+            try:
+                print("Plotting: " + entry.name)
+                make_plots(entry.name, os.path.join(save_path, entry.name))
+            except:
+                print("Failed to plot: " + entry.name)
+
+
+    # title = "cl_pure_res_large_cub_200"
+    # make_plots(title)#, os.path.expanduser("~/ray_results/plots/") + title + "/")
+
+    # print("done")
