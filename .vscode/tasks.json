@@ -59,14 +59,15 @@
                 "-pure", 
                 "-pt",
                 "--model", "resnet18",
-                "--gpu", "0.5",
-                "--cpu", "8",
+                "--gpu", "0.25",
+                "--cpu", "4",
                 "--loss-func", "cross_entropy",
                 "--exp-name", "cl_pure_res_small_fashion_mnist",
-                "--train_transforms", "resnet",
-                "--test_transforms", "resnet",
+                "--train_transforms", "mnist_resnet",
+                "--test_transforms", "mnist_resnet",
                 "-t",
-                "--samples", "50"
+                "--samples", "50",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
@@ -201,14 +202,15 @@
                 "-pure", 
                 "-pt",
                 "--model", "resnet50",
-                "--gpu", "1",
-                "--cpu", "16",
+                "--gpu", "0.25",
+                "--cpu", "4",
                 "--loss-func", "cross_entropy",
                 "--exp-name", "cl_pure_res_med_fashion_mnist",
-                "--train_transforms", "resnet",
-                "--test_transforms", "resnet",
+                "--train_transforms", "mnist_resnet",
+                "--test_transforms", "mnist_resnet",
                 "-t",
-                "--samples", "50"
+                "--samples", "50",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
@@ -347,10 +349,12 @@
                 "--cpu", "16",
                 "--loss-func", "cross_entropy",
                 "--exp-name", "cl_pure_res_large_fashion_mnist",
-                "--train_transforms", "resnet",
-                "--test_transforms", "resnet",
+                "--train_transforms", "mnist_resnet",
+                "--test_transforms", "mnist_resnet",
                 "-t",
-                "--samples", "50"
+                "--samples", "50",
+                // "--grace", "5",
+                "--plot"
             ],
             "presentation": {
                 "reveal": "always",
@@ -769,7 +773,7 @@
                 "--gpu", "0.33",
                 "--cpu", "5",
                 "--loss-func", "simple-dist",
-                "--exp-name", "cl_embed_simple_large_cub_200",
+                "--exp-name", "cl_embed_simple_res_large_cub_200",
                 "--train_transforms", "resnet",
                 "--test_transforms", "resnet",
                 "-t",
@@ -783,9 +787,99 @@
             }
         },
         {
+            "label": "CL: BEST CIFAR10 EMBED SIMPLE DIST ResNet Small",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar10",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.000098870915384571391", "0.001",
+                "-pt",
+                "--model", "resnet18",
+                "--dims", "1769", "1770",
+                "--loss-func", "simple-dist",
+                "--exp-name", "cl_embed_simple_res_small_cifar_10_embeddings",
+                "--train_transforms", "resnet",
+                "--test_transforms", "resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: BEST CIFAR10 EMBED SIMPLE DIST ResNet Medium",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar10",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.00046783693257866204", "0.001",
+                "-pt",
+                "--model", "resnet50",
+                "--dims", "1766", "1770",
+                "--loss-func", "simple-dist",
+                "--exp-name", "cl_embed_simple_res_med_cifar_10_embeddings",
+                "--train_transforms", "resnet",
+                "--test_transforms", "resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: BEST CIFAR10 EMBED SIMPLE DIST ResNet Large",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar10",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.00032667922727799045", "0.001",
+                "-pt",
+                "--model", "resnet101",
+                "--dims", "1577", "1770",
+                "--loss-func", "simple-dist",
+                "--exp-name", "cl_embed_simple_res_large_cifar_10_embeddings",
+                "--train_transforms", "resnet",
+                "--test_transforms", "resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
             "label": "Run Queue",
             "dependsOrder": "sequence",
             "dependsOn": [
+                // "CL: BEST CIFAR10 EMBED SIMPLE DIST ResNet Small",
+                // "CL: BEST CIFAR10 EMBED SIMPLE DIST ResNet Medium",
+                // "CL: BEST CIFAR10 EMBED SIMPLE DIST ResNet Large",
                 "CL: FASHION MNIST Pure ResNet Small",
                 "CL: FASHION MNIST Pure ResNet Medium",
                 "CL: FASHION MNIST Pure ResNet Large" 
