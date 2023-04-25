@@ -27,6 +27,7 @@ dataset_dict = {
 }
 
 transforms_dict = {
+    "id": transforms.Compose([]),
     "toTensor": ToTensor(),
     "resize224_flip": transforms.Compose([
                         transforms.Resize(224),
@@ -53,9 +54,15 @@ transforms_dict = {
     ]),
     "resnet": transforms.Compose([
                         # transforms.ToTensor(),
-                        transforms.Resize(256),
+                        transforms.Resize(256, antialias=True),
                         transforms.CenterCrop(224),
                         transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+                    ]),
+    "mnist_resnet": transforms.Compose([
+                        # transforms.ToTensor(),
+                        transforms.Resize(44, antialias=True),
+                        transforms.CenterCrop(36),
+                        transforms.Normalize(mean=33.3149, std=78.5639)
                     ]),
 }
 
@@ -105,8 +112,8 @@ def get_fashion_mnist_test(config):
     remaining_idx = [i for i in idx if i not in train_split_idx]
     val_split_idx = random.sample(remaining_idx, k=val_split_size)
     
-    training_set.data = training_set.data.view(60000, 1,28,28).expand(-1, 3, 28, 28).float()
-    testing_set.data = testing_set.data.view(10000, 1,28,28).expand(-1, 3, 28, 28).float()
+    training_set.data = training_set.data.view(60000, 1,28,28).float()#.expand(-1, 3, 28, 28).float()
+    testing_set.data = testing_set.data.view(10000, 1,28,28).float()#.expand(-1, 3, 28, 28).float()
 
     train_split = training_set.data[train_split_idx]
     # train_targets = [int(training_set.targets[i].item()) for i in train_split_idx]
@@ -119,9 +126,9 @@ def get_fashion_mnist_test(config):
     training_set = CustomCifarDataset(train_split, train_targets, training_set.transform)
     val_set = CustomCifarDataset(val_split, val_targets, training_set.transform)
     
-    logging.debug("==> applying transforms")
-    training_set.transform_all()
-    val_set.transform_all()
+    # logging.debug("==> applying transforms")
+    # training_set.transform_all()
+    # val_set.transform_all()
     
     # training_set_transformed_tuples = [i for (i, _) in training_set]
     # val_set_transformed_tuples = [i for (i, _) in val_set]
@@ -132,6 +139,7 @@ def get_fashion_mnist_test(config):
     
     # training_set.targets = torch.tensor(training_set.labels)
     # testing_set.targets = torch.tensor(testing_set.labels)
+    #training_set[0]
     return training_set, val_set, testing_set
 
 def get_mnist(config):
@@ -429,8 +437,10 @@ class CustomCifarDataset(torch.utils.data.Dataset):
         return self.transform(self.data[idx]), self.targets[idx]
     
     def transform_all(self):
-        for i in range(len(self.data)):
-            self.data[i] = self.transform(self.data[i])
+        self.data = self.transform(self.data)
+        self.transform = lambda x : x
+        # for i in range(len(self.data)):
+        #     self.data[i] = self.transform(self.data[i])
         
     
 
