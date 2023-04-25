@@ -18,6 +18,7 @@ importlib-resources = "*"
 torch = {version = "*", index = "downloadpytorch"}
 torchvision = {version = "*", index = "downloadpytorch"}
 learn2learn = "*"
+skimage = "*" 
 
 [dev-packages]
 
