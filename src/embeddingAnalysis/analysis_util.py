@@ -3,6 +3,9 @@ import numpy as np
 def argmin(iterable):
     return min(enumerate(iterable), key=lambda x: x[1])[0]
 
+def argmax(iterable):
+    return max(enumerate(iterable), key=lambda x: x[1])[0]
+
 def get_dists(embeddings, labels, class_embeddings, func = lambda x: np.log(x)):
     dists = []
     for i, embedding in enumerate(embeddings):
