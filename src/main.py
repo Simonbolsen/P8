@@ -461,7 +461,7 @@ def run_main(args):
             custom_net_classification(args)
 
     if args.make_plots:
-        make_plots(args.exp_name, os.path.expanduser("~/ray_plots") + args.exp_name + "/")
+        make_plots(args.exp_name, os.path.join(os.path.expanduser("~/ray_plots"), args.exp_name))
 
 if __name__ == '__main__':
     args = argparser.parse_args()
