@@ -1,3 +1,4 @@
+import logging
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 import torch
@@ -21,7 +22,8 @@ dataset_dict = {
     "cifar100": lambda c: get_cifar100(config=c),
     "cifarfs": lambda c: get_cifarfs_as_classification(config=c),
     "cub200": lambda c: get_cub200(config=c),
-    "fashion": lambda c: get_fashion_mnist(config=c)
+    "fashion": lambda c: get_fashion_mnist(config=c),
+    "fashion_test": lambda c: get_fashion_mnist_test(config=c)
 }
 
 transforms_dict = {
@@ -50,9 +52,9 @@ transforms_dict = {
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ]),
     "resnet": transforms.Compose([
+                        # transforms.ToTensor(),
                         transforms.Resize(256),
                         transforms.CenterCrop(224),
-                        transforms.ToTensor(),
                         transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
                     ]),
 }
@@ -76,6 +78,61 @@ def get_data_loader(data, batch_size=100):
 
 def get_data(config):
     return dataset_dict[config.dataset](config)
+
+def get_fashion_mnist_test(config):
+    logging.debug("==> using fashion mnist test")
+    training_set = datasets.MNIST(
+        root=config.data_dir,
+        train=True,
+        transform=transforms_dict[config.train_transforms],
+        download=True
+    )       
+    
+    testing_set = datasets.MNIST(
+        root=config.data_dir,
+        train=False,
+        transform=transforms_dict[config.test_transforms],
+        download=True
+    )       
+    
+    train_split_size = int(len(training_set) * 0.8)
+    val_split_size = int(len(training_set) * 0.2)
+    
+    logging.debug("==> creating splits")
+    idx = range(len(training_set))
+    random.seed(25437890)
+    train_split_idx = random.sample(idx, k=train_split_size)
+    remaining_idx = [i for i in idx if i not in train_split_idx]
+    val_split_idx = random.sample(remaining_idx, k=val_split_size)
+    
+    training_set.data = training_set.data.view(60000, 1,28,28).expand(-1, 3, 28, 28).float()
+    testing_set.data = testing_set.data.view(10000, 1,28,28).expand(-1, 3, 28, 28).float()
+
+    train_split = training_set.data[train_split_idx]
+    # train_targets = [int(training_set.targets[i].item()) for i in train_split_idx]
+    train_targets = training_set.targets[train_split_idx]
+    # val_split = [training_set.data[i] for i in val_split_idx]
+    val_split = training_set.data[val_split_idx]
+    # val_targets = [int(training_set.targets[i].item()) for i in val_split_idx]
+    val_targets = training_set.targets[val_split_idx]
+    
+    training_set = CustomCifarDataset(train_split, train_targets, training_set.transform)
+    val_set = CustomCifarDataset(val_split, val_targets, training_set.transform)
+    
+    logging.debug("==> applying transforms")
+    training_set.transform_all()
+    val_set.transform_all()
+    
+    # training_set_transformed_tuples = [i for (i, _) in training_set]
+    # val_set_transformed_tuples = [i for (i, _) in val_set]
+    
+    # logging.debug("==> creating new dataset")
+    # training_set_transformed = CustomCifarDataset(training_set_transformed_tuples, train_targets, lambda x: x)
+    # val_set_transformed = CustomCifarDataset(val_set_transformed_tuples, val_targets, lambda x: x)
+    
+    # training_set.targets = torch.tensor(training_set.labels)
+    # testing_set.targets = torch.tensor(testing_set.labels)
+    return training_set, val_set, testing_set
 
 def get_mnist(config):
     training_set = MNIST(
@@ -360,16 +417,21 @@ def get_fs_data(config):
     return fs_dataset_dict[config.dataset](config)
 
 class CustomCifarDataset(torch.utils.data.Dataset):
-    def __init__(self, data, data_targets):
+    def __init__(self, data, data_targets, transform):
         self.data = data
         self.targets = data_targets
-        self.transform = ToTensor()
+        self.transform = transform
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, idx):
         return self.transform(self.data[idx]), self.targets[idx]
+    
+    def transform_all(self):
+        for i in range(len(self.data)):
+            self.data[i] = self.transform(self.data[i])
+        
     
 
 def get_cifarfs(config):
