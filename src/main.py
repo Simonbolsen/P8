@@ -471,8 +471,8 @@ if __name__ == '__main__':
 
     if args.make_plots:
         with get_files_dict(os.path.join(os.path.expanduser("~/ray_plots"), args.exp_name)) as plots:
-            send_discord_message(token_path="discord_token.secret", channel_id=1095627677848834128, message="Done @here", files=plots)
+            send_discord_message(token_path="discord_token.secret", channel_id=1095627677848834128, message="Done @here" + args.exp_name, files=plots)
     else:
-        send_discord_message(token_path="discord_token.secret", channel_id=1095627677848834128, message="Done @here")
+        send_discord_message(token_path="discord_token.secret", channel_id=1095627677848834128, message="Done @here" + args.exp_name)
 
    
