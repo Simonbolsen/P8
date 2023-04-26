@@ -2,7 +2,7 @@ from functools import partial
 import os
 
 import numpy as np
-from Plotting.auto_plotter import make_plots
+from Plotting.auto_plotter import make_experiment_plots
 from file_util import get_files_dict
 from training_utils import emc_classification_setup, setup_classification_custom_model, setup_emc_classification_pretrained, setup_pure_classification_pretrained
 import argparse
@@ -462,7 +462,7 @@ def run_main(args):
             custom_net_classification(args)
 
     if args.make_plots:
-        make_plots(args.exp_name, os.path.join(os.path.expanduser("~/ray_plots"), args.exp_name))
+        make_experiment_plots(args.exp_name, os.path.join(os.path.expanduser("~/ray_plots"), args.exp_name))
 
 if __name__ == '__main__':
     args = argparser.parse_args()

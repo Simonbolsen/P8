@@ -1,8 +1,10 @@
 import json
+from typing import Callable, Optional
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import numpy as np;
 import matplotlib.cm as cm
+import matplotlib.scale as mpl_scale
 import math
 from pathlib import Path
 
@@ -159,6 +161,8 @@ def plotPoints(xs, ys, zs, axis_names = ["", "", ""], legend = True, num_of_seri
 class axis():
     label:str
     data:list[list]
+    scale:mpl_scale.ScaleBase = mpl_scale.LinearScale(None)
+
     def __init__(self, label:str, data:list[list] = []) -> None:
         self.label = label
         self.data = data
@@ -186,6 +190,9 @@ def plotPoints2d(xs:axis, ys:axis, legend = True, num_of_series = 1, series_labe
     axe.set_xbound(x_min, x_max)
     axe.set_ybound(y_min, y_max)
     # axe.w_zaxis.set_major_formatter(plt.FuncFormatter(lambda x, pos: f"{function(x):.3f}"))
+
+    axe.set_xscale(xs.scale)
+    axe.set_yscale(ys.scale)
 
     if legend:
         axe.legend()
