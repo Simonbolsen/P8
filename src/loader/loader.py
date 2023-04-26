@@ -57,7 +57,7 @@ transforms_dict = {
                         transforms.CenterCrop(224),
                         transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
                     ]),
-    "mnist_resnet": transforms.Compose([
+    "cheap_mnist_resnet": transforms.Compose([
                         # transforms.ToTensor(),
                         transforms.Resize(44, antialias=True),
                         transforms.CenterCrop(36),
@@ -281,13 +281,20 @@ def get_cifar10(config):
     remaining_idx = [i for i in idx if i not in train_split_idx]
     val_split_idx = random.sample(remaining_idx, k=val_split_size)
 
-    train_split = [training_set.data[i] for i in train_split_idx]
-    train_targets = [int(training_set.targets[i].item()) for i in train_split_idx]
-    val_split = [training_set.data[i] for i in val_split_idx]
-    val_targets = [int(training_set.targets[i].item()) for i in val_split_idx]
 
-    train = CustomCifarDataset(train_split, train_targets)
-    val = CustomCifarDataset(val_split, val_targets)
+    train_split = training_set.data[train_split_idx]
+    train_targets = training_set.targets[train_split_idx]
+    val_split = training_set.data[val_split_idx]
+    val_targets = training_set.targets[val_split_idx]
+
+
+    # train_split = [training_set.data[i] for i in train_split_idx]
+    # train_targets = [int(training_set.targets[i].item()) for i in train_split_idx]
+    # val_split = [training_set.data[i] for i in val_split_idx]
+    # val_targets = [int(training_set.targets[i].item()) for i in val_split_idx]
+
+    train = CustomCifarDataset(train_split, train_targets, training_set.transform)
+    val = CustomCifarDataset(val_split, val_targets, training_set.transform)
 
     train.targets = torch.tensor(train.targets, dtype=torch.int32)
     val.targets = torch.tensor(val.targets)
@@ -354,13 +361,18 @@ def get_cifar100(config):
     remaining_idx = [i for i in idx if i not in train_split_idx]
     val_split_idx = random.sample(remaining_idx, k=val_split_size)
 
-    train_split = [training_set.data[i] for i in train_split_idx]
-    train_targets = [int(training_set.targets[i].item()) for i in train_split_idx]
-    val_split = [training_set.data[i] for i in val_split_idx]
-    val_targets = [int(training_set.targets[i].item()) for i in val_split_idx]
+    train_split = training_set.data[train_split_idx]
+    train_targets = training_set.targets[train_split_idx]
+    val_split = training_set.data[val_split_idx]
+    val_targets = training_set.targets[val_split_idx]
 
-    train = CustomCifarDataset(train_split, train_targets)
-    val = CustomCifarDataset(val_split, val_targets)
+    # train_split = [training_set.data[i] for i in train_split_idx]
+    # train_targets = [int(training_set.targets[i].item()) for i in train_split_idx]
+    # val_split = [training_set.data[i] for i in val_split_idx]
+    # val_targets = [int(training_set.targets[i].item()) for i in val_split_idx]
+
+    train = CustomCifarDataset(train_split, train_targets, training_set.transform)
+    val = CustomCifarDataset(val_split, val_targets, training_set.transform)
 
     train.targets = torch.tensor(train.targets, dtype=torch.int32)
     val.targets = torch.tensor(val.targets)
