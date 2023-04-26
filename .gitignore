@@ -135,3 +135,4 @@ EmbeddingData
 embeddingData
 
 *.secret
+.vscode/settings.json
