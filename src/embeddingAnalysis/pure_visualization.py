@@ -63,7 +63,7 @@ def load_pure_data(epoch, data_folder) :
 def load_mtm_data(epoch, data_folder):
     print("TODO")
 
-def pca_pure_classification(data_folder):
+def pca_pure_classification(data_folder, save = False):
     i = 29
     train_embeddings, train_labels, val_embeddings, val_labels, data, val_class_embeddings, train_class_embeddings = load_pure_data(i, data_folder)
 
@@ -81,14 +81,14 @@ def pca_pure_classification(data_folder):
         i += 2000 / points
         _ = pca.fit_transform(train_embeddings)
         try:
+            xs.append(i)
             scores.append(pca.score(train_embeddings))
         except:
             done = True
         
-
-    plot.plot_line_2d([f(i) for i in range(points)], 
+    plot.plot_line_2d(xs, 
                       [scores], 
-                      ["PCA Scores"], lambda x:x)
+                      ["PCA Scores"], lambda x:x, "PCA Components", "PCA Score", data_folder + "pca_plot" if save else "" )
     
 def plot_pure_distances_to_class_centers():
     all_dists = []
@@ -196,7 +196,7 @@ def plot_acc_by_epoch():
     
     plot.plot_line_2d([i for i in range(30)], [val_acc, train_acc, acc], ["val C4", "Train C4", "Pure"], lambda x:x) #Closest class center classification
 
-def plot_acc_by_dist_funcs_and_epoch(data_folder): 
+def plot_acc_by_dist_funcs_and_epoch(data_folder, save = False): 
     ed_acc = []
     cod_acc = []
     cacd_acc = []
@@ -272,10 +272,13 @@ def plot_acc_by_dist_funcs_and_epoch(data_folder):
         cacd_intersection.append(cacd_intersection_num / len(val_embeddings))
     
     plot.plot_line_2d([i for i in epochs], [ed_acc, cacd_acc, [plot.round_scale(data["accuracies"][i]) for i in epochs]], 
-                      ["Euclidean", "Cosine avg Center", "Pure"]) #Closest class center classification
+                      ["Euclidean", "Cosine avg Center", "Pure"], x_label = "Epoch", y_label = "Classification Accuracy", 
+                      filepath = data_folder + "/acc_plot.png" if save else "") #Closest class center classification
     #plot.plot_line_2d([i for i in epochs], [ed_acc, cod_acc, cacd_acc, codun_acc, cacdun_acc, [plot.round_scale(data["accuracies"][i]) for i in epochs]], 
     #                  ["Euclidean", "Cosine Origo", "Cosine avg Center","Cosine Origo UN", "Cosine avg Center UN", "Pure"]) #Closest class center classification
-    plot.plot_line_2d([i for i in epochs], [ed_intersection, cacd_intersection], ["Euclidean and Pure Intersection", "Cosine avg Center and Pure Intersection"])
+    plot.plot_line_2d([i for i in epochs], [ed_intersection, cacd_intersection], 
+                      ["Euclidean and Pure Intersection", "Cosine avg Center and Pure Intersection"], 
+                      lambda x:x, "Epoch", "Proportion of Prediction Intersection", data_folder + "/intersection_plot.png" if save else "")
 
 def plot_pure_distance_distribution():
     num_buckets = 30
@@ -317,7 +320,7 @@ def get_median_and_iqr(sorted_list):
             j += 1
     return median, min(median - sorted_list[i], sorted_list[j] - median)
         
-def plot_pure_dist_median(data_folder):
+def plot_pure_dist_median(data_folder, save = False):
     all_medians = [[] for _ in range(10)]
     all_cetc = [[] for _ in range(10)]
     all_epochs = [[] for _ in range(10)]
@@ -345,9 +348,12 @@ def plot_pure_dist_median(data_folder):
 
     #plot.plotPoints(all_epochs, all_cetc, all_medians, ["Epoch", "Class center to Avg Center dist", "Median"], num_of_series=10, 
     #                series_labels=[f"Class {i}" for i in range(10)], function=lambda x:x, marker="-")
-    plot.plot_points_series_2d(all_cetc, all_medians, "Dist to avg center", "Median dists", [f"Class {i}" for i in range(10)])
+    #plot.plot_points_series_2d(all_cetc, all_medians, "Dist to avg center", "Median dists", [f"Class {i}" for i in range(10)])
 
-    plot.plot_line_2d([i for i in epochs], all_medians, [f"Class {i}" for i in range(10)], lambda x:x)
+    plot.plot_line_2d([i for i in epochs], all_medians, [f"Class {i}" for i in range(10)], lambda x:x, 
+                      "Epochs", "Mediuan Distance to Class Center", data_folder + "/median_plot.png" if save else "")
+    plot.plot_line_2d([i for i in epochs], all_medians, [f"Class {i}" for i in range(10)], lambda x:x, 
+                      "Epochs", "Class Center Distance to Avg Class Center", data_folder + "/cetc_plot.png" if save else "")
     #plot.plot_line_2d([i for i in epochs], all_medians[:1], ["Median Dist All classes"], lambda x:x)
 
 def print_stats():
@@ -369,8 +375,6 @@ def kmeans():
     plot.plot_line_2d([i for i in cluster_range], [scores], ["Score"], lambda x:x)
     #au.print_distance_matrix(train_class_embeddings, kmeans.cluster_centers_)
 
-def predictions_stats():
-    train_embeddings, train_labels, val_embeddings, val_labels, data, val_class_embeddings, train_class_embeddings = load_pure_data(i, data_folder)
 
 if __name__ == '__main__':
     #plot_acc_by_epoch()
@@ -386,9 +390,10 @@ if __name__ == '__main__':
 
     #USEFUL:
     data_folder = "cifar10_medium_pure_embeddings"
-    train_embeddings, train_labels, val_embeddings, val_labels, data, val_class_embeddings, train_class_embeddings = load_pure_data(29, data_folder)
-    pca_pure_classification(data_folder)
-    plot_acc_by_dist_funcs_and_epoch(data_folder)
-    plot_pure_dist_median(data_folder)
+    save = True
+    #train_embeddings, train_labels, val_embeddings, val_labels, data, val_class_embeddings, train_class_embeddings = load_pure_data(29, data_folder)
+    pca_pure_classification(data_folder, save)
+    plot_acc_by_dist_funcs_and_epoch(data_folder, save)
+    plot_pure_dist_median(data_folder, save)
 
     print("Done")
