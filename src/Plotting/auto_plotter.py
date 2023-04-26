@@ -60,7 +60,7 @@ def make_experiment_plots(experiment_id:str, save_location:Optional[str] = None)
             for (property, value) in overwrites.items():
                 setattr(configData[key], property, value)
 
-    make_plots(configData.values(), [accuracies], save_location)
+    make_plots(configData.values(), [accuracies], name=experiment_id, save_location=save_location)
 
 
 def save_plot(plt:plot, save_location:str, plot_id:str):
@@ -92,12 +92,15 @@ def get_formatted_config_data_and_accuracies(experiment_id:str) -> Tuple[axis, d
     
     return accuracies, data
 
-def make_plots(xAxis:list[axis], yAxis:Sequence[axis], save_location:Optional[str] = None) -> None:
+def make_plots(xAxis:list[axis], yAxis:Sequence[axis], name:Optional[str], save_location:Optional[str] = None) -> None:
     for x in xAxis:
         for y in yAxis:
             figure = make_2d_plot(x, y)
 
             plot_name = x.label + "_" + y.label
+
+            if name != None:
+                figure.title(name)
 
             if save_location != None:
                 save_plot(figure, save_location, plot_name)
