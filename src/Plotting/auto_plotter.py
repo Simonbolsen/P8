@@ -30,15 +30,6 @@ def apply_overwrites(axis:axis, overwrites):
     for name, value in overwrites:
         setattr(axis, name, value)
 
-
-# param1 = "lr"
-# paramColor = "e"
-
-bin1 = []
-bin2 = []
-
-bin1_size = 0.5
-bin2_size = 10
 binColer_size = 3
 
 def insert_append(l:list[list], i:int, e):
@@ -49,14 +40,11 @@ def insert_append(l:list[list], i:int, e):
             l.append([])
         l.append([e])
 
-
-
 def simon_visual_func(x):
     return 1 - (1 - x**2)**(1/2)
 
 def simon_inv_visual_func(x):
     return (1 - (1 - x)**2)**(1/2)
-
 
 def get_simon_scale() -> matplotlib.scale.FuncScale:
     return matplotlib.scale.FuncScale(None, functions=(simon_visual_func, simon_inv_visual_func))
@@ -116,8 +104,6 @@ def make_plots(xAxis:list[axis], yAxis:Sequence[axis], save_location:Optional[st
             else:
                 figure.show()
             print("Plotted: " + plot_name)
-
-
     
 def make_2d_plot(axis1:axis, axis2:axis) -> plot:
 
