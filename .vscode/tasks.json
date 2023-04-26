@@ -40,6 +40,7 @@
                 "focus": true
             }
         },
+        // ------- RESNET SMALL -------
         {
             "label": "CL: FASHION MNIST Pure ResNet Small",
             "command": "${command:python.interpreterPath}",
@@ -54,7 +55,7 @@
                 "--datadir", "'./data'",
                 "--epochs", "30",
                 "--batch","100",
-                "--lr","0.0001", "0.001",
+                "--lr","0.00001", "0.01",
                 "--train-layers","0","10",
                 "-pure", 
                 "-pt",
@@ -161,7 +162,7 @@
                 "--datadir", "'./data'",
                 "--epochs", "30",
                 "--batch","100",
-                "--lr","0.0001", "0.001",
+                "--lr","0.00001", "0.01",
                 "--train-layers","0","10",
                 "-pure", 
                 "-pt",
@@ -197,7 +198,7 @@
                 "--datadir", "'./data'",
                 "--epochs", "30",
                 "--batch","100",
-                "--lr","0.0001", "0.001",
+                "--lr","0.00001", "0.01",
                 "--train-layers","0","25",
                 "-pure", 
                 "-pt",
@@ -339,14 +340,14 @@
                 "--dataset", "fashion",
                 "--datadir", "'./data'",
                 "--epochs", "30",
-                "--batch","64",
-                "--lr","0.0001", "0.001",
+                "--batch","100",
+                "--lr","0.00001", "0.01",
                 "--train-layers","0","50",
                 "-pure", 
                 "-pt",
                 "--model", "resnet101",
-                "--gpu", "1",
-                "--cpu", "16",
+                "--gpu", "0.25",
+                "--cpu", "4",
                 "--loss-func", "cross_entropy",
                 "--exp-name", "cl_pure_res_large_fashion_mnist",
                 "--train_transforms", "mnist_resnet",
@@ -595,8 +596,8 @@
                 "-pt",
                 "--dims", "250", "2000",
                 "--model", "resnet50",
-                "--gpu", "0.08",
-                "--cpu", "1",
+                "--gpu", "0.12",
+                "--cpu", "2",
                 "--loss-func", "simple-dist",
                 "--exp-name", "cl_embed_simple_res_med_cifar_10",
                 "--train_transforms", "resnet",
@@ -786,6 +787,343 @@
                 "focus": true
             }
         },
+
+
+
+
+        {
+            "label": "CL: FASHION MNIST EMBED SIMPLE DIST ResNet Small",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "fashion",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "--train-layers", "0", "10",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet18",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "simple-dist",
+                "--exp-name", "cl_embed_simple_res_small_fashion",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: FASHION MNIST EMBED COSINE DIST ResNet Small",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "fashion",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "--train-layers", "0", "10",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet18",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "cosine-loss",
+                "--exp-name", "cl_embed_cosine_res_small_fashion",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: FASHION MNIST EMBED PUSH ResNet Small",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "fashion",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "--train-layers", "0", "10",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet18",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "class-push",
+                "--exp-name", "cl_embed_push_res_small_fashion",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+
+
+
+
+
+
+        {
+            "label": "CL: FASHION MNIST EMBED SIMPLE DIST ResNet Medium",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "fashion",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "--train-layers", "0", "25",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet50",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "simple-dist",
+                "--exp-name", "cl_embed_simple_res_med_fashion",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: FASHION MNIST EMBED COSINE DIST ResNet Medium",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "fashion",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "--train-layers", "0", "25",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet50",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "cosine-loss",
+                "--exp-name", "cl_embed_cosine_res_med_fashion",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: FASHION MNIST EMBED PUSH ResNet Medium",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "fashion",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "--train-layers", "0", "25",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet50",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "class-push",
+                "--exp-name", "cl_embed_push_res_med_fashion",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+
+
+
+        {
+            "label": "CL: FASHION MNIST EMBED SIMPLE DIST ResNet Large",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "fashion",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "--train-layers", "0", "50",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet101",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "simple-dist",
+                "--exp-name", "cl_embed_simple_res_large_fashion",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: FASHION MNIST EMBED COSINE DIST ResNet Large",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "fashion",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "--train-layers", "0", "50",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet101",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "cosine-loss",
+                "--exp-name", "cl_embed_cosine_res_large_fashion",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: FASHION MNIST EMBED PUSH ResNet Large",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "fashion",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "--train-layers", "0", "50",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet101",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "class-push",
+                "--exp-name", "cl_embed_push_res_large_fashion",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+
+
+
+
+
+
+
+
+
         {
             "label": "CL: BEST CIFAR10 EMBED SIMPLE DIST ResNet Small",
             "command": "${command:python.interpreterPath}",
@@ -880,9 +1218,23 @@
                 // "CL: BEST CIFAR10 EMBED SIMPLE DIST ResNet Small",
                 // "CL: BEST CIFAR10 EMBED SIMPLE DIST ResNet Medium",
                 // "CL: BEST CIFAR10 EMBED SIMPLE DIST ResNet Large",
+                // "CL: CIFAR10 EMBED SIMPLE DIST ResNet Medium"
+
+
                 "CL: FASHION MNIST Pure ResNet Small",
                 "CL: FASHION MNIST Pure ResNet Medium",
-                "CL: FASHION MNIST Pure ResNet Large" 
+                "CL: FASHION MNIST Pure ResNet Large",
+                // "CL: FASHION MNIST EMBED SIMPLE DIST ResNet Small",
+                // "CL: FASHION MNIST EMBED COSINE DIST ResNet Small",
+                // "CL: FASHION MNIST EMBED PUSH ResNet Small",
+
+                // "CL: FASHION MNIST EMBED SIMPLE DIST ResNet Medium",
+                // "CL: FASHION MNIST EMBED COSINE DIST ResNet Medium",
+                // "CL: FASHION MNIST EMBED PUSH ResNet Medium",
+
+                // "CL: FASHION MNIST EMBED SIMPLE DIST ResNet Large",
+                // "CL: FASHION MNIST EMBED COSINE DIST ResNet Large",
+                // "CL: FASHION MNIST EMBED PUSH ResNet Large",
             ]
         }
     ]

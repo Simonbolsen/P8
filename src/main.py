@@ -161,7 +161,7 @@ def get_base_base_config(args):
 
 def get_base_config(args):
     base_config = get_base_base_config(args)
-    base_config["d"] = hp.uniformint("d", args.dims[0], args.dims[1]),
+    base_config["d"] = hp.uniformint("d", args.dims[0], args.dims[1])
     
     loss_func = emc_loss_functions[args.loss_func] if args.loss_func in emc_loss_functions else pure_loss_functions[args.loss_func]
 
@@ -471,8 +471,8 @@ if __name__ == '__main__':
 
     if args.make_plots:
         with get_files_dict(os.path.join(os.path.expanduser("~/ray_plots"), args.exp_name)) as plots:
-            send_discord_message(token_path="discord_token.secret", channel_id=1095627677848834128, message="Done @here", files=plots)
+            send_discord_message(token_path="discord_token.secret", channel_id=1095627677848834128, message="Done @here" + args.exp_name, files=plots)
     else:
-        send_discord_message(token_path="discord_token.secret", channel_id=1095627677848834128, message="Done @here")
+        send_discord_message(token_path="discord_token.secret", channel_id=1095627677848834128, message="Done @here" + args.exp_name)
 
    

@@ -6,6 +6,7 @@ import numpy as np;
 import matplotlib.cm as cm
 import matplotlib.scale as mpl_scale
 import math
+import os
 from pathlib import Path
 
 def inv(x):
@@ -20,13 +21,16 @@ def plot_simple_line_2d(ys, function = inv):
     axe.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, pos: f"{function(x):.3f}"))
     plt.show()
 
-def plot_line_2d(xs, y_series, labels, function = inv):
+def plot_line_2d(xs, y_series, labels, function = inv, x_label = "", y_label = "", save_path = ""):
     axe = plt.axes()
     for index, ys in enumerate(y_series):
         axe.plot(xs, ys, label = labels[index])
     axe.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, pos: f"{function(x):.3f}"))
     plt.legend()
-    plt.show()
+    if save_path == "":
+        plt.show()
+    else:
+        plt.savefig(os.path.dirname(__file__) + "/../../embeddingData/" + save_path)
 
 def plot_points_2d(xs, ys):
     plt.scatter(xs, ys, marker="o", s = [0.1 for _ in range(len(xs))])
