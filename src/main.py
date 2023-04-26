@@ -161,7 +161,7 @@ def get_base_base_config(args):
 
 def get_base_config(args):
     base_config = get_base_base_config(args)
-    base_config["d"] = hp.uniformint("d", args.dims[0], args.dims[1]),
+    base_config["d"] = hp.loguniform("d", np.log(args.dims[0]), np.log(args.dims[1])),
     
     loss_func = emc_loss_functions[args.loss_func] if args.loss_func in emc_loss_functions else pure_loss_functions[args.loss_func]
 
