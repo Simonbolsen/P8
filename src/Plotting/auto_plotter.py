@@ -14,16 +14,22 @@ else:
     import Plotting.plotting_util as plot
     from Plotting.plotting_util import axis
     import Plotting.results_analysis_util as analysis
-# parameters = {
-#     "lr": "Learning Rate log_10(lr)",
-#     "d" : "Dimensions d",
-#     "i" : "Training Iterations i",
-#     "e" : "Epochs e",
-#     "n" : "Linear Num n",
-#     "s" : "Linear Size s",
-#     "b" : "Batch Size log_2(b)",
-#     "c" : "Channels c"
-# }
+
+axisOverwrites = {
+    "lr": {"label": "Learning Rate lr", "scale": matplotlib.scale.LogScale(None)},
+    "d" : {"label": "Dimensions d"},
+    "i" : {"label": "Training Iterations i"},
+    "e" : {"label": "Epochs e"},
+    "n" : {"label": "Linear Num n"},
+    "s" : {"label": "Linear Size s"},
+    "b" : {"label": "Batch Size b"},
+    "c" : {"label": "Channels c"}
+}
+
+def apply_overwrites(axis:axis, overwrites):
+    for name, value in overwrites:
+        setattr(axis, name, value)
+
 
 # param1 = "lr"
 # paramColor = "e"
@@ -60,11 +66,13 @@ def make_experiment_plots(experiment_id:str, save_location:Optional[str] = None)
 
     accuracies.scale = get_simon_scale()
 
-    if "lr" in configData.keys():
-        configData["lr"].scale = matplotlib.scale.LogScale(None)
+    # Apply any overwrites
+    for (key, overwrites) in axisOverwrites.items():
+        if key in configData.keys():
+            for (property, value) in overwrites.items():
+                setattr(configData[key], property, value)
 
     make_plots(configData.values(), [accuracies], save_location)
-
 
 
 def save_plot(plt:plot, save_location:str, plot_id:str):
