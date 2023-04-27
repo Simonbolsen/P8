@@ -77,6 +77,9 @@ argparser.add_argument('-fs', dest="few_shot", action="store_true", help="Few-sh
 
 # Training arguments
 argparser.add_argument('--epochs', dest="epochs", type=gtzero_int, default=1, help="Epochs must be > 0")
+argparser.add_argument('-test', dest='test', action='store_true', help="Flag for using the test setup")
+argparser.add_argument('-se,', dest='save_embeds', action='store_true', help="Flag for saving embedding results")
+
 # argparser.add_argument('--classes', dest="num_of_classes", type=gtzero_int, help="Number of unique classes for the dataset")
 argparser.add_argument('--batch', dest="batch_size", nargs="+", type=gtzero_int, default=[100], help="Batch sizes to choose from. Must be > 0")
 
@@ -154,7 +157,8 @@ def get_base_base_config(args):
         "batch_size": hp.choice("batch_size", args.batch_size),
         "loss_func" : args.loss_func,
         "exp_name": args.exp_name,
-        "dataset": args.dataset
+        "dataset": args.dataset,
+        "save_embeds": args.save_embeds
     }
 
     return base_config
@@ -411,6 +415,39 @@ def pretrained_pure_classification(args):
         setup_pure_classification_pretrained(non_ray_config, training_data_ptr=train_data_ptr,
                                         val_data_ptr=val_data_ptr, device=device, args=args, ray_tune=args.tuning)
 
+def pure_test_classification(args):
+    device = determine_device(1)
+    train_data, test_data = get_data(args) 
+    train_data_ptr = ray.put(train_data)
+    test_data_ptr = ray.put(test_data)
+
+    print("Training data size: ", len(train_data))
+    print("Validation data size: ", len(test_data))
+    
+    pretrained_config = get_pretrained_config(args)
+
+    non_ray_config = pretrained_config | get_non_tune_base_config(args)
+    print("==> testing pretrained pure classification: ", non_ray_config)
+    setup_pure_classification_pretrained(non_ray_config, training_data_ptr=train_data_ptr,
+                                    val_data_ptr=test_data_ptr, device=device, args=args, ray_tune=args.tuning)
+
+
+def emc_test_classification(args):
+    device = determine_device(1)
+    train_data, test_data = get_data(args) 
+    train_data_ptr = ray.put(train_data)
+    test_data_ptr = ray.put(test_data)
+
+    print("Training data size: ", len(train_data))
+    print("Validation data size: ", len(test_data))
+    
+    pretrained_config = get_pretrained_config(args)
+
+    non_tune_config =  pretrained_config | get_non_tune_base_config(args)
+    print("==> testing pretrained embed classification config: ", non_tune_config)
+    setup_emc_classification_pretrained(non_tune_config, training_data_ptr=train_data_ptr,
+                                    val_data_ptr=test_data_ptr, device=device, args=args, ray_tune=args.tuning)
+
 def start_ray_experiment(tuner):
     printlc("starting experiment with ray tune", bcolors.OKBLUE)
     results = tuner.fit()
@@ -449,17 +486,23 @@ def run_main(args):
 
 
     if args.few_shot:
-        if args.pretrained:
+        if args.pure:
             pretrained_fewshot(args)
         else:
             custom_net_fewshot(args)
     else:
-        if args.pretrained and args.pure:
-            pretrained_pure_classification(args)
-        elif args.pretrained:
-            pretrained_emc_classification(args)
+        if args.test:
+            if args.pure:
+                pure_test_classification(args)
+            else:
+                emc_test_classification(args)
         else:
-            custom_net_classification(args)
+            if args.pretrained and args.pure:
+                pretrained_pure_classification(args)
+            elif args.pretrained:
+                pretrained_emc_classification(args)
+            else:
+                custom_net_classification(args)
 
     if args.make_plots:
         make_experiment_plots(args.exp_name, os.path.join(os.path.expanduser("~/ray_plots"), args.exp_name))

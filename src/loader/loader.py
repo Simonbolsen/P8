@@ -63,6 +63,19 @@ transforms_dict = {
                         transforms.CenterCrop(36),
                         transforms.Normalize(mean=33.3149, std=78.5639)
                     ]),
+    "cifar10_resnet": transforms.Compose([
+                        # transforms.ToTensor(),
+                        transforms.Resize(44, antialias=True),
+                        transforms.CenterCrop(36),
+                        transforms.Normalize((0.491, 0.482, 0.447), (0.202, 0.200, 0.201))
+                    ]),
+
+    "cifar100_resnet": transforms.Compose([
+                    # transforms.ToTensor(),
+                    transforms.Resize(44, antialias=True),
+                    transforms.CenterCrop(36),
+                    transforms.Normalize((0.507, 0.487, 0.441), (0.201, 0.198, 0.202))
+                ]),
 }
 
 def load_data(train_data, test_data, batch_size=100):
@@ -101,6 +114,14 @@ def get_fashion_mnist(config):
         download=True
     )       
     
+    if config.test:
+        print("Using TEST data")
+        training_set.data = training_set.data.view(60000, 1,28,28).float()#.expand(-1, 3, 28, 28).float()
+        testing_set.data = testing_set.data.view(10000, 1,28,28).float()#.expand(-1, 3, 28, 28).float()
+        train_set = CustomCifarDataset(training_set.data, training_set.targets, training_set.transform)
+        test_set = CustomCifarDataset(testing_set.data, testing_set.targets, testing_set.transform)
+        return train_set, test_set
+
     train_split_size = int(len(training_set) * 0.8)
     val_split_size = int(len(training_set) * 0.2)
     
@@ -140,6 +161,14 @@ def get_mnist(config):
         transform=transforms_dict[config.test_transforms],
         download=True
     )       
+
+    if config.test:
+        print("Using TEST data")
+        training_set.data = training_set.data.view(60000, 1,28,28).float()#.expand(-1, 3, 28, 28).float()
+        testing_set.data = testing_set.data.view(10000, 1,28,28).float()#.expand(-1, 3, 28, 28).float()
+        train_set = CustomCifarDataset(training_set.data, training_set.targets, training_set.transform)
+        test_set = CustomCifarDataset(testing_set.data, testing_set.targets, testing_set.transform)
+        return train_set, test_set
     
     train_split_size = int(len(training_set) * 0.8)
     val_split_size = int(len(training_set) * 0.2)
@@ -268,10 +297,23 @@ def get_cifar10(config):
         transform=transforms_dict[config.test_transforms],
         download=True
     )       
+    # data is numpy arrays with channels at end
+    # so convert and permute for torch tensor
+    training_set.data = torch.from_numpy(training_set.data).permute(0,3,1,2).float()
+    testing_set.data = torch.from_numpy(testing_set.data).permute(0,3,1,2).float()
+    
+    # mean = train.data.mean(dim=(2,3)).mean(0)/255
+    # std = train.data.std(dim=(2,3)).mean(0)/255
     
     training_set.targets = torch.from_numpy(np.array(training_set.targets))
     testing_set.targets = torch.from_numpy(np.array(testing_set.targets))
     
+    if config.test:
+        print("Using TEST data")
+        train_set = CustomCifarDataset(training_set.data, training_set.targets, training_set.transform)
+        test_set = CustomCifarDataset(testing_set.data, testing_set.targets, testing_set.transform)
+        return train_set, test_set
+
     train_split_size = int(len(training_set) * 0.8)
     val_split_size = int(len(training_set) * 0.2)
 
@@ -296,9 +338,9 @@ def get_cifar10(config):
     train = CustomCifarDataset(train_split, train_targets, training_set.transform)
     val = CustomCifarDataset(val_split, val_targets, training_set.transform)
 
-    train.targets = torch.tensor(train.targets, dtype=torch.int32)
-    val.targets = torch.tensor(val.targets)
-
+    # train.targets = torch.tensor(train.targets, dtype=torch.int32)
+    # val.targets = torch.tensor(val.targets)
+    
     return train, val, testing_set
 
 def get_omniglot(config, target_alphabets=[]):
@@ -349,8 +391,20 @@ def get_cifar100(config):
         download=True
     ) 
     
+    training_set.data = torch.from_numpy(training_set.data).permute(0,3,1,2).float()
+    testing_set.data = torch.from_numpy(testing_set.data).permute(0,3,1,2).float()
+    
+    # mean = train.data.mean(dim=(2,3)).mean(0)/255
+    # std = train.data.std(dim=(2,3)).mean(0)/255
+    
     training_set.targets = torch.from_numpy(np.array(training_set.targets))
     testing_set.targets = torch.from_numpy(np.array(testing_set.targets))
+
+    if config.test:
+        print("Using TEST data")
+        train_set = CustomCifarDataset(training_set.data, training_set.targets, training_set.transform)
+        test_set = CustomCifarDataset(testing_set.data, testing_set.targets, testing_set.transform)
+        return train_set, test_set
 
     train_split_size = int(len(training_set) * 0.8)
     val_split_size = int(len(training_set) * 0.2)
@@ -374,8 +428,8 @@ def get_cifar100(config):
     train = CustomCifarDataset(train_split, train_targets, training_set.transform)
     val = CustomCifarDataset(val_split, val_targets, training_set.transform)
 
-    train.targets = torch.tensor(train.targets, dtype=torch.int32)
-    val.targets = torch.tensor(val.targets)
+    # train.targets = torch.tensor(train.targets, dtype=torch.int32)
+    # val.targets = torch.tensor(val.targets)
 
     return train, val, testing_set
 
