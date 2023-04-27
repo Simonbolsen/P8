@@ -228,7 +228,7 @@ def emc_classification_setup(config, model, train_loader, val_loader, loss_func,
     max_epochs = config["max_epochs"]
     accuracies = []
 
-    if not ray_tune:
+    if not ray_tune and config["save_embeds"]:
         eu.make_embedding_data_folder(config)
         print("Save embeddings: True")
 
@@ -243,9 +243,10 @@ def emc_classification_setup(config, model, train_loader, val_loader, loss_func,
             tune.report(accuracy=accuracy)
         else: 
             print(f"accuracy: {accuracy}")
-            eu.save_emc_classification_embedding_result(train_loader, val_loader, model, config, epoch, device)
+            if config["save_embeds"]:
+                eu.save_emc_classification_embedding_result(train_loader, val_loader, model, config, epoch, device)
 
-    if not ray_tune:
+    if not ray_tune and config["save_embeds"]:
         eu.save_embedding_meta_data(config, accuracies)
 
 def pure_classification_setup(config, model, train_loader, val_loader, loss_func, device, ray_tune = True):
@@ -253,7 +254,7 @@ def pure_classification_setup(config, model, train_loader, val_loader, loss_func
     max_epochs = config["max_epochs"]
     accuracies = []
 
-    if not ray_tune:
+    if not ray_tune and config["save_embeds"]:
         eu.make_embedding_data_folder(config)
         print("Save embeddings: True")
 
@@ -268,9 +269,10 @@ def pure_classification_setup(config, model, train_loader, val_loader, loss_func
             tune.report(accuracy=accuracy)
         else: 
             print(f"accuracy: {accuracy}")
-            eu.save_pure_classification_embedding_result(train_loader, val_loader, model, config, accuracy, epoch, device)
+            if config["save_embeds"]:
+                eu.save_pure_classification_embedding_result(train_loader, val_loader, model, config, accuracy, epoch, device)
     
-    if not ray_tune:
+    if not ray_tune and config["save_embeds"]:
         eu.save_embedding_meta_data(config, accuracies)
 
 

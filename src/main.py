@@ -78,6 +78,7 @@ argparser.add_argument('-fs', dest="few_shot", action="store_true", help="Few-sh
 # Training arguments
 argparser.add_argument('--epochs', dest="epochs", type=gtzero_int, default=1, help="Epochs must be > 0")
 argparser.add_argument('-test', dest='test', action='store_true', help="Flag for using the test setup")
+argparser.add_argument('-se,', dest='save_embeds', action='store_true', help="Flag for saving embedding results")
 
 # argparser.add_argument('--classes', dest="num_of_classes", type=gtzero_int, help="Number of unique classes for the dataset")
 argparser.add_argument('--batch', dest="batch_size", nargs="+", type=gtzero_int, default=[100], help="Batch sizes to choose from. Must be > 0")
@@ -156,7 +157,8 @@ def get_base_base_config(args):
         "batch_size": hp.choice("batch_size", args.batch_size),
         "loss_func" : args.loss_func,
         "exp_name": args.exp_name,
-        "dataset": args.dataset
+        "dataset": args.dataset,
+        "save_embeds": args.save_embeds
     }
 
     return base_config
