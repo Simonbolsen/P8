@@ -422,7 +422,6 @@ def pure_test_classification(args):
     print("Training data size: ", len(train_data))
     print("Validation data size: ", len(test_data))
     
-    base_config = get_pure_base_config(args)
     pretrained_config = get_pretrained_config(args)
 
     non_ray_config = pretrained_config | get_non_tune_base_config(args)
@@ -432,7 +431,20 @@ def pure_test_classification(args):
 
 
 def emc_test_classification(args):
-    pass
+    device = determine_device(1)
+    train_data, test_data = get_data(args) 
+    train_data_ptr = ray.put(train_data)
+    test_data_ptr = ray.put(test_data)
+
+    print("Training data size: ", len(train_data))
+    print("Validation data size: ", len(test_data))
+    
+    pretrained_config = get_pretrained_config(args)
+
+    non_tune_config =  pretrained_config | get_non_tune_base_config(args)
+    print("==> testing pretrained embed classification config: ", non_tune_config)
+    setup_emc_classification_pretrained(non_tune_config, training_data_ptr=train_data_ptr,
+                                    val_data_ptr=test_data_ptr, device=device, args=args, ray_tune=args.tuning)
 
 def start_ray_experiment(tuner):
     printlc("starting experiment with ray tune", bcolors.OKBLUE)
