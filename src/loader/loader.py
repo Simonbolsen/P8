@@ -338,8 +338,8 @@ def get_cifar10(config):
     train = CustomCifarDataset(train_split, train_targets, training_set.transform)
     val = CustomCifarDataset(val_split, val_targets, training_set.transform)
 
-    train.targets = torch.tensor(train.targets, dtype=torch.int32)
-    val.targets = torch.tensor(val.targets)
+    # train.targets = torch.tensor(train.targets, dtype=torch.int32)
+    # val.targets = torch.tensor(val.targets)
     
     return train, val, testing_set
 
@@ -422,8 +422,8 @@ def get_cifar100(config):
     train = CustomCifarDataset(train_split, train_targets, training_set.transform)
     val = CustomCifarDataset(val_split, val_targets, training_set.transform)
 
-    train.targets = torch.tensor(train.targets, dtype=torch.int32)
-    val.targets = torch.tensor(val.targets)
+    # train.targets = torch.tensor(train.targets, dtype=torch.int32)
+    # val.targets = torch.tensor(val.targets)
 
     return train, val, testing_set
 
