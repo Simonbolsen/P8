@@ -114,6 +114,14 @@ def get_fashion_mnist(config):
         download=True
     )       
     
+    if config.test:
+        print("Using TEST data")
+        training_set.data = training_set.data.view(60000, 1,28,28).float()#.expand(-1, 3, 28, 28).float()
+        testing_set.data = testing_set.data.view(10000, 1,28,28).float()#.expand(-1, 3, 28, 28).float()
+        train_set = CustomCifarDataset(training_set.data, training_set.targets, training_set.transform)
+        test_set = CustomCifarDataset(testing_set.data, testing_set.targets, testing_set.transform)
+        return train_set, test_set
+
     train_split_size = int(len(training_set) * 0.8)
     val_split_size = int(len(training_set) * 0.2)
     
@@ -153,6 +161,14 @@ def get_mnist(config):
         transform=transforms_dict[config.test_transforms],
         download=True
     )       
+
+    if config.test:
+        print("Using TEST data")
+        training_set.data = training_set.data.view(60000, 1,28,28).float()#.expand(-1, 3, 28, 28).float()
+        testing_set.data = testing_set.data.view(10000, 1,28,28).float()#.expand(-1, 3, 28, 28).float()
+        train_set = CustomCifarDataset(training_set.data, training_set.targets, training_set.transform)
+        test_set = CustomCifarDataset(testing_set.data, testing_set.targets, testing_set.transform)
+        return train_set, test_set
     
     train_split_size = int(len(training_set) * 0.8)
     val_split_size = int(len(training_set) * 0.2)
@@ -292,6 +308,12 @@ def get_cifar10(config):
     training_set.targets = torch.from_numpy(np.array(training_set.targets))
     testing_set.targets = torch.from_numpy(np.array(testing_set.targets))
     
+    if config.test:
+        print("Using TEST data")
+        train_set = CustomCifarDataset(training_set.data, torch.tensor(training_set.targets, dtype=torch.int32), training_set.transform)
+        test_set = CustomCifarDataset(testing_set.data, torch.tensor(testing_set.targets, dtype=torch.int32), testing_set.transform)
+        return train_set, test_set
+
     train_split_size = int(len(training_set) * 0.8)
     val_split_size = int(len(training_set) * 0.2)
 
