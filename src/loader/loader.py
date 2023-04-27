@@ -284,6 +284,13 @@ def get_cifar10(config):
         transform=transforms_dict[config.test_transforms],
         download=True
     )       
+    # data is numpy arrays with channels at end
+    # so convert and permute for torch tensor
+    training_set.data = torch.from_numpy(training_set.data).permute(0,3,1,2).float()
+    testing_set.data = torch.from_numpy(testing_set.data).permute(0,3,1,2).float()
+    
+    # mean = train.data.mean(dim=(2,3)).mean(0)/255
+    # std = train.data.std(dim=(2,3)).mean(0)/255
     
     training_set.targets = torch.from_numpy(np.array(training_set.targets))
     testing_set.targets = torch.from_numpy(np.array(testing_set.targets))
