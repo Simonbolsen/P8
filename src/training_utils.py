@@ -230,7 +230,9 @@ def emc_classification_setup(config, model, train_loader, val_loader, loss_func,
 
     if not ray_tune and config["save_embeds"]:
         eu.make_embedding_data_folder(config)
-        print("Save embeddings: True")
+        print("==> Save embeddings: True")
+    else:
+        print("==> Save embeddings: False")
 
     print("start training classification...")
     for epoch in range(max_epochs):
