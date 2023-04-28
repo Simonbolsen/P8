@@ -21,8 +21,14 @@ with open(path_to_tasks_json, 'r') as f:
     
     for k, v in labels.items():
         print(f"{k}: {v}")
-    print('\nSelect tasks (eg. 0 1 6 7): ', end='')
+    print('\nSelect tasks (eg. 0 1 6 7. Default: All): ', end='')
 
     selected = input().split(sep=' ')
-    selected_list = [labels[int(i)] for i in selected]
+    
+    # DEFAULT
+    if not selected[0]:
+        selected_list = "".join([label + ',\n' for label in labels.values()])
+    else:
+        selected_list = "".join([labels[int(i)] + ',\n' for i in selected])
+        
     print(selected_list)
