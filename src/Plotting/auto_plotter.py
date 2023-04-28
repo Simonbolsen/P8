@@ -14,25 +14,22 @@ else:
     import Plotting.plotting_util as plot
     from Plotting.plotting_util import axis
     import Plotting.results_analysis_util as analysis
-# parameters = {
-#     "lr": "Learning Rate log_10(lr)",
-#     "d" : "Dimensions d",
-#     "i" : "Training Iterations i",
-#     "e" : "Epochs e",
-#     "n" : "Linear Num n",
-#     "s" : "Linear Size s",
-#     "b" : "Batch Size log_2(b)",
-#     "c" : "Channels c"
-# }
 
-# param1 = "lr"
-# paramColor = "e"
+axisOverwrites = {
+    "lr": {"label": "Learning Rate lr", "scale": matplotlib.scale.LogScale(None)},
+    "d" : {"label": "Dimensions d"},
+    "i" : {"label": "Training Iterations i"},
+    "e" : {"label": "Epochs e"},
+    "n" : {"label": "Linear Num n"},
+    "s" : {"label": "Linear Size s"},
+    "b" : {"label": "Batch Size b"},
+    "c" : {"label": "Channels c"}
+}
 
-bin1 = []
-bin2 = []
+def apply_overwrites(axis:axis, overwrites):
+    for name, value in overwrites:
+        setattr(axis, name, value)
 
-bin1_size = 0.5
-bin2_size = 10
 binColer_size = 3
 
 def insert_append(l:list[list], i:int, e):
@@ -43,14 +40,11 @@ def insert_append(l:list[list], i:int, e):
             l.append([])
         l.append([e])
 
-
-
 def simon_visual_func(x):
     return 1 - (1 - x**2)**(1/2)
 
 def simon_inv_visual_func(x):
     return (1 - (1 - x)**2)**(1/2)
-
 
 def get_simon_scale() -> matplotlib.scale.FuncScale:
     return matplotlib.scale.FuncScale(None, functions=(simon_visual_func, simon_inv_visual_func))
@@ -60,11 +54,13 @@ def make_experiment_plots(experiment_id:str, save_location:Optional[str] = None)
 
     accuracies.scale = get_simon_scale()
 
-    if "lr" in configData.keys():
-        configData["lr"].scale = matplotlib.scale.LogScale(None)
+    # Apply any overwrites
+    for (key, overwrites) in axisOverwrites.items():
+        if key in configData.keys():
+            for (property, value) in overwrites.items():
+                setattr(configData[key], property, value)
 
-    make_plots(configData.values(), [accuracies], save_location)
-
+    make_plots(configData.values(), [accuracies], name=experiment_id, save_location=save_location)
 
 
 def save_plot(plt:plot, save_location:str, plot_id:str):
@@ -96,20 +92,21 @@ def get_formatted_config_data_and_accuracies(experiment_id:str) -> Tuple[axis, d
     
     return accuracies, data
 
-def make_plots(xAxis:list[axis], yAxis:Sequence[axis], save_location:Optional[str] = None) -> None:
+def make_plots(xAxis:list[axis], yAxis:Sequence[axis], name:Optional[str], save_location:Optional[str] = None) -> None:
     for x in xAxis:
         for y in yAxis:
             figure = make_2d_plot(x, y)
 
             plot_name = x.label + "_" + y.label
 
+            if name != None:
+                figure.title(name)
+
             if save_location != None:
                 save_plot(figure, save_location, plot_name)
             else:
                 figure.show()
             print("Plotted: " + plot_name)
-
-
     
 def make_2d_plot(axis1:axis, axis2:axis) -> plot:
 

@@ -135,7 +135,8 @@ def make_embedding_data_folder(config):
     if not os.path.exists(data_folder):
         os.makedirs(data_folder)
     else:
-        logging.ERROR("Cannot save embeddings as folder already exists: " + data_folder)
+        logging.error("Cannot save embeddings as folder already exists: " + data_folder)
+        logging.error("Exiting...")
         sys.exit()
 
 def save_embedding_meta_data(config, accuracies):
