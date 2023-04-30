@@ -308,7 +308,7 @@
                 "--model", "resnet50", //
                 "--gpu", "0.25",
                 "--cpu", "4",
-                "--loss-func", "cosine-dist", //
+                "--loss-func", "cosine-loss", //
                 "--exp-name", "cl_embed_cosine_res_med_cifar_10", //
                 "--train_transforms", "cifar10_resnet", //
                 "--test_transforms", "cifar10_resnet", //
@@ -411,7 +411,7 @@
                 "--model", "resnet101", //
                 "--gpu", "0.25",
                 "--cpu", "4",
-                "--loss-func", "cosine-dist", //
+                "--loss-func", "cosine-loss", //
                 "--exp-name", "cl_embed_cosine_res_large_cifar_10", //
                 "--train_transforms", "cifar10_resnet", //
                 "--test_transforms", "cifar10_resnet", //
@@ -2105,15 +2105,30 @@
                 // "CL: FASHION MNIST Pure ResNet Large",
                 // "CL: FASHION MNIST EMBED SIMPLE DIST ResNet Small",
                 // "CL: FASHION MNIST EMBED COSINE DIST ResNet Small",
-                "CL: FASHION MNIST EMBED PUSH ResNet Small",
+                // "CL: FASHION MNIST EMBED PUSH ResNet Small",
 
-                "CL: FASHION MNIST EMBED SIMPLE DIST ResNet Medium",
-                "CL: FASHION MNIST EMBED COSINE DIST ResNet Medium",
-                "CL: FASHION MNIST EMBED PUSH ResNet Medium",
+                // "CL: FASHION MNIST EMBED SIMPLE DIST ResNet Medium",
+                // "CL: FASHION MNIST EMBED COSINE DIST ResNet Medium",
+                // "CL: FASHION MNIST EMBED PUSH ResNet Medium",
 
-                "CL: FASHION MNIST EMBED SIMPLE DIST ResNet Large",
-                "CL: FASHION MNIST EMBED COSINE DIST ResNet Large",
-                "CL: FASHION MNIST EMBED PUSH ResNet Large",
+                // "CL: FASHION MNIST EMBED SIMPLE DIST ResNet Large",
+                // "CL: FASHION MNIST EMBED COSINE DIST ResNet Large",
+                // "CL: FASHION MNIST EMBED PUSH ResNet Large",
+                // "CL: CIFAR10 Pure ResNet Small",
+                // "CL: CIFAR10 Pure ResNet Medium",
+                // "CL: CIFAR10 Pure ResNet Large",
+
+                // "CL: CIFAR10 EMBED SIMPLE DIST ResNet Small",
+                // "CL: CIFAR10 EMBED COSINE DIST ResNet Small",
+                // "CL: CIFAR10 EMBED PUSH ResNet Small",
+
+                // "CL: CIFAR10 EMBED SIMPLE DIST ResNet Medium",
+                "CL: CIFAR10 EMBED COSINE DIST ResNet Medium",
+                "CL: CIFAR10 EMBED PUSH ResNet Medium",
+
+                "CL: CIFAR10 EMBED SIMPLE DIST ResNet Large",
+                "CL: CIFAR10 EMBED COSINE DIST ResNet Large",
+                "CL: CIFAR10 EMBED PUSH ResNet Large",
             ]
         }
     ]
