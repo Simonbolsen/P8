@@ -728,7 +728,7 @@
                 "--model", "resnet50", //
                 "--gpu", "0.25",
                 "--cpu", "4",
-                "--loss-func", "cosine-dist", //
+                "--loss-func", "cosine-loss", //
                 "--exp-name", "cl_embed_cosine_res_med_cifar_100", //
                 "--train_transforms", "cifar100_resnet", //
                 "--test_transforms", "cifar100_resnet", //
@@ -830,7 +830,7 @@
                 "--model", "resnet101", //
                 "--gpu", "0.25",
                 "--cpu", "4",
-                "--loss-func", "cosine-dist", //
+                "--loss-func", "cosine-loss", //
                 "--exp-name", "cl_embed_cosine_res_large_cifar_100", //
                 "--train_transforms", "cifar100_resnet", //
                 "--test_transforms", "cifar100_resnet", //
