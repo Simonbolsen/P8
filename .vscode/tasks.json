@@ -2560,12 +2560,28 @@
                 // "CL: CIFAR10 EMBED PUSH ResNet Small",
 
                 // "CL: CIFAR10 EMBED SIMPLE DIST ResNet Medium",
-                "CL: CIFAR10 EMBED COSINE DIST ResNet Medium",
-                "CL: CIFAR10 EMBED PUSH ResNet Medium",
+                // "CL: CIFAR10 EMBED COSINE DIST ResNet Medium",
+                // "CL: CIFAR10 EMBED PUSH ResNet Medium",
 
-                "CL: CIFAR10 EMBED SIMPLE DIST ResNet Large",
-                "CL: CIFAR10 EMBED COSINE DIST ResNet Large",
-                "CL: CIFAR10 EMBED PUSH ResNet Large",
+                // "CL: CIFAR10 EMBED SIMPLE DIST ResNet Large",
+                // "CL: CIFAR10 EMBED COSINE DIST ResNet Large",
+                // "CL: CIFAR10 EMBED PUSH ResNet Large",
+
+                "CL: KMNIST Pure ResNet Small",
+                "CL: KMNIST Pure ResNet Medium",
+                "CL: KMNIST Pure ResNet Large",
+
+                "CL: KMNIST EMBED SIMPLE DIST ResNet Small",
+                "CL: KMNIST EMBED COSINE DIST ResNet Small",
+                "CL: KMNIST EMBED PUSH ResNet Small",
+
+                "CL: KMNIST EMBED SIMPLE DIST ResNet Medium",
+                "CL: KMNIST EMBED COSINE DIST ResNet Medium",
+                "CL: KMNIST EMBED PUSH ResNet Medium",
+
+                "CL: KMNIST EMBED SIMPLE DIST ResNet Large",
+                "CL: KMNIST EMBED COSINE DIST ResNet Large",
+                "CL: KMNIST EMBED PUSH ResNet Large",
             ]
         }
     ]
