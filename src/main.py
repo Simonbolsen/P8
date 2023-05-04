@@ -49,6 +49,12 @@ def gtzero_float(x):
         raise argparse.ArgumentTypeError("Minimum value is >0")
     return x
 
+def gtezero_float(x):
+    x = float(x)
+    if x < 0:
+        raise argparse.ArgumentTypeError("Minimum value is =0")
+    return x
+
 def args_pretty_print(args):
     tab = tabulate(vars(args).items(), headers=["arg", "value"], missingval=f"{bcolors.WARNING}None{bcolors.ENDC}")
     return tab
@@ -94,7 +100,7 @@ argparser.add_argument('--kernsize', dest='kernel_size', type=gtzero_int, defaul
 argparser.add_argument('--loss-func', dest='loss_func', default='simple-dist', choices=list(emc_loss_functions.keys())+list(pure_loss_functions.keys()))
 argparser.add_argument('--prox-mult', dest='prox_mult', nargs="+", default=[10,100], type=gtzero_int, 
                        help="Proximity multiplier for push loss functions. Only used with the push loss function")
-argparser.add_argument('--p', dest='p', nargs="+", type=gtzero_float, default=[0, 2], help="p used in cone loss function")
+argparser.add_argument('--p', dest='p', nargs="+", type=gtezero_float, default=[0, 2], help="p used in cone loss function")
 argparser.add_argument('--q', dest='q', nargs="+", type=gtzero_float, default=[0, 0.68], help="q used in cone loss function")
 
 # Pretrained

@@ -60,7 +60,7 @@ def train_pure_pretrained(model, train_loader, optimiser, loss_func, num_epochs,
 
         res = model(images)
 
-        loss = loss_func(res, labels)
+        loss = loss_func(res, labels, device)
         optimiser.zero_grad()
     
         loss.backward()
