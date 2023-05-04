@@ -67,7 +67,9 @@ datasets = {"mnist": 0,
             "fc100": 5,
             "cub200": 6,
             "fashion": 7,
-            "fashion_test": 8}
+            "fashion_test": 8,
+            "kuzushuji49": 9,
+            "kmnist": 10}
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument('--dataset', dest="dataset", type=str, default="mnist", choices=datasets.keys(),
@@ -84,6 +86,7 @@ argparser.add_argument('-fs', dest="few_shot", action="store_true", help="Few-sh
 # Training arguments
 argparser.add_argument('--epochs', dest="epochs", type=gtzero_int, default=1, help="Epochs must be > 0")
 argparser.add_argument('-test', dest='test', action='store_true', help="Flag for using the test setup")
+argparser.add_argument('-se,', dest='save_embeds', action='store_true', help="Flag for saving embedding results")
 
 # argparser.add_argument('--classes', dest="num_of_classes", type=gtzero_int, help="Number of unique classes for the dataset")
 argparser.add_argument('--batch', dest="batch_size", nargs="+", type=gtzero_int, default=[100], help="Batch sizes to choose from. Must be > 0")
@@ -162,7 +165,8 @@ def get_base_base_config(args):
         "batch_size": hp.choice("batch_size", args.batch_size),
         "loss_func" : args.loss_func,
         "exp_name": args.exp_name,
-        "dataset": args.dataset
+        "dataset": args.dataset,
+        "save_embeds": args.save_embeds
     }
 
     return base_config
@@ -428,7 +432,6 @@ def pure_test_classification(args):
     print("Training data size: ", len(train_data))
     print("Validation data size: ", len(test_data))
     
-    base_config = get_pure_base_config(args)
     pretrained_config = get_pretrained_config(args)
 
     non_ray_config = pretrained_config | get_non_tune_base_config(args)
@@ -438,7 +441,20 @@ def pure_test_classification(args):
 
 
 def emc_test_classification(args):
-    pass
+    device = determine_device(1)
+    train_data, test_data = get_data(args) 
+    train_data_ptr = ray.put(train_data)
+    test_data_ptr = ray.put(test_data)
+
+    print("Training data size: ", len(train_data))
+    print("Validation data size: ", len(test_data))
+    
+    pretrained_config = get_pretrained_config(args)
+
+    non_tune_config =  pretrained_config | get_non_tune_base_config(args)
+    print("==> testing pretrained embed classification config: ", non_tune_config)
+    setup_emc_classification_pretrained(non_tune_config, training_data_ptr=train_data_ptr,
+                                    val_data_ptr=test_data_ptr, device=device, args=args, ray_tune=args.tuning)
 
 def start_ray_experiment(tuner):
     printlc("starting experiment with ray tune", bcolors.OKBLUE)
