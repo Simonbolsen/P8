@@ -40,6 +40,44 @@
                 "focus": true
             }
         },
+        {
+            "label": "CL: CIFAR10 EMBED CONE ResNet Medium",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar10",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.0005", "0.001",
+                "--train-layers","13","25",
+                "-pt",
+                "--dims", "100", "2000",
+                "--p", "0.0",
+                "--q", "0.7",
+                "--model", "resnet50",
+                "--gpu", "0.33",
+                "--cpu", "5",
+                "--loss-func", "cone-loss",
+                "--exp-name", "cl_embed_cone_res_med_cifar_10",
+                "--train_transforms", "cifar10_resnet",
+                "--test_transforms", "cifar10_resnet",
+                "--samples", "100",
+                "-fe",
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+
+        // ------- RESNET SMALL -------
         
         
 
