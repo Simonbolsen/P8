@@ -84,7 +84,7 @@ argparser.add_argument('-se,', dest='save_embeds', action='store_true', help="Fl
 argparser.add_argument('--batch', dest="batch_size", nargs="+", type=gtzero_int, default=[100], help="Batch sizes to choose from. Must be > 0")
 
 # Custom network settings
-argparser.add_argument('--channels', dest="cnn_channels", nargs="+", type=gtzero_int, default=[16, 32, 64, 128, 256], help="Number of channels in each convolutional layer")
+argparser.add_argument('--channels', dest="cnn_channels", nargs="+", type=gtzero_int, default=[16, 32, 64, 128], help="Number of channels in each convolutional layer")
 # TODO: cnnlayers not used at the momenet(?)
 argparser.add_argument('--cnnlayers', dest="cnn_layers", type=gtzero_int, default=5, help="Number of convolutional layers")
 argparser.add_argument('--linlayers', dest="linear_layers", type=gtzero_int, default=5, help="Number of linear layers")
@@ -482,8 +482,7 @@ def run_main(args):
             logging.error('incorrect logging level... exiting...')
             os.quit(1)
         setup_logger(args.log_level.upper()) 
-        print('Setting log level to: ', args.log_level)
-
+        print('==> Setting log level to: ', args.log_level)
 
     if args.few_shot:
         if args.pure:
