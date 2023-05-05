@@ -40,44 +40,8 @@
                 "focus": true
             }
         },
-        // ------- RESNET SMALL -------
         {
-            "label": "CL: FASHION MNIST Pure ResNet Small",
-            "command": "${command:python.interpreterPath}",
-            "type": "shell",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "args": [
-                "./src/main.py",
-                "--dataset", "fashion",
-                "--datadir", "'./data'",
-                "--epochs", "30",
-                "--batch","100",
-                "--lr","0.00001", "0.01",
-                "--train-layers","0","10",
-                "-pure", 
-                "-pt",
-                "--model", "resnet18",
-                "--gpu", "0.25",
-                "--cpu", "4",
-                "--loss-func", "cross_entropy",
-                "--exp-name", "cl_pure_res_small_fashion_mnist",
-                "--train_transforms", "mnist_resnet",
-                "--test_transforms", "mnist_resnet",
-                "-t",
-                "--samples", "50",
-                "--plot"
-            ],
-            "presentation": {
-                "reveal": "always",
-                "panel": "new",
-                "focus": true
-            }
-        },
-        {
-            "label": "CL: CIFAR10 Pure ResNet Small",
+            "label": "CL: CIFAR10 EMBED CONE ResNet Medium",
             "command": "${command:python.interpreterPath}",
             "type": "shell",
             "group": {
@@ -90,20 +54,65 @@
                 "--datadir", "'./data'",
                 "--epochs", "30",
                 "--batch","100",
-                "--lr","0.0001", "0.001",
-                "--train-layers","0","10",
-                "-pure", 
+                "--lr","0.0005", "0.001",
+                "--train-layers","13","25",
                 "-pt",
-                "--model", "resnet18",
+                "--dims", "100", "2000",
+                "--p", "0.0",
+                "--q", "0.7",
+                "--model", "resnet50",
                 "--gpu", "0.33",
                 "--cpu", "5",
-                "--loss-func", "cross_entropy",
-                "--exp-name", "cl_pure_res_small_cifar_10",
-                "--train_transforms", "resnet",
-                "--test_transforms", "resnet",
-                "-t",
+                "--loss-func", "cone-loss",
+                "--exp-name", "cl_embed_cone_res_med_cifar_10",
+                "--train_transforms", "cifar10_resnet",
+                "--test_transforms", "cifar10_resnet",
                 "--samples", "100",
                 "-fe",
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+
+        // ------- RESNET SMALL -------
+        
+        
+
+        // ----------------------------------------------------------------------------------
+        //
+        //                                      !CIFAR10
+        //
+        // ----------------------------------------------------------------------------------
+
+        {
+            "label": "CL: CIFAR10 Pure ResNet Small", //
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar10", // 
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.00001", "0.01", //
+                "-pure", 
+                "-pt",
+                "--model", "resnet18", //
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "cross_entropy", //
+                "--exp-name", "cl_pure_res_small_cifar_10", //
+                "--train_transforms", "cifar10_resnet", //
+                "--test_transforms", "cifar10_resnet", //
+                "-t",
+                "--samples", "50", //
                 "--plot"
             ],
             "presentation": {
@@ -113,7 +122,7 @@
             }
         },
         {
-            "label": "CL: CIFAR100 Pure ResNet Small",
+            "label": "CL: CIFAR10 Pure ResNet Medium", //
             "command": "${command:python.interpreterPath}",
             "type": "shell",
             "group": {
@@ -122,24 +131,22 @@
             },
             "args": [
                 "./src/main.py",
-                "--dataset", "cifar100",
+                "--dataset", "cifar10", //
                 "--datadir", "'./data'",
                 "--epochs", "30",
                 "--batch","100",
-                "--lr","0.0001", "0.001",
-                "--train-layers","0","10",
+                "--lr","0.00001", "0.01", //
                 "-pure", 
                 "-pt",
-                "--model", "resnet18",
-                "--gpu", "0.33",
-                "--cpu", "5",
+                "--model", "resnet50", //
+                "--gpu", "0.25",
+                "--cpu", "4",
                 "--loss-func", "cross_entropy",
-                "--exp-name", "cl_pure_res_small_cifar_100",
-                "--train_transforms", "resnet",
-                "--test_transforms", "resnet",
+                "--exp-name", "cl_pure_res_med_cifar_10", //
+                "--train_transforms", "cifar10_resnet", //
+                "--test_transforms", "cifar10_resnet", //
                 "-t",
-                "--samples", "100",
-                "-fe",
+                "--samples", "50", //
                 "--plot"
             ],
             "presentation": {
@@ -148,6 +155,778 @@
                 "focus": true
             }
         },
+        {
+            "label": "CL: CIFAR10 Pure ResNet Large", //
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar10", //
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.00001", "0.01", //
+                "-pure", 
+                "-pt",
+                "--model", "resnet101", //
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "cross_entropy", //
+                "--exp-name", "cl_pure_res_large_cifar_10", //
+                "--train_transforms", "cifar10_resnet", //
+                "--test_transforms", "cifar10_resnet", //
+                "-t",
+                "--samples", "50", //
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: CIFAR10 EMBED SIMPLE DIST ResNet Small", //
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar10", //
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01", //
+                "-pt",
+                "--dims", "200", "2000", //
+                "--model", "resnet18", //
+                "--gpu", "0.25", 
+                "--cpu", "4",
+                "--loss-func", "simple-dist", //
+                "--exp-name", "cl_embed_simple_res_small_cifar_10", //
+                "--train_transforms", "cifar10_resnet", //
+                "--test_transforms", "cifar10_resnet", //
+                "-t",
+                "--samples", "50", //
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },       
+        {
+            "label": "CL: CIFAR10 EMBED COSINE DIST ResNet Small", //
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar10", //
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01", //
+                "-pt",
+                "--dims", "200", "2000", //
+                "--model", "resnet18", //
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "cosine-loss", //
+                "--exp-name", "cl_embed_cosine_res_small_cifar_10", //
+                "--train_transforms", "cifar10_resnet", //
+                "--test_transforms", "cifar10_resnet", //
+                "-t",
+                "--samples", "50", //
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },      
+        {
+            "label": "CL: CIFAR10 EMBED PUSH ResNet Small", //
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar10", //
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01", //
+                "-pt",
+                "--dims", "200", "2000", //
+                "--model", "resnet18", //
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "class-push", //
+                "--exp-name", "cl_embed_push_res_small_cifar_10", //
+                "--train_transforms", "cifar10_resnet", //
+                "--test_transforms", "cifar10_resnet", //
+                "-t",
+                "--samples", "50", //
+                "--plot",
+                "--prox-mult", "10", "1000" //
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },   
+        {
+            "label": "CL: CIFAR10 EMBED SIMPLE DIST ResNet Medium", //
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar10", //
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.00001", "0.01", //
+                "-pt",
+                "--dims", "200", "2000", //
+                "--model", "resnet50", //
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "simple-dist", //
+                "--exp-name", "cl_embed_simple_res_med_cifar_10", //
+                "--train_transforms", "cifar10_resnet", //
+                "--test_transforms", "cifar10_resnet", //
+                "-t",
+                "--samples", "50", //
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: CIFAR10 EMBED COSINE DIST ResNet Medium", //
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar10", //
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.00001", "0.01", //
+                "-pt",
+                "--dims", "200", "2000", //
+                "--model", "resnet50", //
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "cosine-loss", //
+                "--exp-name", "cl_embed_cosine_res_med_cifar_10", //
+                "--train_transforms", "cifar10_resnet", //
+                "--test_transforms", "cifar10_resnet", //
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: CIFAR10 EMBED PUSH ResNet Medium", //
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar10", //
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01", //
+                "-pt",
+                "--dims", "200", "2000", //
+                "--model", "resnet50", //
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "class-push", //
+                "--exp-name", "cl_embed_push_res_med_cifar_10", //
+                "--train_transforms", "cifar10_resnet", //
+                "--test_transforms", "cifar10_resnet", //
+                "-t",
+                "--samples", "50", //
+                "--plot",
+                "--prox-mult", "10", "1000" //
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },   
+        {
+            "label": "CL: CIFAR10 EMBED SIMPLE DIST ResNet Large", //
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar10", //
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.00001", "0.01", //
+                "-pt",
+                "--dims", "200", "2000", //
+                "--model", "resnet101", //
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "simple-dist", //
+                "--exp-name", "cl_embed_simple_res_large_cifar_10", //
+                "--train_transforms", "cifar10_resnet", //
+                "--test_transforms", "cifar10_resnet", //
+                "-t",
+                "--samples", "50", //
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: CIFAR10 EMBED COSINE DIST ResNet Large", //
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar10", //
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.00001", "0.01", //
+                "-pt",
+                "--dims", "200", "2000", //
+                "--model", "resnet101", //
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "cosine-loss", //
+                "--exp-name", "cl_embed_cosine_res_large_cifar_10", //
+                "--train_transforms", "cifar10_resnet", //
+                "--test_transforms", "cifar10_resnet", //
+                "-t",
+                "--samples", "50", //
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: CIFAR10 EMBED PUSH ResNet Large", //
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar10", //
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01", //
+                "-pt",
+                "--dims", "200", "2000", //
+                "--model", "resnet101", //
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "class-push", //
+                "--exp-name", "cl_embed_push_res_large_cifar_10", //
+                "--train_transforms", "cifar10_resnet", //
+                "--test_transforms", "cifar10_resnet", //
+                "-t",
+                "--samples", "50", //
+                "--plot",
+                "--prox-mult", "10", "1000" //
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },   
+
+
+        // ---------------------------------------------------------------------------------------------------------------------------
+        //
+        //                                        !CIFAR100
+        //
+        // ---------------------------------------------------------------------------------------------------------------------------
+
+
+        {
+            "label": "CL: CIFAR100 Pure ResNet Small", //
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar100", //
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.00001", "0.01", //
+                "-pure", //
+                "-pt",
+                "--model", "resnet18", //
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "cross_entropy", //
+                "--exp-name", "cl_pure_res_small_cifar_100", //
+                "--train_transforms", "cifar100_resnet", //
+                "--test_transforms", "cifar100_resnet", //
+                "-t",
+                "--samples", "50", //
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: CIFAR100 Pure ResNet Medium", //
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar100", //
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.00001", "0.01", //
+                "-pure", //
+                "-pt",
+                "--model", "resnet50", //
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "cross_entropy", //
+                "--exp-name", "cl_pure_res_med_cifar_100", //
+                "--train_transforms", "cifar100_resnet", //
+                "--test_transforms", "cifar100_resnet", //
+                "-t",
+                "--samples", "50", //
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: CIFAR100 Pure ResNet Large", //
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar100", //
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.00001", "0.01", //
+                "-pure", 
+                "-pt",
+                "--model", "resnet101", //
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "cross_entropy", //
+                "--exp-name", "cl_pure_res_large_cifar_100", //
+                "--train_transforms", "cifar100_resnet", //
+                "--test_transforms", "cifar100_resnet", //
+                "-t",
+                "--samples", "50", //
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: CIFAR100 EMBED SIMPLE DIST ResNet Small", //
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar100", //
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01", //
+                "-pt",
+                "--dims", "200", "2000", //
+                "--model", "resnet18", //
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "simple-dist", //
+                "--exp-name", "cl_embed_simple_res_small_cifar_100", //
+                "--train_transforms", "cifar100_resnet", //
+                "--test_transforms", "cifar100_resnet", //
+                "-t",
+                "--samples", "50", //
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: CIFAR100 EMBED COSINE DIST ResNet Small", //
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar100", //
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01", //
+                "-pt",
+                "--dims", "200", "2000", //
+                "--model", "resnet18", //
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "cosine-loss", //
+                "--exp-name", "cl_embed_cosine_res_small_cifar_100", //
+                "--train_transforms", "cifar100_resnet", //
+                "--test_transforms", "cifar100_resnet", //
+                "-t",
+                "--samples", "50", //
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },      
+        {
+            "label": "CL: CIFAR100 EMBED PUSH ResNet Small", //
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar100", //
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "-pt",
+                "--dims", "200", "2000", //
+                "--model", "resnet18", //
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "class-push", //
+                "--exp-name", "cl_embed_push_res_small_cifar_100", //
+                "--train_transforms", "cifar100_resnet", //
+                "--test_transforms", "cifar100_resnet", //
+                "-t",
+                "--samples", "50", //
+                "--plot",
+                "--prox-mult", "10", "1000" //
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },   
+        {
+            "label": "CL: CIFAR100 EMBED SIMPLE DIST ResNet Medium", //
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar100", //
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.00001", "0.01", //
+                "-pt",
+                "--dims", "200", "2000", //
+                "--model", "resnet50", //
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "simple-dist", //
+                "--exp-name", "cl_embed_simple_res_med_cifar_100", //
+                "--train_transforms", "cifar100_resnet", //
+                "--test_transforms", "cifar100_resnet", //
+                "-t",
+                "--samples", "50", //
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: CIFAR100 EMBED COSINE DIST ResNet Medium", //
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar100", //
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.00001", "0.01", //
+                "-pt",
+                "--dims", "200", "2000", //
+                "--model", "resnet50", //
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "cosine-loss", //
+                "--exp-name", "cl_embed_cosine_res_med_cifar_100", //
+                "--train_transforms", "cifar100_resnet", //
+                "--test_transforms", "cifar100_resnet", //
+                "-t",
+                "--samples", "50", //
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: CIFAR100 EMBED PUSH ResNet Medium", //
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar100", //
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01", //
+                "-pt",
+                "--dims", "200", "2000", //
+                "--model", "resnet50", //
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "class-push", //
+                "--exp-name", "cl_embed_push_res_med_cifar_100", //
+                "--train_transforms", "cifar100_resnet", //
+                "--test_transforms", "cifar100_resnet", //
+                "-t",
+                "--samples", "50", //
+                "--plot",
+                "--prox-mult", "10", "1000" //
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },   
+        {
+            "label": "CL: CIFAR100 EMBED SIMPLE DIST ResNet Large", //
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar100", //
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.00001", "0.01", //
+                "-pt",
+                "--model", "resnet101", //
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "simple-dist", //
+                "--exp-name", "cl_embed_simple_res_large_cifar_100", //
+                "--train_transforms", "cifar100_resnet", //
+                "--test_transforms", "cifar100_resnet", //
+                "-t",
+                "--samples", "50", //
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: CIFAR100 EMBED COSINE DIST ResNet Large", //
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar100", //
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.00001", "0.01", //
+                "-pt",
+                "--dims", "200", "2000", //
+                "--model", "resnet101", //
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "cosine-loss", //
+                "--exp-name", "cl_embed_cosine_res_large_cifar_100", //
+                "--train_transforms", "cifar100_resnet", //
+                "--test_transforms", "cifar100_resnet", //
+                "-t",
+                "--samples", "50", //
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: CIFAR100 EMBED PUSH ResNet Large", //
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "cifar100", //
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01", //
+                "-pt",
+                "--dims", "200", "2000", //
+                "--model", "resnet101", //
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "class-push", //
+                "--exp-name", "cl_embed_push_res_large_cifar_100", //
+                "--train_transforms", "cifar100_resnet", //
+                "--test_transforms", "cifar100_resnet", //
+                "-t",
+                "--samples", "50", //
+                "--plot",
+                "--prox-mult", "10", "1000" //
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },   
+
+
+
+        // ---------------------------------------------------------------------------------------------------------------------------
+        //
+        //                                        !CUB200
+        //
+        // ---------------------------------------------------------------------------------------------------------------------------
+
+
         {
             "label": "CL: CUB200 Pure ResNet Small",
             "command": "${command:python.interpreterPath}",
@@ -184,113 +963,9 @@
                 "focus": true
             }
         },
-        {
-            "label": "CL: FASHION MNIST Pure ResNet Medium",
-            "command": "${command:python.interpreterPath}",
-            "type": "shell",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "args": [
-                "./src/main.py",
-                "--dataset", "fashion",
-                "--datadir", "'./data'",
-                "--epochs", "30",
-                "--batch","100",
-                "--lr","0.00001", "0.01",
-                "--train-layers","0","25",
-                "-pure", 
-                "-pt",
-                "--model", "resnet50",
-                "--gpu", "0.25",
-                "--cpu", "4",
-                "--loss-func", "cross_entropy",
-                "--exp-name", "cl_pure_res_med_fashion_mnist",
-                "--train_transforms", "mnist_resnet",
-                "--test_transforms", "mnist_resnet",
-                "-t",
-                "--samples", "50",
-                "--plot"
-            ],
-            "presentation": {
-                "reveal": "always",
-                "panel": "new",
-                "focus": true
-            }
-        },
-        {
-            "label": "CL: CIFAR10 Pure ResNet Medium",
-            "command": "${command:python.interpreterPath}",
-            "type": "shell",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "args": [
-                "./src/main.py",
-                "--dataset", "cifar10",
-                "--datadir", "'./data'",
-                "--epochs", "30",
-                "--batch","100",
-                "--lr","0.0001", "0.001",
-                "--train-layers","0","25",
-                "-pure", 
-                "-pt",
-                "--model", "resnet50",
-                "--gpu", "0.33",
-                "--cpu", "5",
-                "--loss-func", "cross_entropy",
-                "--exp-name", "cl_pure_res_med_cifar_10",
-                "--train_transforms", "resnet",
-                "--test_transforms", "resnet",
-                "-t",
-                "--samples", "100",
-                "-fe",
-                "--plot"
-            ],
-            "presentation": {
-                "reveal": "always",
-                "panel": "new",
-                "focus": true
-            }
-        },
-        {
-            "label": "CL: CIFAR100 Pure ResNet Medium",
-            "command": "${command:python.interpreterPath}",
-            "type": "shell",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "args": [
-                "./src/main.py",
-                "--dataset", "cifar100",
-                "--datadir", "'./data'",
-                "--epochs", "30",
-                "--batch","100",
-                "--lr","0.0001", "0.001",
-                "--train-layers","0","25",
-                "-pure", 
-                "-pt",
-                "--model", "resnet50",
-                "--gpu", "0.33",
-                "--cpu", "5",
-                "--loss-func", "cross_entropy",
-                "--exp-name", "cl_pure_res_med_cifar_100",
-                "--train_transforms", "resnet",
-                "--test_transforms", "resnet",
-                "-t",
-                "--samples", "100",
-                "-fe",
-                "--plot"
-            ],
-            "presentation": {
-                "reveal": "always",
-                "panel": "new",
-                "focus": true
-            }
-        },
+        
+       
+        
         {
             "label": "CL: CUB200 Pure ResNet Medium",
             "command": "${command:python.interpreterPath}",
@@ -327,114 +1002,9 @@
                 "focus": true
             }
         },
-        {
-            "label": "CL: FASHION MNIST Pure ResNet Large",
-            "command": "${command:python.interpreterPath}",
-            "type": "shell",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "args": [
-                "./src/main.py",
-                "--dataset", "fashion",
-                "--datadir", "'./data'",
-                "--epochs", "30",
-                "--batch","100",
-                "--lr","0.00001", "0.01",
-                "--train-layers","0","50",
-                "-pure", 
-                "-pt",
-                "--model", "resnet101",
-                "--gpu", "0.25",
-                "--cpu", "4",
-                "--loss-func", "cross_entropy",
-                "--exp-name", "cl_pure_res_large_fashion_mnist",
-                "--train_transforms", "mnist_resnet",
-                "--test_transforms", "mnist_resnet",
-                "-t",
-                "--samples", "50",
-                // "--grace", "5",
-                "--plot"
-            ],
-            "presentation": {
-                "reveal": "always",
-                "panel": "new",
-                "focus": true
-            }
-        },
-        {
-            "label": "CL: CIFAR10 Pure ResNet Large",
-            "command": "${command:python.interpreterPath}",
-            "type": "shell",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "args": [
-                "./src/main.py",
-                "--dataset", "cifar10",
-                "--datadir", "'./data'",
-                "--epochs", "30",
-                "--batch","100",
-                "--lr","0.0001", "0.001",
-                "--train-layers","0","50",
-                "-pure", 
-                "-pt",
-                "--model", "resnet101",
-                "--gpu", "0.33",
-                "--cpu", "5",
-                "--loss-func", "cross_entropy",
-                "--exp-name", "cl_pure_res_large_cifar_10",
-                "--train_transforms", "resnet",
-                "--test_transforms", "resnet",
-                "-t",
-                "--samples", "100",
-                "-fe",
-                "--plot"
-            ],
-            "presentation": {
-                "reveal": "always",
-                "panel": "new",
-                "focus": true
-            }
-        },
-        {
-            "label": "CL: CIFAR100 Pure ResNet Large",
-            "command": "${command:python.interpreterPath}",
-            "type": "shell",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "args": [
-                "./src/main.py",
-                "--dataset", "cifar100",
-                "--datadir", "'./data'",
-                "--epochs", "30",
-                "--batch","100",
-                "--lr","0.00001", "0.001",
-                "--train-layers","0","50",
-                "-pure", 
-                "-pt",
-                "--model", "resnet101",
-                "--gpu", "0.33",
-                "--cpu", "5",
-                "--loss-func", "cross_entropy",
-                "--exp-name", "cl_pure_res_large_cifar_100",
-                "--train_transforms", "resnet",
-                "--test_transforms", "resnet",
-                "-t",
-                "--samples", "200",
-                "-fe",
-                "--plot"
-            ],
-            "presentation": {
-                "reveal": "always",
-                "panel": "new",
-                "focus": true
-            }
-        },
+        
+        
+        
         {
             "label": "CL: CUB200 Pure ResNet Large",
             "command": "${command:python.interpreterPath}",
@@ -471,76 +1041,8 @@
                 "focus": true
             }
         },
-        {
-            "label": "CL: CIFAR10 EMBED SIMPLE DIST ResNet Small",
-            "command": "${command:python.interpreterPath}",
-            "type": "shell",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "args": [
-                "./src/main.py",
-                "--dataset", "cifar10",
-                "--datadir", "'./data'",
-                "--epochs", "30",
-                "--batch", "100",
-                "--lr", "0.00001", "0.0001",
-                "--train-layers", "0", "10",
-                "-pt",
-                "--dims", "80", "2000",
-                "--model", "resnet18",
-                "--gpu", "0.33",
-                "--cpu", "5",
-                "--loss-func", "simple-dist",
-                "--exp-name", "cl_embed_simple_res_small_cifar_10",
-                "--train_transforms", "resnet",
-                "--test_transforms", "resnet",
-                "-t",
-                "--samples", "100",
-                "--plot"
-            ],
-            "presentation": {
-                "reveal": "always",
-                "panel": "new",
-                "focus": true
-            }
-        },        
-        {
-            "label": "CL: CIFAR100 EMBED SIMPLE DIST ResNet Small",
-            "command": "${command:python.interpreterPath}",
-            "type": "shell",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "args": [
-                "./src/main.py",
-                "--dataset", "cifar100",
-                "--datadir", "'./data'",
-                "--epochs", "30",
-                "--batch", "100",
-                "--lr", "0.0001", "0.001",
-                "--train-layers", "0", "10",
-                "-pt",
-                "--dims", "80", "2000",
-                "--model", "resnet18",
-                "--gpu", "0.33",
-                "--cpu", "5",
-                "--loss-func", "simple-dist",
-                "--exp-name", "cl_embed_simple_res_small_cifar_100",
-                "--train_transforms", "resnet",
-                "--test_transforms", "resnet",
-                "-t",
-                "--samples", "100",
-                "--plot"
-            ],
-            "presentation": {
-                "reveal": "always",
-                "panel": "new",
-                "focus": true
-            }
-        },
+        
+        
         {
             "label": "CL: CUB200 EMBED SIMPLE DIST ResNet Small",
             "command": "${command:python.interpreterPath}",
@@ -577,77 +1079,8 @@
                 "focus": true
             }
         },
-        {
-            "label": "CL: CIFAR10 EMBED SIMPLE DIST ResNet Medium",
-            "command": "${command:python.interpreterPath}",
-            "type": "shell",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "args": [
-                "./src/main.py",
-                "--dataset", "cifar10",
-                "--datadir", "'./data'",
-                "--epochs", "30",
-                "--batch","100",
-                "--lr","0.0001", "0.001",
-                "--train-layers","0","25",
-                "-pt",
-                "--dims", "250", "2000",
-                "--model", "resnet50",
-                "--gpu", "0.12",
-                "--cpu", "2",
-                "--loss-func", "simple-dist",
-                "--exp-name", "cl_embed_simple_res_med_cifar_10",
-                "--train_transforms", "resnet",
-                "--test_transforms", "resnet",
-                "-t",
-                "--samples", "100",
-                "-fe",
-                "--plot"
-            ],
-            "presentation": {
-                "reveal": "always",
-                "panel": "new",
-                "focus": true
-            }
-        },
-        {
-            "label": "CL: CIFAR100 EMBED SIMPLE DIST ResNet Medium",
-            "command": "${command:python.interpreterPath}",
-            "type": "shell",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "args": [
-                "./src/main.py",
-                "--dataset", "cifar100",
-                "--datadir", "'./data'",
-                "--epochs", "30",
-                "--batch","100",
-                "--lr","0.0001", "0.001",
-                "--train-layers","0","25",
-                "-pt",
-                "--dims", "200", "2000",
-                "--model", "resnet50",
-                "--gpu", "0.33",
-                "--cpu", "5",
-                "--loss-func", "simple-dist",
-                "--exp-name", "cl_embed_simple_res_med_cifar_100",
-                "--train_transforms", "resnet",
-                "--test_transforms", "resnet",
-                "-t",
-                "--samples", "100",
-                "--plot"
-            ],
-            "presentation": {
-                "reveal": "always",
-                "panel": "new",
-                "focus": true
-            }
-        },
+       
+        
         {
             "label": "CL: CUB200 EMBED SIMPLE DIST ResNet Medium",
             "command": "${command:python.interpreterPath}",
@@ -684,75 +1117,8 @@
                 "focus": true
             }
         },
-        {
-            "label": "CL: CIFAR10 EMBED SIMPLE DIST ResNet Large",
-            "command": "${command:python.interpreterPath}",
-            "type": "shell",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "args": [
-                "./src/main.py",
-                "--dataset", "cifar10",
-                "--datadir", "'./data'",
-                "--epochs", "30",
-                "--batch","100",
-                "--lr","0.0001", "0.001",
-                "--train-layers","0","50",
-                "-pt",
-                "--dims", "80", "2000",
-                "--model", "resnet101",
-                "--gpu", "0.12",
-                "--cpu", "2",
-                "--loss-func", "simple-dist",
-                "--exp-name", "cl_embed_simple_res_large_cifar_10",
-                "--train_transforms", "resnet",
-                "--test_transforms", "resnet",
-                "-t",
-                "--samples", "100",
-                "--plot"
-            ],
-            "presentation": {
-                "reveal": "always",
-                "panel": "new",
-                "focus": true
-            }
-        },
-        {
-            "label": "CL: CIFAR100 EMBED SIMPLE DIST ResNet Large",
-            "command": "${command:python.interpreterPath}",
-            "type": "shell",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "args": [
-                "./src/main.py",
-                "--dataset", "cifar100",
-                "--datadir", "'./data'",
-                "--epochs", "30",
-                "--batch","100",
-                "--lr","0.0001", "0.001",
-                "--train-layers","0","50",
-                "-pt",
-                "--model", "resnet101",
-                "--gpu", "0.33",
-                "--cpu", "5",
-                "--loss-func", "simple-dist",
-                "--exp-name", "cl_embed_simple_res_large_cifar_100",
-                "--train_transforms", "resnet",
-                "--test_transforms", "resnet",
-                "-t",
-                "--samples", "100",
-                "--plot"
-            ],
-            "presentation": {
-                "reveal": "always",
-                "panel": "new",
-                "focus": true
-            }
-        },
+        
+     
         {
             "label": "CL: CUB200 EMBED SIMPLE DIST ResNet Large",
             "command": "${command:python.interpreterPath}",
@@ -789,8 +1155,117 @@
         },
 
 
+        // ----------------------------------------------------------------------------------
+        //
+        //                                !FASHION MNIST
+        //
+        // ----------------------------------------------------------------------------------
 
-
+        {
+            "label": "CL: FASHION MNIST Pure ResNet Small",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "fashion",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.00001", "0.01",
+                "--train-layers","0","10",
+                "-pure", 
+                "-pt",
+                "--model", "resnet18",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "cross_entropy",
+                "--exp-name", "cl_pure_res_small_fashion_mnist",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: FASHION MNIST Pure ResNet Medium",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "fashion",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.00001", "0.01",
+                "--train-layers","0","25",
+                "-pure", 
+                "-pt",
+                "--model", "resnet50",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "cross_entropy",
+                "--exp-name", "cl_pure_res_med_fashion_mnist",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: FASHION MNIST Pure ResNet Large",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "fashion",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.00001", "0.01",
+                "--train-layers","0","50",
+                "-pure", 
+                "-pt",
+                "--model", "resnet101",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "cross_entropy",
+                "--exp-name", "cl_pure_res_large_fashion_mnist",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
         {
             "label": "CL: FASHION MNIST EMBED SIMPLE DIST ResNet Small",
             "command": "${command:python.interpreterPath}",
@@ -1124,6 +1599,885 @@
 
 
 
+
+        // ----------------------------------------------------------------------------------
+        //
+        //                                !MNIST
+        //
+        // ----------------------------------------------------------------------------------
+
+        {
+            "label": "CL: MNIST Pure ResNet Small",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "mnist",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.00001", "0.01",
+                "-pure", 
+                "-pt",
+                "--model", "resnet18",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "cross_entropy",
+                "--exp-name", "cl_pure_res_small_mnist",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: MNIST Pure ResNet Medium",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "mnist",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.00001", "0.01",
+                "-pure", 
+                "-pt",
+                "--model", "resnet50",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "cross_entropy",
+                "--exp-name", "cl_pure_res_med_mnist",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: MNIST Pure ResNet Large",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "mnist",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.00001", "0.01",
+                "-pure", 
+                "-pt",
+                "--model", "resnet101",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "cross_entropy",
+                "--exp-name", "cl_pure_res_large_mnist",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: MNIST EMBED SIMPLE DIST ResNet Small",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "mnist",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "--train-layers", "0", "10",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet18",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "simple-dist",
+                "--exp-name", "cl_embed_simple_res_small_mnist",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: MNIST EMBED COSINE DIST ResNet Small",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "mnist",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "--train-layers", "0", "10",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet18",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "cosine-loss",
+                "--exp-name", "cl_embed_cosine_res_small_mnist",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: MNIST EMBED PUSH ResNet Small",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "mnist",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "--train-layers", "0", "10",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet18",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "class-push",
+                "--exp-name", "cl_embed_push_res_small_mnist",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot",
+                "--prox-mult", "10", "1000" //
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+
+
+
+
+
+
+        {
+            "label": "CL: MNIST EMBED SIMPLE DIST ResNet Medium",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "mnist",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet50",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "simple-dist",
+                "--exp-name", "cl_embed_simple_res_med_mnist",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: MNIST EMBED COSINE DIST ResNet Medium",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "mnist",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet50",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "cosine-loss",
+                "--exp-name", "cl_embed_cosine_res_med_mnist",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: MNIST EMBED PUSH ResNet Medium",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "mnist",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet50",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "class-push",
+                "--exp-name", "cl_embed_push_res_med_mnist",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot",
+                "--prox-mult", "10", "1000"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+
+
+
+        {
+            "label": "CL: MNIST EMBED SIMPLE DIST ResNet Large",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "mnist",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet101",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "simple-dist",
+                "--exp-name", "cl_embed_simple_res_large_mnist",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: MNIST EMBED COSINE DIST ResNet Large",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "mnist",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "--train-layers", "0", "50",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet101",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "cosine-loss",
+                "--exp-name", "cl_embed_cosine_res_large_mnist",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot",
+                
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: MNIST EMBED PUSH ResNet Large",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "mnist",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "--train-layers", "0", "50",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet101",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "class-push",
+                "--exp-name", "cl_embed_push_res_large_mnist",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot",
+                "--prox-mult", "10", "1000"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+
+
+
+
+        // ----------------------------------------------------------------------------------
+        //
+        //                                !KuzushijiMNIST
+        //
+        // ----------------------------------------------------------------------------------
+
+        {
+            "label": "CL: KMNIST Pure ResNet Small",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "kmnist",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.00001", "0.01",
+                "-pure", 
+                "-pt",
+                "--model", "resnet18",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "cross_entropy",
+                "--exp-name", "cl_pure_res_small_kmnist",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: KMNIST Pure ResNet Medium",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "kmnist",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.00001", "0.01",
+                "-pure", 
+                "-pt",
+                "--model", "resnet50",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "cross_entropy",
+                "--exp-name", "cl_pure_res_med_kmnist",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: KMNIST Pure ResNet Large",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "kmnist",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch","100",
+                "--lr","0.00001", "0.01",
+                "-pure", 
+                "-pt",
+                "--model", "resnet101",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "cross_entropy",
+                "--exp-name", "cl_pure_res_large_kmnist",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: KMNIST EMBED SIMPLE DIST ResNet Small",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "kmnist",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "--train-layers", "0", "10",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet18",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "simple-dist",
+                "--exp-name", "cl_embed_simple_res_small_kmnist",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: KMNIST EMBED COSINE DIST ResNet Small",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "kmnist",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "--train-layers", "0", "10",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet18",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "cosine-loss",
+                "--exp-name", "cl_embed_cosine_res_small_kmnist",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: KMNIST EMBED PUSH ResNet Small",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "kmnist",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "--train-layers", "0", "10",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet18",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "class-push",
+                "--exp-name", "cl_embed_push_res_small_kmnist",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot",
+                "--prox-mult", "10", "1000" //
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+
+
+
+
+
+
+        {
+            "label": "CL: KMNIST EMBED SIMPLE DIST ResNet Medium",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "kmnist",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet50",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "simple-dist",
+                "--exp-name", "cl_embed_simple_res_med_kmnist",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: KMNIST EMBED COSINE DIST ResNet Medium",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "kmnist",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet50",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "cosine-loss",
+                "--exp-name", "cl_embed_cosine_res_med_kmnist",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: KMNIST EMBED PUSH ResNet Medium",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "kmnist",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet50",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "class-push",
+                "--exp-name", "cl_embed_push_res_med_kmnist",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot",
+                "--prox-mult", "10", "1000"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+
+
+
+        {
+            "label": "CL: KMNIST EMBED SIMPLE DIST ResNet Large",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "kmnist",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet101",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "simple-dist",
+                "--exp-name", "cl_embed_simple_res_large_kmnist",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: KMNIST EMBED COSINE DIST ResNet Large",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "kmnist",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "--train-layers", "0", "50",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet101",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "cosine-loss",
+                "--exp-name", "cl_embed_cosine_res_large_kmnist",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot",
+                
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "CL: KMNIST EMBED PUSH ResNet Large",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "kmnist",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "--train-layers", "0", "50",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet101",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "class-push",
+                "--exp-name", "cl_embed_push_res_large_kmnist",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot",
+                "--prox-mult", "10", "1000"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+
+
+
+
+
+
+
+
+
+
         {
             "label": "CL: BEST CIFAR10 EMBED SIMPLE DIST ResNet Small",
             "command": "${command:python.interpreterPath}",
@@ -1221,9 +2575,9 @@
                 // "CL: CIFAR10 EMBED SIMPLE DIST ResNet Medium"
 
 
-                "CL: FASHION MNIST Pure ResNet Small",
-                "CL: FASHION MNIST Pure ResNet Medium",
-                "CL: FASHION MNIST Pure ResNet Large",
+                // "CL: FASHION MNIST Pure ResNet Small",
+                // "CL: FASHION MNIST Pure ResNet Medium",
+                // "CL: FASHION MNIST Pure ResNet Large",
                 // "CL: FASHION MNIST EMBED SIMPLE DIST ResNet Small",
                 // "CL: FASHION MNIST EMBED COSINE DIST ResNet Small",
                 // "CL: FASHION MNIST EMBED PUSH ResNet Small",
@@ -1235,6 +2589,37 @@
                 // "CL: FASHION MNIST EMBED SIMPLE DIST ResNet Large",
                 // "CL: FASHION MNIST EMBED COSINE DIST ResNet Large",
                 // "CL: FASHION MNIST EMBED PUSH ResNet Large",
+                // "CL: CIFAR10 Pure ResNet Small",
+                // "CL: CIFAR10 Pure ResNet Medium",
+                // "CL: CIFAR10 Pure ResNet Large",
+
+                // "CL: CIFAR10 EMBED SIMPLE DIST ResNet Small",
+                // "CL: CIFAR10 EMBED COSINE DIST ResNet Small",
+                // "CL: CIFAR10 EMBED PUSH ResNet Small",
+
+                // "CL: CIFAR10 EMBED SIMPLE DIST ResNet Medium",
+                // "CL: CIFAR10 EMBED COSINE DIST ResNet Medium",
+                // "CL: CIFAR10 EMBED PUSH ResNet Medium",
+
+                // "CL: CIFAR10 EMBED SIMPLE DIST ResNet Large",
+                // "CL: CIFAR10 EMBED COSINE DIST ResNet Large",
+                // "CL: CIFAR10 EMBED PUSH ResNet Large",
+
+                "CL: KMNIST Pure ResNet Small",
+                "CL: KMNIST Pure ResNet Medium",
+                "CL: KMNIST Pure ResNet Large",
+
+                "CL: KMNIST EMBED SIMPLE DIST ResNet Small",
+                "CL: KMNIST EMBED COSINE DIST ResNet Small",
+                "CL: KMNIST EMBED PUSH ResNet Small",
+
+                "CL: KMNIST EMBED SIMPLE DIST ResNet Medium",
+                "CL: KMNIST EMBED COSINE DIST ResNet Medium",
+                "CL: KMNIST EMBED PUSH ResNet Medium",
+
+                "CL: KMNIST EMBED SIMPLE DIST ResNet Large",
+                "CL: KMNIST EMBED COSINE DIST ResNet Large",
+                "CL: KMNIST EMBED PUSH ResNet Large",
             ]
         }
     ]

@@ -27,8 +27,9 @@ with open(path_to_tasks_json, 'r') as f:
     
     # DEFAULT
     if not selected[0]:
-        selected_list = "".join([label + ',\n' for label in labels.values()])
+        selected_list = "".join(['\"' + label + '\",\n' for label in labels.values()])
     else:
-        selected_list = "".join([labels[int(i)] + ',\n' for i in selected])
+        selected_list = "".join(['\"' + labels[int(i)] + '\",\n' for i in selected])
         
     print(selected_list)
+

@@ -31,6 +31,7 @@ def plot_line_2d(xs, y_series, labels, function = inv, x_label = "", y_label = "
         plt.show()
     else:
         plt.savefig(os.path.dirname(__file__) + "/../../embeddingData/" + save_path)
+        plt.close()
 
 def plot_points_2d(xs, ys):
     plt.scatter(xs, ys, marker="o", s = [0.1 for _ in range(len(xs))])
