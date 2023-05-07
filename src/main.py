@@ -49,6 +49,12 @@ def gtzero_float(x):
         raise argparse.ArgumentTypeError("Minimum value is >0")
     return x
 
+def gtezero_float(x):
+    x = float(x)
+    if x < 0:
+        raise argparse.ArgumentTypeError("Minimum value is =0")
+    return x
+
 def args_pretty_print(args):
     tab = tabulate(vars(args).items(), headers=["arg", "value"], missingval=f"{bcolors.WARNING}None{bcolors.ENDC}")
     return tab
@@ -61,7 +67,9 @@ datasets = {"mnist": 0,
             "fc100": 5,
             "cub200": 6,
             "fashion": 7,
-            "fashion_test": 8}
+            "fashion_test": 8,
+            "kuzushuji49": 9,
+            "kmnist": 10}
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument('--dataset', dest="dataset", type=str, default="mnist", choices=datasets.keys(),
@@ -84,7 +92,7 @@ argparser.add_argument('-se,', dest='save_embeds', action='store_true', help="Fl
 argparser.add_argument('--batch', dest="batch_size", nargs="+", type=gtzero_int, default=[100], help="Batch sizes to choose from. Must be > 0")
 
 # Custom network settings
-argparser.add_argument('--channels', dest="cnn_channels", nargs="+", type=gtzero_int, default=[16, 32, 64, 128, 256], help="Number of channels in each convolutional layer")
+argparser.add_argument('--channels', dest="cnn_channels", nargs="+", type=gtzero_int, default=[16, 32, 64, 128], help="Number of channels in each convolutional layer")
 # TODO: cnnlayers not used at the momenet(?)
 argparser.add_argument('--cnnlayers', dest="cnn_layers", type=gtzero_int, default=5, help="Number of convolutional layers")
 argparser.add_argument('--linlayers', dest="linear_layers", type=gtzero_int, default=5, help="Number of linear layers")
@@ -95,7 +103,7 @@ argparser.add_argument('--kernsize', dest='kernel_size', type=gtzero_int, defaul
 argparser.add_argument('--loss-func', dest='loss_func', default='simple-dist', choices=list(emc_loss_functions.keys())+list(pure_loss_functions.keys()))
 argparser.add_argument('--prox-mult', dest='prox_mult', nargs="+", default=[10,100], type=gtzero_int, 
                        help="Proximity multiplier for push loss functions. Only used with the push loss function")
-argparser.add_argument('--p', dest='p', nargs="+", type=gtzero_float, default=[0, 2], help="p used in cone loss function")
+argparser.add_argument('--p', dest='p', nargs="+", type=gtezero_float, default=[0, 2], help="p used in cone loss function")
 argparser.add_argument('--q', dest='q', nargs="+", type=gtzero_float, default=[0, 0.68], help="q used in cone loss function")
 
 # Pretrained
@@ -482,8 +490,7 @@ def run_main(args):
             logging.error('incorrect logging level... exiting...')
             os.quit(1)
         setup_logger(args.log_level.upper()) 
-        print('Setting log level to: ', args.log_level)
-
+        print('==> Setting log level to: ', args.log_level)
 
     if args.few_shot:
         if args.pure:

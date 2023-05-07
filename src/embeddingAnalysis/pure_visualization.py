@@ -41,12 +41,12 @@ def load_pure_data(epoch, data_folder) :
     data = fu.read_pickle_file(path + f"/classification_data_train_{epoch}.p")
     train_embeddings = data["train_embeddings"]
     train_labels = data["train_labels"]
-    train_predictions = data["predictions"]
+    #train_predictions = data["predictions"]
 
     data = fu.read_pickle_file(path + f"/classification_data_val_{epoch}.p")
     val_embeddings = data["val_embeddings"]
     val_labels = data["val_labels"]
-    val_predictions = data["predictions"]
+    #val_predictions = data["predictions"]
 
     center_path = f"class_centers_{epoch}.p"
     if os.path.exists(path + "/" + center_path):
@@ -55,8 +55,8 @@ def load_pure_data(epoch, data_folder) :
         class_centers = save_class_centers(train_embeddings, train_labels, val_embeddings, val_labels, path, center_path)
 
     data = fu.read_json_file(path + "/meta_data.json")
-    data["train_predictions"] = train_predictions
-    data["val_predictions"] = val_predictions
+    #data["train_predictions"] = train_predictions
+    #data["val_predictions"] = val_predictions
 
     return train_embeddings, train_labels, val_embeddings, val_labels, data, class_centers["val"], class_centers["train"]
 
@@ -72,13 +72,12 @@ def pca_pure_classification(data_folder, save = False):
     scores = []
     xs = []
     done = False
-    i = 0
+    i = 5
     while not done and i < points:
-        xs.append(i)
         pca = PCA(n_components = i)
         if i % int(points / 10) == 0:
             print(i)
-        i += 2000 / points
+        i += int(1)
         _ = pca.fit_transform(train_embeddings)
         try:
             xs.append(i)
@@ -88,7 +87,7 @@ def pca_pure_classification(data_folder, save = False):
         
     plot.plot_line_2d(xs, 
                       [scores], 
-                      ["PCA Scores"], lambda x:x, "PCA Components", "PCA Score", data_folder + "pca_plot" if save else "" )
+                      ["PCA Scores"], lambda x:x, "PCA Components", "PCA Score", data_folder + "/pca_plot" if save else "" )
     
 def plot_pure_distances_to_class_centers():
     all_dists = []
@@ -216,7 +215,7 @@ def plot_acc_by_dist_funcs_and_epoch(data_folder, save = False):
         cacd_intersection_num = 0
         
         train_embeddings, train_labels, val_embeddings, val_labels, data, val_class_embeddings, train_class_embeddings = load_pure_data(epoch, data_folder)
-        val_predictions = data["val_predictions"]
+        #val_predictions = data["val_predictions"]
 
         center = np.zeros(len(train_class_embeddings[0]))
         for i in train_class_embeddings:
@@ -224,8 +223,8 @@ def plot_acc_by_dist_funcs_and_epoch(data_folder, save = False):
         center = center / len(train_class_embeddings)
 
         print(end=".")
-        for i, v in enumerate(val_embeddings):
-            label = val_labels[i]
+        for i, v in enumerate(train_embeddings):
+            label = train_labels[i]
 
             eucledian_dist = lambda c, v : ((np.array(v) - np.array(c))**2).sum()
             def cosine_origo_dist(c,v): 
@@ -259,26 +258,26 @@ def plot_acc_by_dist_funcs_and_epoch(data_folder, save = False):
             cosine_avg_center_misclassified += 0 if clossest_cacd_class == label else 1
             #cosine_origo_un_misclassified += 0 if clossest_codun_class == label else 1
             #cosine_avg_center_un_misclassified += 0 if clossest_cacdun_class == label else 1
-            ed_intersection_num += 1 if au.argmax(val_predictions[i]) == clossest_ed_class else 0
-            cacd_intersection_num += 1 if au.argmax(val_predictions[i]) == clossest_cacd_class else 0
+            #ed_intersection_num += 1 if au.argmax(val_predictions[i]) == clossest_ed_class else 0
+            #cacd_intersection_num += 1 if au.argmax(val_predictions[i]) == clossest_cacd_class else 0
 
         print(end=".")
-        ed_acc.append(plot.round_scale(1.0 - euclidean_misclassified/len(val_embeddings)))
+        ed_acc.append(plot.round_scale(1.0 - euclidean_misclassified/len(train_embeddings)))
         #cod_acc.append(plot.round_scale(1.0 - cosine_origo_misclassified/len(val_embeddings)))
-        cacd_acc.append(plot.round_scale(1.0 - cosine_avg_center_misclassified/len(val_embeddings)))
+        cacd_acc.append(plot.round_scale(1.0 - cosine_avg_center_misclassified/len(train_embeddings)))
         #codun_acc.append(plot.round_scale(1.0 - cosine_origo_un_misclassified/len(val_embeddings)))
         #cacdun_acc.append(plot.round_scale(1.0 - cosine_avg_center_un_misclassified/len(val_embeddings)))
-        ed_intersection.append(ed_intersection_num / len(val_embeddings))
-        cacd_intersection.append(cacd_intersection_num / len(val_embeddings))
+        #ed_intersection.append(ed_intersection_num / len(val_embeddings))
+        #cacd_intersection.append(cacd_intersection_num / len(val_embeddings))
     
     plot.plot_line_2d([i for i in epochs], [ed_acc, cacd_acc, [plot.round_scale(data["accuracies"][i]) for i in epochs]], 
-                      ["Euclidean", "Cosine avg Center", "Pure"], x_label = "Epoch", y_label = "Classification Accuracy", 
-                      filepath = data_folder + "/acc_plot.png" if save else "") #Closest class center classification
+                      ["Euclidean", "Cosine avg Center", "Pure"], x_label = "Epoch", y_label = "Classification Accuracy",
+                      save_path= data_folder + "/acc_plot.png" if save else "") #Closest class center classification
     #plot.plot_line_2d([i for i in epochs], [ed_acc, cod_acc, cacd_acc, codun_acc, cacdun_acc, [plot.round_scale(data["accuracies"][i]) for i in epochs]], 
     #                  ["Euclidean", "Cosine Origo", "Cosine avg Center","Cosine Origo UN", "Cosine avg Center UN", "Pure"]) #Closest class center classification
-    plot.plot_line_2d([i for i in epochs], [ed_intersection, cacd_intersection], 
-                      ["Euclidean and Pure Intersection", "Cosine avg Center and Pure Intersection"], 
-                      lambda x:x, "Epoch", "Proportion of Prediction Intersection", data_folder + "/intersection_plot.png" if save else "")
+    #plot.plot_line_2d([i for i in epochs], [ed_intersection, cacd_intersection], 
+    #                  ["Euclidean and Pure Intersection", "Cosine avg Center and Pure Intersection"], 
+    #                  lambda x:x, "Epoch", "Proportion of Prediction Intersection", data_folder + "/intersection_plot.png" if save else "")
 
 def plot_pure_distance_distribution():
     num_buckets = 30
@@ -325,7 +324,7 @@ def plot_pure_dist_median(data_folder, save = False):
     all_cetc = [[] for _ in range(10)]
     all_epochs = [[] for _ in range(10)]
 
-    epochs = range(1, 30)
+    epochs = range(1, 20)
     for epoch in epochs:
         print(epoch)
         train_embeddings, train_labels, val_embeddings, val_labels, data, val_class_embeddings, train_class_embeddings = load_pure_data(epoch, data_folder)        
@@ -351,8 +350,8 @@ def plot_pure_dist_median(data_folder, save = False):
     #plot.plot_points_series_2d(all_cetc, all_medians, "Dist to avg center", "Median dists", [f"Class {i}" for i in range(10)])
 
     plot.plot_line_2d([i for i in epochs], all_medians, [f"Class {i}" for i in range(10)], lambda x:x, 
-                      "Epochs", "Mediuan Distance to Class Center", data_folder + "/median_plot.png" if save else "")
-    plot.plot_line_2d([i for i in epochs], all_medians, [f"Class {i}" for i in range(10)], lambda x:x, 
+                      "Epochs", "Mediuan Distance to Class Center", save_path=data_folder + "/median_plot.png" if save else "")
+    plot.plot_line_2d([i for i in epochs], all_cetc, [f"Class {i}" for i in range(10)], lambda x:x, 
                       "Epochs", "Class Center Distance to Avg Class Center", data_folder + "/cetc_plot.png" if save else "")
     #plot.plot_line_2d([i for i in epochs], all_medians[:1], ["Median Dist All classes"], lambda x:x)
 
@@ -375,6 +374,94 @@ def kmeans():
     plot.plot_line_2d([i for i in cluster_range], [scores], ["Score"], lambda x:x)
     #au.print_distance_matrix(train_class_embeddings, kmeans.cluster_centers_)
 
+def confusion_dist_matrix(data_folder):
+    path = os.path.dirname(__file__) + "/../../embeddingData/" + data_folder
+    data = fu.read_pickle_file(path + f"/classification_data_train_{10}.p")
+    train_class_embeddings = data["train_class_embeddings"]
+    train_embeddings = data["train_embeddings"]
+    print("")
+    for i in range(len(train_class_embeddings)):
+        print(f"  {i}", end="  ")
+    print("")
+    for i, ci in enumerate(train_class_embeddings):
+        cia = np.array(ci)
+        for ii, cii in enumerate(train_class_embeddings):
+            count = 0
+            ciia = np.array(cii)
+            for e in train_embeddings:
+                if ((np.array(e) - cia)**2).sum(0) <= ((np.array(e) - ciia)**2).sum(0) :
+                    count += 1
+            print(f" {(count / len(train_embeddings)):.2f}", end="")
+
+        print("")
+
+def print_centers():
+    epoch = 5
+    path = os.path.dirname(__file__) + "/../../embeddingData/" + data_folder
+    data = fu.read_pickle_file(path + f"/classification_data_train_{epoch}.p")
+    train_embeddings = data["train_embeddings"]
+    class_embeddings = data["train_class_embeddings"]
+
+    center_path = f"class_centers_{epoch}.p"
+    class_centers = fu.read_pickle_file(path + "/" + center_path)["train"]
+
+    avg_center = np.zeros(len(class_embeddings[0]))
+    embeddings_center = np.zeros(len(class_embeddings[0]))
+
+    for i in range(10):
+        avg_center = avg_center + class_centers[i]
+        embeddings_center = embeddings_center + class_embeddings[i]
+
+    avg_center = np.array(avg_center / 10)
+    embeddings_center = np.array(embeddings_center / 10)
+
+    ac_norm = np.linalg.norm(avg_center)
+    ec_norm = np.linalg.norm(embeddings_center)
+    print(f"{np.dot(ac_norm, ec_norm) / ac_norm / ec_norm}" )
+    print(f"{ac_norm}")
+    print(f"{ec_norm}")
+    print("")
+
+    for i in range(10):
+        print("")
+        for ii in range(10):
+            ce = np.array(class_embeddings[i] - embeddings_center)
+            cc = np.array(class_centers[ii] - avg_center)
+            cc_norm = np.linalg.norm(cc)
+            ce_norm = np.linalg.norm(ce)
+            print(f" {np.dot(ce, cc) / ce_norm / cc_norm:.2f}", end = "")
+
+def find_error():
+    a = []
+    #for epoch in range(0, 1):
+    epoch = 5
+    path = os.path.dirname(__file__) + "/../../embeddingData/" + data_folder
+    data = fu.read_pickle_file(path + f"/classification_data_train_{epoch}.p")
+    class_embeddings = data["train_class_embeddings"]
+    center_path = f"class_centers_{epoch}.p"
+    class_centers = fu.read_pickle_file(path + "/" + center_path)["train"]
+    
+    pca = PCA(n_components = 3)
+    pca_train_embeddings = pca.fit_transform(data["train_embeddings"])
+    train_labels = data["train_labels"]
+
+    data = fu.read_pickle_file(path + f"/classification_data_val_{epoch}.p")
+    pca_val_embeddings = pca.transform(data["val_embeddings"])
+    val_labels = data["val_labels"]
+    pca_class_centers = pca.transform(class_centers)
+    pca_class_embeddings = pca.transform(class_embeddings)
+
+    avg_class_center = sum(pca_class_centers)/len(pca_class_centers)
+    pca_class_centers = [(pcc - avg_class_center)/np.linalg.norm(pcc - avg_class_center) + avg_class_center for pcc in pca_class_centers]
+
+    COLOR = plot.get_colors(10)
+    series = [{"marker": ".", "color": COLOR[i], "label": f"{i}cc", 
+               "points":[e for ei, e in enumerate(pca_train_embeddings) if train_labels[ei] == i]} for i in range(10)] + [{"marker": "*", "color": COLOR[i], "label": f"{i}ce", 
+                                                               "points":pca_class_embeddings[i:i+1]} for i in range(10)]
+
+    plot.plotCustomPoints(series, legend=False, axes=[0,1,2])
+
+    print("break")
 
 if __name__ == '__main__':
     #plot_acc_by_epoch()
@@ -389,11 +476,16 @@ if __name__ == '__main__':
 
 
     #USEFUL:
-    data_folder = "cifar10_medium_pure_embeddings"
+    data_folder = "cl_embed_cone_res_med_cifar_10"#"cifar10_medium_pure_embeddings"
     save = True
-    #train_embeddings, train_labels, val_embeddings, val_labels, data, val_class_embeddings, train_class_embeddings = load_pure_data(29, data_folder)
-    pca_pure_classification(data_folder, save)
-    plot_acc_by_dist_funcs_and_epoch(data_folder, save)
-    plot_pure_dist_median(data_folder, save)
 
+    
+
+
+
+    #train_embeddings, train_labels, val_embeddings, val_labels, data, val_class_embeddings, train_class_embeddings = load_pure_data(29, data_folder)
+    #pca_pure_classification(data_folder, save)
+    #plot_acc_by_dist_funcs_and_epoch(data_folder, save)
+    #plot_pure_dist_median(data_folder, save)
+    find_error()
     print("Done")

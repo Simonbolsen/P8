@@ -113,25 +113,38 @@ def cone_loss(p, q, output_embeds, class_embeds, targets, device):
 
     for i, output_embedding in enumerate(output_embeds):
         actual_index = targets[i]
-        class_from_center = class_embeds[actual_index] - class_center
+        normalized_class_from_center = torch.nn.functional.normalize(class_embeds[actual_index] - class_center, dim=0)
         normalized_output_from_center = torch.nn.functional.normalize(output_embedding - class_center, dim=0)
 
         diff = output_embedding - class_embeds[actual_index]
 
-        cfc_length = torch.norm(class_from_center)
-
-        d = torch.dot(normalized_output_from_center, class_from_center) / cfc_length
-        a = class_from_center * d - normalized_output_from_center * cfc_length
-        a_length = torch.norm(a)
-        scale = (1 - d)**p
+        d = torch.dot(normalized_output_from_center, normalized_class_from_center)
+        a = torch.nn.functional.normalize(normalized_class_from_center * d - normalized_output_from_center, dim = 0)
+        scale = (1.00001 - d)**p
 
         actual_index = actual_index + output_embeds.size()[0]
-        grad[i] = scale * diff if (d.item() < -q) else -q * class_from_center - r * a * (cfc_length / a_length)
-        grad[actual_index] = grad[actual_index] - diff
+        output_grad = scale * (-q * normalized_class_from_center - r * a)
+        grad[i] = output_grad
+        grad[actual_index] = grad[actual_index] - diff / len(output_embeds)
 
-        acc_loss = acc_loss + (diff).pow(2).sum(0)
+        #acc_loss = acc_loss + (diff).pow(2).sum(0)
 
+    print(f"{torch.norm(grad[0])}, {torch.norm(grad[-1])}")
+    print(f"{torch.norm(output_embeds[0])}, {torch.norm(class_embeds[-1])}")
+    print("")
     return acc_loss, grad
+
+#Doesn't work, sorry!
+def cone_non_grad(output_embeds, class_embeds, targets, device):
+    acc_loss = torch.tensor(0.0, requires_grad=True, device=device)
+    grad = torch.zeros(torch.Size([output_embeds.size()[0] + class_embeds.size()[0], output_embeds.size()[1]]), device=device, dtype=torch.float)
+    for i, output_embedding in enumerate(output_embeds):
+        actual_index = targets[i]
+        output_from_center = output_embedding
+        normalized_class_from_center = torch.nn.functional.normalize(class_embeds[actual_index], dim=0)
+        orthogonal_cfc = output_from_center - normalized_class_from_center * torch.dot(normalized_class_from_center, output_from_center)
+        acc_loss = acc_loss - torch.dot(output_from_center, normalized_class_from_center) + torch.norm(orthogonal_cfc) 
+    return acc_loss, None
 
 def cone_loss_hyperparam(p=0, q=0.68):
     return lambda output_embeds, class_embeds, targets, device: cone_loss(p, q, output_embeds, class_embeds, targets, device)
@@ -249,11 +262,22 @@ def cosine_loss(output_embeds, class_embeds, targets, device):
     
     return loss, None
 
+def one_hot_cone_loss(res, labels, device):
+    acc_loss = torch.tensor(0.0, requires_grad=True, device=device)
+    class_embeddings = torch.nn.functional.one_hot(labels)
+    for i, output_embedding in enumerate(res):
+        actual_index = labels[i]
+        #output_from_center = output_embedding
+        #normalized_class_from_center = torch.zeros( device=device) #torch.nn.functional.normalize(class_embeds[actual_index], dim=0)
+        #orthogonal_cfc = output_from_center - normalized_class_from_center * torch.dot(normalized_class_from_center, output_from_center)
+        acc_loss = acc_loss - output_embedding[actual_index] + torch.norm(output_embedding[actual_index] - output_embedding[actual_index] * class_embeddings[i]) 
+    return acc_loss
+
 emc_loss_functions = {
     "simple-dist": simple_dist_loss,
     "class-push": dist_and_proximity_loss,
     "comp-dist-loss": comparison_dist_loss,
-    "cone_loss": cone_loss_hyperparam,
+    "cone-loss": cone_loss_hyperparam,
     "cosine-loss": cosine_loss
 }
 
@@ -264,14 +288,15 @@ def get_emc_loss_function(args, config):
     if args.loss_func == "class-push":
         logging.debug(f'class-push loss: using prox mult: {config["prox_mult"]}')
         return loss_func(config["prox_mult"])
-    if args.loss_func == "cone_loss":
+    if args.loss_func == "cone-loss":
         logging.debug(f'cone loss: using values p: {config["p"]}, q: {config["q"]}')
         return loss_func(config["p"], config["q"])
 
     return loss_func
 
 pure_loss_functions = {
-    "cross_entropy": nn.CrossEntropyLoss()
+    "cross_entropy": lambda res, labels, _ : nn.CrossEntropyLoss()(res, labels),
+    "cone_loss": one_hot_cone_loss
 }
 
 def get_pure_loss_function(args, config):

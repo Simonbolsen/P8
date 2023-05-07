@@ -13,6 +13,7 @@ import loader.cifar10fs_splits as cifar10fs_splits
 from learn2learn.vision.datasets import FC100
 from loader.cub200_dataset import Cub200
 from loader.mnist_loader import FashionMNIST, MNIST
+from loader.kuzushuji import Kuzushiji
 
 
 dataset_dict = {
@@ -22,7 +23,9 @@ dataset_dict = {
     "cifar100": lambda c: get_cifar100(config=c),
     "cifarfs": lambda c: get_cifarfs_as_classification(config=c),
     "cub200": lambda c: get_cub200(config=c),
-    "fashion": lambda c: get_fashion_mnist(config=c)
+    "fashion": lambda c: get_fashion_mnist(config=c),
+    "kuzushuji49": lambda c: get_kuzushuji_49(config=c),
+    "kmnist": lambda c: get_kuzushuji_mnist(config=c)
 }
 
 transforms_dict = {
@@ -97,6 +100,113 @@ def get_data_loader(data, batch_size=100):
 
 def get_data(config):
     return dataset_dict[config.dataset](config)
+
+def get_kuzushuji_49(config):
+    logging.debug("==> using kuzushuji-49 mnist")
+    training_set = Kuzushiji(
+        root=config.data_dir,
+        train=True,
+        transform=transforms_dict[config.train_transforms],
+        download=True
+    )
+    
+    testing_set = Kuzushiji(
+        root=config.data_dir,
+        train=False,
+        transform=transforms_dict[config.test_transforms],
+        download=True
+    )       
+    
+    if config.test:
+        print("Using TEST data")
+        training_set.data = training_set.data.view(-1, 1,28,28).float()#.expand(-1, 3, 28, 28).float()
+        testing_set.data = testing_set.data.view(-1, 1,28,28).float()#.expand(-1, 3, 28, 28).float()
+        train_set = CustomCifarDataset(training_set.data, training_set.targets, training_set.transform)
+        test_set = CustomCifarDataset(testing_set.data, testing_set.targets, testing_set.transform)
+        return train_set, test_set
+
+    train_split_size = int(len(training_set) * 0.8)
+    # val_split_size = int(len(training_set) * 0.2)
+    
+    logging.debug("==> creating splits")
+    idx = [i for i in range(len(training_set))]
+    random.seed(25437890)
+    # train_split_idx = random.sample(idx, k=train_split_size)
+    random.shuffle(idx)
+    train_split_idx = idx[:train_split_size]
+    val_split_idx = idx[train_split_size:]
+    # remaining_idx = [i for i in idx if i not in train_split_idx]
+    # val_split_idx = random.sample(remaining_idx, k=val_split_size)
+    
+    # Ensure no overlap
+    assert not list(set(train_split_idx) & set(val_split_idx))
+    # assert not [i for i in train_split_idx if i in val_split_idx]
+    
+    training_set.data = training_set.data.view(-1, 1,28,28).float()#.expand(-1, 3, 28, 28).float()
+    testing_set.data = testing_set.data.view(-1, 1,28,28).float()#.expand(-1, 3, 28, 28).float()
+
+    logging.debug("==> creating train split")
+    train_split = training_set.data[train_split_idx]
+    train_targets = training_set.targets[train_split_idx]
+    
+    logging.debug("==> creating val split")
+    val_split = training_set.data[val_split_idx]
+    val_targets = training_set.targets[val_split_idx]
+    
+    logging.debug("==> creating train set")
+    training_set = CustomCifarDataset(train_split, train_targets, training_set.transform)
+    logging.debug("==> creating val set")
+    val_set = CustomCifarDataset(val_split, val_targets, training_set.transform)
+    
+    return training_set, val_set, testing_set
+
+def get_kuzushuji_mnist(config):
+    logging.debug("==> using kmnist mnist")
+    training_set = datasets.KMNIST(
+        root=config.data_dir,
+        train=True,
+        transform=transforms_dict[config.train_transforms],
+        download=True
+    )
+    
+    testing_set = datasets.KMNIST(
+        root=config.data_dir,
+        train=False,
+        transform=transforms_dict[config.test_transforms],
+        download=True
+    )       
+    
+    if config.test:
+        print("Using TEST data")
+        training_set.data = training_set.data.view(60000, 1,28,28).float()#.expand(-1, 3, 28, 28).float()
+        testing_set.data = testing_set.data.view(10000, 1,28,28).float()#.expand(-1, 3, 28, 28).float()
+        train_set = CustomCifarDataset(training_set.data, training_set.targets, training_set.transform)
+        test_set = CustomCifarDataset(testing_set.data, testing_set.targets, testing_set.transform)
+        return train_set, test_set
+
+    train_split_size = int(len(training_set) * 0.8)
+    val_split_size = int(len(training_set) * 0.2)
+    
+    logging.debug("==> creating splits")
+    idx = range(len(training_set))
+    random.seed(25437890)
+    train_split_idx = random.sample(idx, k=train_split_size)
+    remaining_idx = [i for i in idx if i not in train_split_idx]
+    val_split_idx = random.sample(remaining_idx, k=val_split_size)
+    
+    training_set.data = training_set.data.view(60000, 1,28,28).float()#.expand(-1, 3, 28, 28).float()
+    testing_set.data = testing_set.data.view(10000, 1,28,28).float()#.expand(-1, 3, 28, 28).float()
+
+    train_split = training_set.data[train_split_idx]
+    train_targets = training_set.targets[train_split_idx]
+    
+    val_split = training_set.data[val_split_idx]
+    val_targets = training_set.targets[val_split_idx]
+    
+    training_set = CustomCifarDataset(train_split, train_targets, training_set.transform)
+    val_set = CustomCifarDataset(val_split, val_targets, training_set.transform)
+    
+    return training_set, val_set, testing_set
 
 def get_fashion_mnist(config):
     logging.debug("==> using fashion mnist")
