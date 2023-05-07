@@ -94,7 +94,7 @@ argparser.add_argument('--batch', dest="batch_size", nargs="+", type=gtzero_int,
 # Custom network settings
 argparser.add_argument('--channels', dest="cnn_channels", nargs="+", type=gtzero_int, default=[16, 32, 64, 128], help="Number of channels in each convolutional layer")
 # TODO: cnnlayers not used at the momenet(?)
-argparser.add_argument('--cnnlayers', dest="cnn_layers", type=gtzero_int, default=5, help="Number of convolutional layers")
+argparser.add_argument('--cnnlayers', dest="cnn_layers", type=gtzero_int, default=4, help="Number of convolutional layers")
 argparser.add_argument('--linlayers', dest="linear_layers", type=gtzero_int, default=5, help="Number of linear layers")
 argparser.add_argument('--linsize', dest="linear_size", type=gtzero_int, default=100, help="Number of output features in linear layers")
 argparser.add_argument('--stride', dest='stride', type=gtzero_int, default=1, help="Stride for convolutional layers")
