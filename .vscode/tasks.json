@@ -2565,6 +2565,538 @@
                 "focus": true
             }
         },
+        
+
+         // ----------------------------------------------------------------------------------
+        //
+        //                                !FASHION BEST
+        //
+        // ----------------------------------------------------------------------------------
+
+        {
+            "label": "BEST : cl_embed_push_res_large_fashion",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir","'./data'",
+                "--epochs","30",
+                "--batch",
+                "100",
+                "--dims",
+                "1745",
+                "1746",
+                "--dataset",
+                "fashion",
+                "--exp-name",
+                "cl_embed_push_res_large_fashion_BEST",
+                "--loss-func",
+                "class-push",
+                "--lr","0.00034305873377953847","1",
+                "--model","resnet101",
+                "--prox-mult","95","96",
+                "--train_transforms","cheap_mnist_resnet",
+                "--test_transforms","cheap_mnist_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_cosine_res_large_fashion",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir",
+                "'./data'",
+                "--epochs",
+                "30",
+                "--batch",
+                "100",
+                "--dims",
+                "1006",
+                "1007",
+                "--dataset",
+                "fashion",
+                "--exp-name",
+                "cl_embed_cosine_res_large_fashion_BEST",
+                "--loss-func",
+                "cosine-loss",
+                "--lr",
+                "0.00033785735282789673",
+                "1",
+                "--model",
+                "resnet101",
+                "--train_transforms",
+                "cheap_mnist_resnet",
+                "--test_transforms",
+                "cheap_mnist_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_simple_res_large_fashion",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir",
+                "'./data'",
+                "--epochs",
+                "30",
+                "--batch",
+                "100",
+                "--dims",
+                "1466",
+                "1467",
+                "--dataset",
+                "fashion",
+                "--exp-name",
+                "cl_embed_simple_res_large_fashion_BEST",
+                "--loss-func",
+                "simple-dist",
+                "--lr",
+                "0.0006811457128194774",
+                "1",
+                "--model",
+                "resnet101",
+                "--train_transforms",
+                "cheap_mnist_resnet",
+                "--test_transforms",
+                "cheap_mnist_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_push_res_med_fashion",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir",
+                "'./data'",
+                "--epochs",
+                "30",
+                "--batch",
+                "100",
+                "--dims",
+                "1700",
+                "1701",
+                "--dataset",
+                "fashion",
+                "--exp-name",
+                "cl_embed_push_res_med_fashion_BEST",
+                "--loss-func",
+                "class-push",
+                "--lr",
+                "0.0003947310896664156",
+                "1",
+                "--model",
+                "resnet50",
+                "--prox-mult",
+                "72",
+                "73",
+                "--train_transforms",
+                "cheap_mnist_resnet",
+                "--test_transforms",
+                "cheap_mnist_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_cosine_res_med_fashion",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir",
+                "'./data'",
+                "--epochs",
+                "30",
+                "--batch",
+                "100",
+                "--dims",
+                "1291",
+                "1292",
+                "--dataset",
+                "fashion",
+                "--exp-name",
+                "cl_embed_cosine_res_med_fashion_BEST",
+                "--loss-func",
+                "cosine-loss",
+                "--lr",
+                "0.000241292290310704",
+                "1",
+                "--model",
+                "resnet50",
+                "--train_transforms",
+                "cheap_mnist_resnet",
+                "--test_transforms",
+                "cheap_mnist_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_simple_res_med_fashion",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir",
+                "'./data'",
+                "--epochs",
+                "30",
+                "--batch",
+                "100",
+                "--dims",
+                "1230",
+                "1231",
+                "--dataset",
+                "fashion",
+                "--exp-name",
+                "cl_embed_simple_res_med_fashion_BEST",
+                "--loss-func",
+                "simple-dist",
+                "--lr",
+                "0.0006793674168086769",
+                "1",
+                "--model",
+                "resnet50",
+                "--train_transforms",
+                "cheap_mnist_resnet",
+                "--test_transforms",
+                "cheap_mnist_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_push_res_small_fashion",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir",
+                "'./data'",
+                "--epochs",
+                "30",
+                "--batch",
+                "100",
+                "--dims",
+                "1279",
+                "1280",
+                "--dataset",
+                "fashion",
+                "--exp-name",
+                "cl_embed_push_res_small_fashion_BEST",
+                "--loss-func",
+                "class-push",
+                "--lr",
+                "0.0005777826987335856",
+                "1",
+                "--model",
+                "resnet18",
+                "--prox-mult",
+                "63",
+                "64",
+                "--train_transforms",
+                "cheap_mnist_resnet",
+                "--test_transforms",
+                "cheap_mnist_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_cosine_res_small_fashion",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir",
+                "'./data'",
+                "--epochs",
+                "30",
+                "--batch",
+                "100",
+                "--dims",
+                "1901",
+                "1902",
+                "--dataset",
+                "fashion",
+                "--exp-name",
+                "cl_embed_cosine_res_small_fashion_BEST",
+                "--loss-func",
+                "cosine-loss",
+                "--lr",
+                "0.00034111815857236337",
+                "1",
+                "--model",
+                "resnet18",
+                "--train_transforms",
+                "cheap_mnist_resnet",
+                "--test_transforms",
+                "cheap_mnist_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_simple_res_small_fashion",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir",
+                "'./data'",
+                "--epochs",
+                "30",
+                "--batch",
+                "100",
+                "--dims",
+                "1351",
+                "1352",
+                "--dataset",
+                "fashion",
+                "--exp-name",
+                "cl_embed_simple_res_small_fashion_BEST",
+                "--loss-func",
+                "simple-dist",
+                "--lr",
+                "0.0004453945866822611",
+                "1",
+                "--model",
+                "resnet18",
+                "--train_transforms",
+                "cheap_mnist_resnet",
+                "--test_transforms",
+                "cheap_mnist_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_pure_res_large_fashion_mnist",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir",
+                "'./data'",
+                "--epochs",
+                "30",
+                "--batch",
+                "100",
+                "--dataset",
+                "fashion",
+                "--exp-name",
+                "cl_pure_res_large_fashion_mnist_BEST",
+                "-pure",
+                "--loss-func",
+                "cross_entropy",
+                "--lr",
+                "0.003175974580595376",
+                "1",
+                "--model",
+                "resnet101",
+                "--train_transforms",
+                "cheap_mnist_resnet",
+                "--test_transforms",
+                "cheap_mnist_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_pure_res_med_fashion_mnist",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir",
+                "'./data'",
+                "--epochs",
+                "30",
+                "--batch",
+                "100",
+                "--dataset",
+                "fashion",
+                "--exp-name",
+                "cl_pure_res_med_fashion_mnist_BEST",
+                "-pure",
+                "--loss-func",
+                "cross_entropy",
+                "--lr",
+                "0.0005861841122271772",
+                "1",
+                "--model",
+                "resnet50",
+                "--train_transforms",
+                "cheap_mnist_resnet",
+                "--test_transforms",
+                "cheap_mnist_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_pure_res_small_fashion_mnist",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir",
+                "'./data'",
+                "--epochs",
+                "30",
+                "--batch",
+                "100",
+                "--dataset",
+                "fashion",
+                "--exp-name",
+                "cl_pure_res_small_fashion_mnist_BEST",
+                "-pure",
+                "--loss-func",
+                "cross_entropy",
+                "--lr",
+                "0.0047011966804095095",
+                "1",
+                "--model",
+                "resnet18",
+                "--train_transforms",
+                "cheap_mnist_resnet",
+                "--test_transforms",
+                "cheap_mnist_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        
+
         {
             "label": "Run Queue",
             "dependsOrder": "sequence",
