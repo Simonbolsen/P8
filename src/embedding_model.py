@@ -40,6 +40,7 @@ class Convnet(nn.Module):
             nn_util.conv_layer(self.middle_layers[0], self.middle_layers[1], self.k_size, self.stride),
             nn_util.conv_layer(self.middle_layers[1], self.middle_layers[2], self.k_size, self.stride),
             nn_util.conv_layer(self.middle_layers[2], self.middle_layers[3], self.k_size, self.stride),
+            nn.AdaptiveAvgPool2d(self.final_conv_out_size),
             nn.Flatten(),
             nn_util.create_n_linear_layers(self.linear_layers, self.linear_first_in, self.linear_layers_size),
             nn.Linear(self.linear_layers_size, self.d)
