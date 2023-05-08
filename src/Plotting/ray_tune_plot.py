@@ -25,10 +25,13 @@ def insert_append(l, i, e):
             l.append([])
         l.append([e])
 
-results = tune.ExperimentAnalysis("~/ray_results/cifarfs_resnet101_1", 
+results = tune.ExperimentAnalysis("~/ray_results/cl_embed_simple_res_large_kmnist", 
                                   default_metric="accuracy", 
                                   default_mode="max")
 best_results = analysis.best_iterations_per_trial(results)
+
+keys_by_acc = {result["data"]["accuracy"]: key for key, result in best_results.items()}
+best = best_results[keys_by_acc[max(keys_by_acc.keys())]]
 
 x1 = []
 x2 = []
