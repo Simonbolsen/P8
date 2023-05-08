@@ -833,6 +833,7 @@
                 "--model", "resnet101", //
                 "--gpu", "0.25",
                 "--cpu", "4",
+                "--dims", "200", "2000",
                 "--loss-func", "simple-dist", //
                 "--exp-name", "cl_embed_simple_res_large_cifar_100", //
                 "--train_transforms", "cifar100_resnet", //
@@ -2603,6 +2604,21 @@
                 // "CL: CIFAR10 EMBED SIMPLE DIST ResNet Large",
                 // "CL: CIFAR10 EMBED COSINE DIST ResNet Large",
                 // "CL: CIFAR10 EMBED PUSH ResNet Large",
+                "CL: CIFAR100 Pure ResNet Small",
+                "CL: CIFAR100 Pure ResNet Medium",
+                "CL: CIFAR100 Pure ResNet Large",
+
+                "CL: CIFAR100 EMBED SIMPLE DIST ResNet Small",
+                "CL: CIFAR100 EMBED COSINE DIST ResNet Small",
+                "CL: CIFAR100 EMBED PUSH ResNet Small",
+
+                "CL: CIFAR100 EMBED SIMPLE DIST ResNet Medium",
+                "CL: CIFAR100 EMBED COSINE DIST ResNet Medium",
+                "CL: CIFAR100 EMBED PUSH ResNet Medium",
+
+                "CL: CIFAR100 EMBED SIMPLE DIST ResNet Large",
+                "CL: CIFAR100 EMBED COSINE DIST ResNet Large",
+                "CL: CIFAR100 EMBED PUSH ResNet Large",
 
                 "CL: KMNIST Pure ResNet Small",
                 "CL: KMNIST Pure ResNet Medium",
