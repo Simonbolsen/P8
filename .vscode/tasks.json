@@ -4,7 +4,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "CIFAR CLASSIFICATION EMBEDDINGS",
+            "label": "CIFAR CLASSIFICATION PNP",
             "command": "${command:python.interpreterPath}",
             "type": "shell",
             "group": {
@@ -17,21 +17,24 @@
                 "--datadir", "'./data'",
                 "--train_transforms","cifar10_resnet",
                 "--test_transforms","cifar10_resnet",
-                "--epochs", "30",
+                "--epochs", "25",
                 "--batch","100",
-                "--dims","15", "16",
-                "--lr","0.0007391208356282593", "0.001",
+                "--dims","100", "2000",
+                "--lr","0.0001", "0.001",
                 "-fe",
-                "--train-layers","13","25",
+                "--train-layers","1","25",
                 "--channels","32", "32", "64", "128", "256",
                 "-pt",
+                "-t",
                 "--shots", "5",
+                "--q", "0.01", "1.0",
                 "--model", "resnet50",
                 "--gpu", "0.33",
                 "--cpu", "5",
-                "--loss-func", "simple-dist",
-                "--exp-name", "cifar10_medium_embeddings",
-                "--samples", "200"
+                "--loss-func", "pnp-loss",
+                "--exp-name", "cifar10_medium_pnp_embeddings",
+                "--samples", "100",
+                "-se"
             ],
             "presentation": {
                 "reveal": "always",
