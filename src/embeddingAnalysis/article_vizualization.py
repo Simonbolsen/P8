@@ -288,12 +288,12 @@ def plot_data(data_folder, save_path = ""):
                 ys_cen_eu.append(item)
                 ls_cen_eu.append(f'{file["name"]} {key}')
 
-    plot.plot_line_series_2d(xs_acc, ys_acc, ls_acc, "Epoch ep", "Accuracy a", save_path=save_path)
-    plot.plot_line_series_2d(xs_pca, ys_pca, ls_pca, "PCA Componments pc", "Score s", save_path=save_path)
-    plot.plot_line_series_2d(xs_med_eu, ys_med_eu, ls_med_eu, "Epoch ep", "Eucledian Distance ed", save_path=save_path)
-    plot.plot_line_series_2d(xs_med_co, ys_med_co, ls_med_co, "Epoch ep", "Cosine Similarity cs", save_path=save_path)
-    plot.plot_line_series_2d(xs_med_eu, ys_med_eu, ls_med_eu, "Epoch ep", "Eucledian Distance ed", save_path=save_path)
-    plot.plot_line_series_2d(xs_med_co, ys_med_co, ls_med_co, "Epoch ep", "Cosine Similarity cs", save_path=save_path)
+    plot.plot_line_series_2d(xs_acc, ys_acc, ls_acc, "Epoch ep", "Accuracy a", save_path=save_path+"/acc")
+    plot.plot_line_series_2d(xs_pca, ys_pca, ls_pca, "PCA Componments pc", "Score s", save_path=save_path+"/pca")
+    plot.plot_line_series_2d(xs_med_eu, ys_med_eu, ls_med_eu, "Epoch ep", "Median Eucledian Distance ed", save_path=save_path+"/med_euc")
+    plot.plot_line_series_2d(xs_med_co, ys_med_co, ls_med_co, "Epoch ep", "Median Cosine Similarity cs", save_path=save_path+"/med_cos")
+    plot.plot_line_series_2d(xs_cen_eu, ys_cen_eu, ls_cen_eu, "Epoch ep", "Center Eucledian Distance ed", save_path=save_path+"/cen_euc")
+    plot.plot_line_series_2d(xs_cen_co, ys_cen_co, ls_cen_co, "Epoch ep", "Center Cosine Similarity cs", save_path=save_path+"/cen_cos")
 
     #plot.plot_line_2d(xs, 
     #                  [scores], 
@@ -315,7 +315,7 @@ if __name__ == "__main__":
     input_folders = ["cifar10_medium_embeddings"]
     data_folder = "plots/plotData"
     plot_folder = "plots"
-    gather_data(input_folders, data_folder)
+    #gather_data(input_folders, data_folder)
     plot_data(data_folder, plot_folder) #Without a save path the plots are shown and not saved
 
     print("Done")
