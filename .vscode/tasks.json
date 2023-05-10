@@ -2949,7 +2949,772 @@
                 "focus": true
             }
         },
+
+        // ----------------------------------------------------------------------------------
+        //
+        //                                      !CIFAR10 BEST
+        //
+        // ----------------------------------------------------------------------------------
         
+        {
+            "label": "BEST : cl_embed_push_res_large_cifar_10",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--dims", "1818", "1819",
+                "--dataset", "cifar10",
+                "--exp-name", "cl_embed_push_res_large_cifar_10_BEST",
+                "--loss-func", "class-push",
+                "--lr", "0.0003891367970742131", "1",
+                "--model", "resnet101",
+                "--prox-mult", "322", "323",
+                "--train_transforms", "cifar10_resnet",
+                "--test_transforms", "cifar10_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_cosine_res_large_cifar_10",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--dims", "763", "764",
+                "--dataset", "cifar10",
+                "--exp-name", "cl_embed_cosine_res_large_cifar_10_BEST",
+                "--loss-func", "cosine-loss",
+                "--lr", "0.0002555302102328242", "1",
+                "--model", "resnet101",
+                "--train_transforms", "cifar10_resnet",
+                "--test_transforms", "cifar10_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_simple_res_large_cifar_10",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--dims", "1027", "1028",
+                "--dataset", "cifar10",
+                "--exp-name", "cl_embed_simple_res_large_cifar_10_BEST",
+                "--loss-func", "simple-dist",
+                "--lr", "0.0005021564919432481", "1",
+                "--model", "resnet101",
+                "--train_transforms", "cifar10_resnet",
+                "--test_transforms", "cifar10_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_push_res_med_cifar_10",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--dims", "500", "501",
+                "--dataset", "cifar10",
+                "--exp-name", "cl_embed_push_res_med_cifar_10_BEST",
+                "--loss-func", "class-push",
+                "--lr", "0.0004408482379678506", "1",
+                "--model", "resnet50",
+                "--prox-mult", "867", "868",
+                "--train_transforms", "cifar10_resnet",
+                "--test_transforms", "cifar10_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_cosine_res_med_cifar_10",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--dims", "1809", "1810",
+                "--dataset", "cifar10",
+                "--exp-name", "cl_embed_cosine_res_med_cifar_10_BEST",
+                "--loss-func", "cosine-loss",
+                "--lr", "0.000497013788098242", "1",
+                "--model", "resnet50",
+                "--train_transforms", "cifar10_resnet",
+                "--test_transforms", "cifar10_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_simple_res_med_cifar_10",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--dims", "877", "878",
+                "--dataset", "cifar10",
+                "--exp-name", "cl_embed_simple_res_med_cifar_10_BEST",
+                "--loss-func", "simple-dist",
+                "--lr", "0.0004331950206396657", "1",
+                "--model", "resnet50",
+                "--train_transforms", "cifar10_resnet",
+                "--test_transforms", "cifar10_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_push_res_small_cifar_10",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--dims", "1066", "1067",
+                "--dataset", "cifar10",
+                "--exp-name", "cl_embed_push_res_small_cifar_10_BEST",
+                "--loss-func", "class-push",
+                "--lr", "0.0007833304720523006", "1",
+                "--model", "resnet18",
+                "--prox-mult", "98", "99",
+                "--train_transforms", "cifar10_resnet",
+                "--test_transforms", "cifar10_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_cosine_res_small_cifar_10",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--dims", "1609", "1610",
+                "--dataset", "cifar10",
+                "--exp-name", "cl_embed_cosine_res_small_cifar_10_BEST",
+                "--loss-func", "cosine-loss",
+                "--lr", "0.0005656481839849817", "1",
+                "--model", "resnet18",
+                "--train_transforms", "cifar10_resnet",
+                "--test_transforms", "cifar10_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_simple_res_small_cifar_10",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--dims", "558", "559",
+                "--dataset", "cifar10",
+                "--exp-name", "cl_embed_simple_res_small_cifar_10_BEST",
+                "--loss-func", "simple-dist",
+                "--lr", "0.0005793582115900375", "1",
+                "--model", "resnet18",
+                "--train_transforms", "cifar10_resnet",
+                "--test_transforms", "cifar10_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_pure_res_large_cifar_10",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--dataset", "cifar10",
+                "--exp-name", "cl_pure_res_large_cifar_10_BEST",
+                "-pure",
+                "--loss-func", "cross_entropy",
+                "--lr", "0.0014231825591257909", "1",
+                "--model", "resnet101",
+                "--train_transforms", "cifar10_resnet",
+                "--test_transforms", "cifar10_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_pure_res_med_cifar_10",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--dataset", "cifar10",
+                "--exp-name", "cl_pure_res_med_cifar_10_BEST",
+                "-pure",
+                "--loss-func", "cross_entropy",
+                "--lr", "0.001115846736431373", "1",
+                "--model", "resnet50",
+                "--train_transforms", "cifar10_resnet",
+                "--test_transforms", "cifar10_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_pure_res_small_cifar_10",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--dataset", "cifar10",
+                "--exp-name", "cl_pure_res_small_cifar_10_BEST",
+                "-pure",
+                "--loss-func", "cross_entropy",
+                "--lr", "0.0009678283907930908", "1",
+                "--model", "resnet18",
+                "--train_transforms", "cifar10_resnet",
+                "--test_transforms", "cifar10_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+
+
+        // ---------------------------------------------------------------------------------------------------------------------------
+        //
+        //                                        !CIFAR100 BEST
+        //
+        // ---------------------------------------------------------------------------------------------------------------------------
+
+
+        {
+            "label": "BEST : cl_embed_simple_res_large_cifar_100",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--dims", "1659", "1660",
+                "--dataset", "cifar100",
+                "--exp-name", "cl_embed_simple_res_large_cifar_100_BEST",
+                "--loss-func", "simple-dist",
+                "--lr", "0.00020882793261364348", "1",
+                "--model", "resnet101",
+                "--train_transforms", "cifar100_resnet",
+                "--test_transforms", "cifar100_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_push_res_large_cifar_100",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--dims", "1605", "1606",
+                "--dataset", "cifar100",
+                "--exp-name", "cl_embed_push_res_large_cifar_100_BEST",
+                "--loss-func", "class-push",
+                "--lr", "0.00033807774829395994", "1",
+                "--model", "resnet101",
+                "--prox-mult", "583", "584",
+                "--train_transforms", "cifar100_resnet",
+                "--test_transforms", "cifar100_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_cosine_res_large_cifar_100",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--dims", "680", "681",
+                "--dataset", "cifar100",
+                "--exp-name", "cl_embed_cosine_res_large_cifar_100_BEST",
+                "--loss-func", "cosine-loss",
+                "--lr", "0.00037623193217486956", "1",
+                "--model", "resnet101",
+                "--train_transforms", "cifar100_resnet",
+                "--test_transforms", "cifar100_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_push_res_med_cifar_100",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--dims", "1217", "1218",
+                "--dataset", "cifar100",
+                "--exp-name", "cl_embed_push_res_med_cifar_100_BEST",
+                "--loss-func", "class-push",
+                "--lr", "0.0002763912236531686", "1",
+                "--model", "resnet50",
+                "--prox-mult", "774", "775",
+                "--train_transforms", "cifar100_resnet",
+                "--test_transforms", "cifar100_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_cosine_res_med_cifar_100",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--dims", "1304", "1305",
+                "--dataset", "cifar100",
+                "--exp-name", "cl_embed_cosine_res_med_cifar_100_BEST",
+                "--loss-func", "cosine-loss",
+                "--lr", "0.0005619728154053799", "1",
+                "--model", "resnet50",
+                "--train_transforms", "cifar100_resnet",
+                "--test_transforms", "cifar100_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_simple_res_med_cifar_100",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--dims", "1277", "1278",
+                "--dataset", "cifar100",
+                "--exp-name", "cl_embed_simple_res_med_cifar_100_BEST",
+                "--loss-func", "simple-dist",
+                "--lr", "0.00037105825188364844", "1",
+                "--model", "resnet50",
+                "--train_transforms", "cifar100_resnet",
+                "--test_transforms", "cifar100_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_push_res_small_cifar_100",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--dims", "1215", "1216",
+                "--dataset", "cifar100",
+                "--exp-name", "cl_embed_push_res_small_cifar_100_BEST",
+                "--loss-func", "class-push",
+                "--lr", "0.00021996051839487222", "1",
+                "--model", "resnet18",
+                "--prox-mult", "756", "757",
+                "--train_transforms", "cifar100_resnet",
+                "--test_transforms", "cifar100_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_cosine_res_small_cifar_100",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--dims", "974", "975",
+                "--dataset", "cifar100",
+                "--exp-name", "cl_embed_cosine_res_small_cifar_100_BEST",
+                "--loss-func", "cosine-loss",
+                "--lr", "0.0002640889758308444", "1",
+                "--model", "resnet18",
+                "--train_transforms", "cifar100_resnet",
+                "--test_transforms", "cifar100_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_simple_res_small_cifar_100",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--dims", "1152", "1153",
+                "--dataset", "cifar100",
+                "--exp-name", "cl_embed_simple_res_small_cifar_100_BEST",
+                "--loss-func", "simple-dist",
+                "--lr", "0.00024164714536025058", "1",
+                "--model", "resnet18",
+                "--train_transforms", "cifar100_resnet",
+                "--test_transforms", "cifar100_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_pure_res_large_cifar_100",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--dataset", "cifar100",
+                "--exp-name", "cl_pure_res_large_cifar_100_BEST",
+                "-pure",
+                "--loss-func", "cross_entropy",
+                "--lr", "0.00054032626498395", "1",
+                "--model", "resnet101",
+                "--train_transforms", "cifar100_resnet",
+                "--test_transforms", "cifar100_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_pure_res_med_cifar_100",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--dataset", "cifar100",
+                "--exp-name", "cl_pure_res_med_cifar_100_BEST",
+                "-pure",
+                "--loss-func", "cross_entropy",
+                "--lr", "0.0005793152210072046", "1",
+                "--model", "resnet50",
+                "--train_transforms", "cifar100_resnet",
+                "--test_transforms", "cifar100_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_pure_res_small_cifar_100",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--dataset", "cifar100",
+                "--exp-name", "cl_pure_res_small_cifar_100_BEST",
+                "-pure",
+                "--loss-func", "cross_entropy",
+                "--lr", "0.0005857223981110697", "1",
+                "--model", "resnet18",
+                "--train_transforms", "cifar100_resnet",
+                "--test_transforms", "cifar100_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
 
         {
             "label": "Run Queue",
@@ -2990,37 +3755,78 @@
                 // "CL: CIFAR10 EMBED SIMPLE DIST ResNet Large",
                 // "CL: CIFAR10 EMBED COSINE DIST ResNet Large",
                 // "CL: CIFAR10 EMBED PUSH ResNet Large",
-                "CL: CIFAR100 Pure ResNet Small",
-                "CL: CIFAR100 Pure ResNet Medium",
-                "CL: CIFAR100 Pure ResNet Large",
+                // "CL: CIFAR100 Pure ResNet Small",
+                // "CL: CIFAR100 Pure ResNet Medium",
+                // "CL: CIFAR100 Pure ResNet Large",
 
-                "CL: CIFAR100 EMBED SIMPLE DIST ResNet Small",
-                "CL: CIFAR100 EMBED COSINE DIST ResNet Small",
-                "CL: CIFAR100 EMBED PUSH ResNet Small",
+                // "CL: CIFAR100 EMBED SIMPLE DIST ResNet Small",
+                // "CL: CIFAR100 EMBED COSINE DIST ResNet Small",
+                // "CL: CIFAR100 EMBED PUSH ResNet Small",
 
-                "CL: CIFAR100 EMBED SIMPLE DIST ResNet Medium",
-                "CL: CIFAR100 EMBED COSINE DIST ResNet Medium",
-                "CL: CIFAR100 EMBED PUSH ResNet Medium",
+                // "CL: CIFAR100 EMBED SIMPLE DIST ResNet Medium",
+                // "CL: CIFAR100 EMBED COSINE DIST ResNet Medium",
+                // "CL: CIFAR100 EMBED PUSH ResNet Medium",
 
-                "CL: CIFAR100 EMBED SIMPLE DIST ResNet Large",
-                "CL: CIFAR100 EMBED COSINE DIST ResNet Large",
-                "CL: CIFAR100 EMBED PUSH ResNet Large",
+                // "CL: CIFAR100 EMBED SIMPLE DIST ResNet Large",
+                // "CL: CIFAR100 EMBED COSINE DIST ResNet Large",
+                // "CL: CIFAR100 EMBED PUSH ResNet Large",
 
-                "CL: KMNIST Pure ResNet Small",
-                "CL: KMNIST Pure ResNet Medium",
-                "CL: KMNIST Pure ResNet Large",
+                // "CL: KMNIST Pure ResNet Small",
+                // "CL: KMNIST Pure ResNet Medium",
+                // "CL: KMNIST Pure ResNet Large",
 
-                "CL: KMNIST EMBED SIMPLE DIST ResNet Small",
-                "CL: KMNIST EMBED COSINE DIST ResNet Small",
-                "CL: KMNIST EMBED PUSH ResNet Small",
+                // "CL: KMNIST EMBED SIMPLE DIST ResNet Small",
+                // "CL: KMNIST EMBED COSINE DIST ResNet Small",
+                // "CL: KMNIST EMBED PUSH ResNet Small",
 
-                "CL: KMNIST EMBED SIMPLE DIST ResNet Medium",
-                "CL: KMNIST EMBED COSINE DIST ResNet Medium",
-                "CL: KMNIST EMBED PUSH ResNet Medium",
+                // "CL: KMNIST EMBED SIMPLE DIST ResNet Medium",
+                // "CL: KMNIST EMBED COSINE DIST ResNet Medium",
+                // "CL: KMNIST EMBED PUSH ResNet Medium",
 
-                "CL: KMNIST EMBED SIMPLE DIST ResNet Large",
-                "CL: KMNIST EMBED COSINE DIST ResNet Large",
-                "CL: KMNIST EMBED PUSH ResNet Large",
+                // "CL: KMNIST EMBED SIMPLE DIST ResNet Large",
+                // "CL: KMNIST EMBED COSINE DIST ResNet Large",
+                // "CL: KMNIST EMBED PUSH ResNet Large",
+                // "BEST : cl_embed_push_res_large_fashion",
+                // "BEST : cl_embed_cosine_res_large_fashion",
+                // "BEST : cl_embed_simple_res_large_fashion",
+                // "BEST : cl_embed_push_res_med_fashion",
+                // "BEST : cl_embed_cosine_res_med_fashion",
+                // "BEST : cl_embed_simple_res_med_fashion",
+                // "BEST : cl_embed_push_res_small_fashion",
+                // "BEST : cl_embed_cosine_res_small_fashion",
+                // "BEST : cl_embed_simple_res_small_fashion",
+                // "BEST : cl_pure_res_large_fashion_mnist",
+                // "BEST : cl_pure_res_med_fashion_mnist",
+                // "BEST : cl_pure_res_small_fashion_mnist",
+
+
+
+                
+                // "BEST : cl_embed_push_res_large_cifar_10",  
+                // "BEST : cl_embed_cosine_res_large_cifar_10",
+                // "BEST : cl_embed_simple_res_large_cifar_10",
+                // "BEST : cl_embed_push_res_med_cifar_10",    
+                // "BEST : cl_embed_cosine_res_med_cifar_10",  
+                // "BEST : cl_embed_simple_res_med_cifar_10",  
+                // "BEST : cl_embed_push_res_small_cifar_10",  
+                // "BEST : cl_embed_cosine_res_small_cifar_10",
+                // "BEST : cl_embed_simple_res_small_cifar_10", 
+                // "BEST : cl_pure_res_large_cifar_10",         
+                // "BEST : cl_pure_res_med_cifar_10",           
+                // "BEST : cl_pure_res_small_cifar_10",      
+                
+                "BEST : cl_embed_simple_res_large_cifar_100",
+                "BEST : cl_embed_push_res_large_cifar_100",  
+                "BEST : cl_embed_cosine_res_large_cifar_100",
+                "BEST : cl_embed_push_res_med_cifar_100",    
+                "BEST : cl_embed_cosine_res_med_cifar_100",  
+                "BEST : cl_embed_simple_res_med_cifar_100",  
+                "BEST : cl_embed_push_res_small_cifar_100",  
+                "BEST : cl_embed_cosine_res_small_cifar_100",
+                "BEST : cl_embed_simple_res_small_cifar_100",
+                "BEST : cl_pure_res_large_cifar_100",        
+                "BEST : cl_pure_res_med_cifar_100",
+                "BEST : cl_pure_res_small_cifar_100",   
             ]
         }
     ]
