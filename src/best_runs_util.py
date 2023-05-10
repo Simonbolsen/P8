@@ -21,18 +21,33 @@ experiments = [
     # "cl_pure_res_large_fashion_mnist",
     # "cl_pure_res_med_fashion_mnist",
     # "cl_pure_res_small_fashion_mnist"
-    "cl_embed_push_res_large_cifar_10",
-    "cl_embed_cosine_res_large_cifar_10",
-    "cl_embed_simple_res_large_cifar_10",
-    "cl_embed_push_res_med_cifar_10",
-    "cl_embed_cosine_res_med_cifar_10",
-    "cl_embed_simple_res_med_cifar_10",
-    "cl_embed_push_res_small_cifar_10",
-    "cl_embed_cosine_res_small_cifar_10",
-    "cl_embed_simple_res_small_cifar_10",
-    "cl_pure_res_large_cifar_10",
-    "cl_pure_res_med_cifar_10",
-    "cl_pure_res_small_cifar_10"
+
+
+    # "cl_embed_push_res_large_cifar_10",
+    # "cl_embed_cosine_res_large_cifar_10",
+    # "cl_embed_simple_res_large_cifar_10",
+    # "cl_embed_push_res_med_cifar_10",
+    # "cl_embed_cosine_res_med_cifar_10",
+    # "cl_embed_simple_res_med_cifar_10",
+    # "cl_embed_push_res_small_cifar_10",
+    # "cl_embed_cosine_res_small_cifar_10",
+    # "cl_embed_simple_res_small_cifar_10",
+    # "cl_pure_res_large_cifar_10",
+    # "cl_pure_res_med_cifar_10",
+    # "cl_pure_res_small_cifar_10"
+
+    "cl_embed_simple_res_large_cifar_100",
+    "cl_embed_push_res_large_cifar_100",
+    "cl_embed_cosine_res_large_cifar_100",
+    "cl_embed_push_res_med_cifar_100",
+    "cl_embed_cosine_res_med_cifar_100",
+    "cl_embed_simple_res_med_cifar_100",
+    "cl_embed_push_res_small_cifar_100",
+    "cl_embed_cosine_res_small_cifar_100",
+    "cl_embed_simple_res_small_cifar_100",
+    "cl_pure_res_large_cifar_100",
+    "cl_pure_res_med_cifar_100",
+    "cl_pure_res_small_cifar_100"
 ]
 
 config_to_param = {
