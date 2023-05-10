@@ -3817,14 +3817,14 @@
                 
                 // "BEST : cl_embed_simple_res_large_cifar_100",
                 // "BEST : cl_embed_push_res_large_cifar_100",  
-                "BEST : cl_embed_cosine_res_large_cifar_100",
+                "BEST : cl_embed_cosine_res_large_cifar_100", // x
                 // "BEST : cl_embed_push_res_med_cifar_100",     x = ikke kørt
                 // "BEST : cl_embed_cosine_res_med_cifar_100",   x
                 // "BEST : cl_embed_simple_res_med_cifar_100",   x
                 // "BEST : cl_embed_push_res_small_cifar_100",   x
                 // "BEST : cl_embed_cosine_res_small_cifar_100", x
                 // "BEST : cl_embed_simple_res_small_cifar_100", x
-                "BEST : cl_pure_res_large_cifar_100",
+                "BEST : cl_pure_res_large_cifar_100",        //  x
                 // "BEST : cl_pure_res_med_cifar_100",           x
                 // "BEST : cl_pure_res_small_cifar_100",         x
             ]
