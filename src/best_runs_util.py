@@ -4,24 +4,50 @@ import Plotting.results_analysis_util as analysis
 import json
 
 # THIS SCRIPT ASSUMES THE FOLLOWING:
-# assumes max epochs = training iteration
 # and feature extraction not used
 # the model used is a PRETRAINED network
 # if cross entropy is used the model is pure
 
 experiments = [
-    "cl_embed_push_res_large_fashion",
-    "cl_embed_cosine_res_large_fashion",
-    "cl_embed_simple_res_large_fashion",
-    "cl_embed_push_res_med_fashion",
-    "cl_embed_cosine_res_med_fashion",
-    "cl_embed_simple_res_med_fashion",
-    "cl_embed_push_res_small_fashion",
-    "cl_embed_cosine_res_small_fashion",
-    "cl_embed_simple_res_small_fashion",
-    "cl_pure_res_large_fashion_mnist",
-    "cl_pure_res_med_fashion_mnist",
-    "cl_pure_res_small_fashion_mnist"
+    # "cl_embed_push_res_large_fashion",
+    # "cl_embed_cosine_res_large_fashion",
+    # "cl_embed_simple_res_large_fashion",
+    # "cl_embed_push_res_med_fashion",
+    # "cl_embed_cosine_res_med_fashion",
+    # "cl_embed_simple_res_med_fashion",
+    # "cl_embed_push_res_small_fashion",
+    # "cl_embed_cosine_res_small_fashion",
+    # "cl_embed_simple_res_small_fashion",
+    # "cl_pure_res_large_fashion_mnist",
+    # "cl_pure_res_med_fashion_mnist",
+    # "cl_pure_res_small_fashion_mnist"
+
+
+    # "cl_embed_push_res_large_cifar_10",
+    # "cl_embed_cosine_res_large_cifar_10",
+    # "cl_embed_simple_res_large_cifar_10",
+    # "cl_embed_push_res_med_cifar_10",
+    # "cl_embed_cosine_res_med_cifar_10",
+    # "cl_embed_simple_res_med_cifar_10",
+    # "cl_embed_push_res_small_cifar_10",
+    # "cl_embed_cosine_res_small_cifar_10",
+    # "cl_embed_simple_res_small_cifar_10",
+    # "cl_pure_res_large_cifar_10",
+    # "cl_pure_res_med_cifar_10",
+    # "cl_pure_res_small_cifar_10"
+
+    "cl_embed_simple_res_large_cifar_100",
+    "cl_embed_push_res_large_cifar_100",
+    "cl_embed_cosine_res_large_cifar_100",
+    "cl_embed_push_res_med_cifar_100",
+    "cl_embed_cosine_res_med_cifar_100",
+    "cl_embed_simple_res_med_cifar_100",
+    "cl_embed_push_res_small_cifar_100",
+    "cl_embed_cosine_res_small_cifar_100",
+    "cl_embed_simple_res_small_cifar_100",
+    "cl_pure_res_large_cifar_100",
+    "cl_pure_res_med_cifar_100",
+    "cl_pure_res_small_cifar_100"
 ]
 
 config_to_param = {
@@ -81,7 +107,7 @@ for exp in experiments:
     }
 
     for param, value in best['config'].items():
-        if param == 'max_epochs' or param == 'train_layers' or param == 'feature_extract':
+        if param == 'max_epochs' or param == 'train_layers' or param == 'feature_extract' or param == 'save_embeds':
             continue
 
         arg_name = config_to_param[param]

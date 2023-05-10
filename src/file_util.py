@@ -34,6 +34,15 @@ def read_pickle_file(path):
         data = pickle.load(file)
         return data
     
+def read_all_json_files(folder):
+    path = os.scandir(path=os.path.join(os.path.realpath(__file__), '..', '..', folder))
+    files = []
+
+    for file in path:
+        files.append(read_json_file(file))
+
+    return files
+
 class get_files_dict():
     files:dict[str, int] = dict()
 
