@@ -99,7 +99,7 @@ def simple_dist_loss(output_embds, class_embeds, targets, device):
     return acc_loss, None#, acc_loss_div
 
 
-def push_n_pull_loss(output_embds, class_embeds, targets, device):
+def push_n_pull_loss(q, output_embds, class_embeds, targets, device):
     acc_loss = torch.tensor(0.0, requires_grad=True, device=device)
     avg_center = torch.sum(class_embeds, dim = 0) / class_embeds.size()[0]
     
@@ -109,9 +109,7 @@ def push_n_pull_loss(output_embds, class_embeds, targets, device):
 
     ce_loss =  torch.sum(class_embed_diffs**2, dim = [0,1])
     ac_loss = torch.sum(avg_center_diffs**2, dim = [0,1])
-    acc_loss = ce_loss - 0.5 * ac_loss
-
-    print(f"{ce_loss}, {ac_loss}")
+    acc_loss = ce_loss - q * ac_loss
 
     return acc_loss, None
 
@@ -294,7 +292,7 @@ def one_hot_cone_loss(res, labels, device):
 
 emc_loss_functions = {
     "simple-dist": simple_dist_loss,
-    "pnp-loss": push_n_pull_loss,
+    "pnp-loss": pnp_hyperparam,
     "class-push": dist_and_proximity_loss,
     "comp-dist-loss": comparison_dist_loss,
     "cone-loss": cone_loss_hyperparam,

@@ -33,17 +33,32 @@ def plot_line_2d(xs, y_series, labels, function = inv, x_label = "", y_label = "
         plt.savefig(os.path.dirname(__file__) + "/../../embeddingData/" + save_path)
         plt.close()
 
+def plot_line_series_2d(xs, ys, labels, x_label = "", y_label = "", save_path = ""):
+    axe = plt.axes()
+    for i in range(len(ys)):
+        axe.plot(xs[i], ys[i], label = labels[i])
+    plt.legend()
+
+    axe.set_xlabel(x_label)
+    axe.set_ylabel(y_label)
+
+    if save_path == "":
+        plt.show()
+    else:
+        plt.savefig(os.path.dirname(__file__) + "/../../" + save_path)
+        plt.close()
+
 def plot_points_2d(xs, ys):
     plt.scatter(xs, ys, marker="o", s = [0.1 for _ in range(len(xs))])
     plt.legend()
     plt.show()
 
-def plot_points_series_2d(xs, ys, x_title, y_title, labels, size = 5):
+def plot_points_series_2d(xs, ys, x_title, y_title, labels, marker = "o", size = 5):
 
     axe = plt.axes()
 
     for i in range(len(xs)):
-        plt.scatter(xs[i], ys[i], marker="o", s = [size for _ in range(len(xs[i]))], label= labels[i])
+        plt.scatter(xs[i], ys[i], marker=marker, s = [size for _ in range(len(xs[i]))], label= labels[i])
 
     axe.set_xlabel(x_title)
     axe.set_ylabel(y_title)
