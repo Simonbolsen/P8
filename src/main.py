@@ -16,7 +16,7 @@ from ray.tune.stopper import TrialPlateauStopper
 from ray.tune.schedulers import AsyncHyperBandScheduler
 from ray.tune.search.hyperopt import HyperOptSearch
 from hyperopt import hp
-from nn_util import cone_loss_hyperparam, simple_dist_loss, dist_and_proximity_loss, comparison_dist_loss, emc_loss_functions, pure_loss_functions
+from nn_util import cone_loss_hyperparam, pnp_hyperparam, simple_dist_loss, dist_and_proximity_loss, comparison_dist_loss, emc_loss_functions, pure_loss_functions
 from few_shot_utils import setup_few_shot_pretrained, setup_few_shot_custom_model
 from training_utils import train_emc, eval_classification
 from bcolors import bcolors, printlc
@@ -104,7 +104,7 @@ argparser.add_argument('--loss-func', dest='loss_func', default='simple-dist', c
 argparser.add_argument('--prox-mult', dest='prox_mult', nargs="+", default=[10,100], type=gtzero_int, 
                        help="Proximity multiplier for push loss functions. Only used with the push loss function")
 argparser.add_argument('--p', dest='p', nargs="+", type=gtezero_float, default=[0, 2], help="p used in cone loss function")
-argparser.add_argument('--q', dest='q', nargs="+", type=gtzero_float, default=[0, 0.68], help="q used in cone loss function")
+argparser.add_argument('--q', dest='q', nargs="+", type=float, default=[-10, 10], help="q used in cone loss function")
 
 # Pretrained
 argparser.add_argument('-pt', dest="pretrained", action='store_true', 
@@ -187,10 +187,14 @@ def get_base_config(args):
         }
     elif loss_func is cone_loss_hyperparam:
         printlc(f"==> using cone loss function with p = {args.p} and q = {args.q}", bcolors.OKBLUE)
-        # TODO: possibly make this loguniform
         base_config |= {
             "q": hp.uniform("q", args.q[0], args.q[1]),
             "p": hp.uniform("p", args.p[0], args.p[1])
+        }
+    elif loss_func is pnp_hyperparam:
+        printlc(f"==> using pnp loss function with q = {args.q}", bcolors.OKBLUE)
+        base_config |= {
+            "q": hp.uniform("q", args.q[0], args.q[1]),
         }
     
     return base_config

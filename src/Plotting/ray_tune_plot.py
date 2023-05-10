@@ -4,11 +4,11 @@ import plotting_util as plot
 import results_analysis_util as analysis
 import math
 
-parameters = {"lr": "Learning Rate log_10(lr)", "d": "Dimensions d", "i": "Training Iterations i", 
+parameters = {"lr": "Learning Rate log_10(lr)", "d": "Dimensions d", "i": "Training Iterations i", "q": "q",
               "e": "Epochs e", "n" : "Linear Num n", "s": "Linear Size s", "b" : "Batch Size log_2(b)", "c": "Channels c"}
-param1 = "c"
-param2 = "d"
-paramColor = "e"
+param1 = "lr"
+param2 = "q"
+paramColor = "i"
 
 bin1 = []
 bin2 = []
@@ -25,7 +25,7 @@ def insert_append(l, i, e):
             l.append([])
         l.append([e])
 
-results = tune.ExperimentAnalysis("~/ray_results/cl_embed_simple_res_large_kmnist", 
+results = tune.ExperimentAnalysis("~/ray_results/cifar10_medium_pnp_embeddings_2", 
                                   default_metric="accuracy", 
                                   default_mode="max")
 best_results = analysis.best_iterations_per_trial(results)
@@ -51,12 +51,13 @@ for k, result in best_results.items():
         params["d"] = result["config"]["d"]
         params["i"] = result["data"]["training_iteration"]
         params["e"] = result["config"]["max_epochs"]
+        params["q"] = result["config"]["q"]
         #params["s"] = result["config"]["linear_size"]
         params["b"] = math.log(result["config"]["batch_size"],2)
         # params["c"] = result["config"]["channels"]
         accuracy = result["data"]["accuracy"]
            
-        if params["lr"] < -3 and params["lr"] > -3.75:# and params["c"] > 150:
+        if True:#params["lr"] < -3 and params["lr"] > -3.75:# and params["c"] > 150:
             if accuracy < 0.2:
                 failures += 1
 
