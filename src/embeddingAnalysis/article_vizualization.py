@@ -317,28 +317,27 @@ if __name__ == "__main__":
     #"cl_embed_simple_res_large_fashion_BEST",
     #"cl_embed_cosine_res_large_fashion_BEST",
     #"cl_embed_push_res_large_fashion_BEST",
+    #"cl_embed_push_res_large_cifar_100_BEST",
 
-    #input_folders = [
-    #    "cl_embed_push_res_large_cifar_100_BEST",
-    #    "cl_embed_simple_res_large_cifar_100_BEST",
-    #    "cl_pure_res_small_cifar_10_BEST",
-    #    "cl_pure_res_med_cifar_10_BEST",
-    #    "cl_pure_res_large_cifar_10_BEST",
-    #    "cl_embed_simple_res_small_cifar_10_BEST",
-    #    "cl_embed_simple_res_large_cifar_10_BEST",
-    #    "cl_embed_cosine_res_large_cifar_10_BEST",
-    #    "cl_embed_push_res_large_cifar_10_BEST",
-    #    "cl_embed_cosine_res_small_cifar_10_BEST",
-    #    "cl_embed_push_res_small_cifar_10_BEST",
-    #    "cl_embed_simple_res_med_cifar_10_BEST",
-    #    "cl_embed_cosine_res_med_cifar_10_BEST",
-    #    "cl_embed_push_res_med_cifar_10_BEST",
-    #    "cl_pure_res_small_fashion_mnist_BEST",
-    #    "cl_pure_res_med_fashion_mnist_BEST",
-    #    "cl_pure_res_large_fashion_mnist_BEST",
-    #    "cl_embed_simple_res_small_fashion_BEST",
-    #    "cl_embed_cosine_res_small_fashion_BEST"]
-    input_folders = ["cifar10_medium_embeddings"]
+    input_folders = [
+        "cl_embed_simple_res_large_cifar_100_BEST",
+        "cl_pure_res_small_cifar_10_BEST",
+        "cl_pure_res_med_cifar_10_BEST",
+        "cl_pure_res_large_cifar_10_BEST",
+        "cl_embed_simple_res_small_cifar_10_BEST",
+        "cl_embed_simple_res_large_cifar_10_BEST",
+        "cl_embed_cosine_res_large_cifar_10_BEST",
+        "cl_embed_push_res_large_cifar_10_BEST",
+        "cl_embed_cosine_res_small_cifar_10_BEST",
+        "cl_embed_push_res_small_cifar_10_BEST",
+        "cl_embed_simple_res_med_cifar_10_BEST",
+        "cl_embed_cosine_res_med_cifar_10_BEST",
+        "cl_embed_push_res_med_cifar_10_BEST",
+        "cl_pure_res_small_fashion_mnist_BEST",
+        "cl_pure_res_med_fashion_mnist_BEST",
+        "cl_pure_res_large_fashion_mnist_BEST",
+        "cl_embed_simple_res_small_fashion_BEST",
+        "cl_embed_cosine_res_small_fashion_BEST"]
     data_folder = "plots/plotData"
     plot_folder = "plots"
     gather_data(input_folders, data_folder)
