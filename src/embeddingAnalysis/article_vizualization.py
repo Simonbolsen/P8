@@ -18,7 +18,7 @@ from collections import Counter
 def get_class_centers(embeddings, labels):
     num_of_classes = len(set(labels))
     class_center_train = [np.zeros(len(embeddings[0])) for _ in range (num_of_classes)]
-    class_size = [0 for _ in range(10)]
+    class_size = [0 for _ in np.unique(np.array(labels))]
     for i, e in enumerate(embeddings):
         label = labels[i]
         npe = np.array(e)
@@ -86,6 +86,7 @@ def acc_by_dist_funcs(data_folder, save = False):
         train_embeddings, train_labels, val_embeddings, val_labels, _, train_class_centers, class_embeddings = load_data(epoch, data_folder)
         #val_predictions = data["val_predictions"]
 
+        print(end=".")
         center = np.zeros(len(train_class_centers[0]))
         for i in train_class_centers:
             center += i
@@ -165,7 +166,7 @@ def median_dists(data_folder):
     meta_data = load_meta_data(data_folder)
     epochs = range(0, meta_data["config"]["max_epochs"])
     for epoch in epochs:
-        print("Median Dists " + epoch)
+        print(f"Median Dists {epoch}")
         train_embeddings, train_labels, val_embeddings, val_labels, val_class_centers, train_class_centers, class_embedings = load_data(epoch, data_folder)        
         val_eucledian_dists, val_cosine_dist = get_eucledian_and_cosine_dists(val_embeddings, val_labels, train_class_centers)
 
@@ -214,7 +215,7 @@ def center_dists(data_folder):
     meta_data = load_meta_data(data_folder)
     epochs = range(0, meta_data["config"]["max_epochs"])
     for epoch in epochs:
-        print("Center Dists: " + epoch)
+        print(f"Center Dists: {epoch}")
         _, _, _, _, _, train_class_centers, class_embeddings = load_data(epoch, data_folder)        
         
         eucledian, cosine = get_avg_dist_to_avg_center(train_class_centers)
@@ -312,10 +313,37 @@ def plot_data(data_folder, save_path = ""):
 
 if __name__ == "__main__":
     
-    input_folders = ["cifar10_medium_embeddings"]
+    #"cl_embed_push_res_small_fashion_BEST",
+    #"cl_embed_simple_res_med_fashion_BEST",
+    #"cl_embed_cosine_res_med_fashion_BEST",
+    #"cl_embed_push_res_med_fashion_BEST",
+    #"cl_embed_simple_res_large_fashion_BEST",
+    #"cl_embed_cosine_res_large_fashion_BEST",
+    #"cl_embed_push_res_large_fashion_BEST",
+
+    input_folders = [
+        "cl_embed_push_res_large_cifar_100_BEST",
+        "cl_embed_simple_res_large_cifar_100_BEST",
+        "cl_pure_res_small_cifar_10_BEST",
+        "cl_pure_res_med_cifar_10_BEST",
+        "cl_pure_res_large_cifar_10_BEST",
+        "cl_embed_simple_res_small_cifar_10_BEST",
+        "cl_embed_simple_res_large_cifar_10_BEST",
+        "cl_embed_cosine_res_large_cifar_10_BEST",
+        "cl_embed_push_res_large_cifar_10_BEST",
+        "cl_embed_cosine_res_small_cifar_10_BEST",
+        "cl_embed_push_res_small_cifar_10_BEST",
+        "cl_embed_simple_res_med_cifar_10_BEST",
+        "cl_embed_cosine_res_med_cifar_10_BEST",
+        "cl_embed_push_res_med_cifar_10_BEST",
+        "cl_pure_res_small_fashion_mnist_BEST",
+        "cl_pure_res_med_fashion_mnist_BEST",
+        "cl_pure_res_large_fashion_mnist_BEST",
+        "cl_embed_simple_res_small_fashion_BEST",
+        "cl_embed_cosine_res_small_fashion_BEST"]
     data_folder = "plots/plotData"
     plot_folder = "plots"
-    #gather_data(input_folders, data_folder)
+    gather_data(input_folders, data_folder)
     plot_data(data_folder, plot_folder) #Without a save path the plots are shown and not saved
 
     print("Done")
