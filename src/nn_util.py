@@ -99,9 +99,11 @@ def simple_dist_loss(output_embds, class_embeds, targets, device):
     return acc_loss, None#, acc_loss_div
 
 
+def pnp_get_avg_center(class_embeds): return torch.sum(class_embeds, dim = 0) / class_embeds.size()[0]
+
 def push_n_pull_loss(q, output_embds, class_embeds, targets, device):
     acc_loss = torch.tensor(0.0, requires_grad=True, device=device)
-    avg_center = torch.sum(class_embeds, dim = 0) / class_embeds.size()[0]
+    avg_center = pnp_get_avg_center(class_embeds)
     
     actual_embeds = class_embeds[targets]
     class_embed_diffs = output_embds - actual_embeds
