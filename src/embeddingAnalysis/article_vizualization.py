@@ -320,9 +320,9 @@ if __name__ == "__main__":
     #"cl_embed_simple_res_large_fashion_BEST",
     #"cl_embed_cosine_res_large_fashion_BEST",
     #"cl_embed_push_res_large_fashion_BEST",
+    #"cl_embed_push_res_large_cifar_100_BEST",
 
     input_folders = [
-        "cl_embed_push_res_large_cifar_100_BEST",
         "cl_embed_simple_res_large_cifar_100_BEST",
         "cl_pure_res_small_cifar_10_BEST",
         "cl_pure_res_med_cifar_10_BEST",
