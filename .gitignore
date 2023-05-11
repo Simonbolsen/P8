@@ -136,4 +136,5 @@ embeddingData
 
 *.secret
 .vscode/settings.json
+/src/Plotting/loss_plots
 plots
