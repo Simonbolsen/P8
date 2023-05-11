@@ -97,11 +97,13 @@ def acc_by_dist_funcs(data_folder, save = False):
 
         ed_acc.append(np.count_nonzero(np.argmin(np.sum((train_embeddings[:, np.newaxis, :] - train_class_centers[np.newaxis, :, :]) ** 2, axis=-1), axis=1)  == np.array(train_labels))/ len(train_embeddings))
 
+        print(end=".")
         normalized_train_embeddings = train_embeddings / np.linalg.norm(train_embeddings, axis=1)[:, np.newaxis]
         normalized_train_class_centers = train_class_centers / np.linalg.norm(train_class_centers, axis=1)[:, np.newaxis]
 
         cod_acc.append(np.count_nonzero(np.argmax(np.dot(normalized_train_embeddings, np.transpose(normalized_train_class_centers)), axis=1) == np.array(train_labels)) / len(train_embeddings))
 
+        print(end=".")
         if not is_pure(meta_data):
             normalized_class_embeddings = np.array(class_embeddings)
             normalized_class_embeddings = normalized_class_embeddings / np.linalg.norm(normalized_class_embeddings, axis=1)[:, np.newaxis]
