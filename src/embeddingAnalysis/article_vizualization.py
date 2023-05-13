@@ -92,28 +92,27 @@ def acc_by_dist_funcs(data_folder, save = False):
             center += i
         center = center / len(train_class_centers)
 
-        eucledian_dist = lambda c, v : ((np.array(v) - np.array(c))**2).sum()
-        
+        train_embeddings = np.array(train_embeddings)
+        train_class_centers = np.array(train_class_centers)
+
+        count = 0
+        step = int(len(train_embeddings) / 1000)
+        for i in range(0, len(train_embeddings), step):
+            count += np.count_nonzero(np.argmin(np.sum((train_embeddings[i:i+step, np.newaxis, :] - train_class_centers[np.newaxis, :, :]) ** 2, axis=-1), axis=1)  == np.array(train_labels[i:i+step]))
+
+        ed_acc.append(count / len(train_embeddings)) 
 
         print(end=".")
-        for i, v in enumerate(train_embeddings):
-            label = train_labels[i]
+        normalized_train_embeddings = train_embeddings / np.linalg.norm(train_embeddings, axis=1)[:, np.newaxis]
+        normalized_train_class_centers = train_class_centers / np.linalg.norm(train_class_centers, axis=1)[:, np.newaxis]
 
-            clossest_ed_class = au.argmin([eucledian_dist(c,v) for c in train_class_centers])
-            clossest_cod_class = au.argmin([-cosine(c,v) for c in train_class_centers])
+        cod_acc.append(np.count_nonzero(np.argmax(np.dot(normalized_train_embeddings, np.transpose(normalized_train_class_centers)), axis=1) == np.array(train_labels)) / len(train_embeddings))
 
-            if not is_pure(meta_data):
-                clossest_ce_cod_class = au.argmin([-cosine(c,v) for c in class_embeddings])
-                class_embedding_cosine_misclassified += 0 if clossest_ce_cod_class == label else 1
-
-            euclidean_misclassified += 0 if clossest_ed_class == label else 1
-            cosine_origo_misclassified += 0 if clossest_cod_class == label else 1
-            
         print(end=".")
-        ed_acc.append(1.0 - euclidean_misclassified/len(train_embeddings))
-        cod_acc.append(1.0 - cosine_origo_misclassified/len(train_embeddings))
-        ce_cod_acc.append(1.0 - class_embedding_cosine_misclassified/len(train_embeddings))
-        print(end=".")
+        if not is_pure(meta_data):
+            normalized_class_embeddings = np.array(class_embeddings)
+            normalized_class_embeddings = normalized_class_embeddings / np.linalg.norm(normalized_class_embeddings, axis=1)[:, np.newaxis]
+            ce_cod_acc.append(np.count_nonzero(np.argmax(np.dot(normalized_train_embeddings, np.transpose(normalized_class_embeddings)), axis=1) == np.array(train_labels)) / len(train_embeddings))
         
     if is_pure(meta_data):
         return [i for i in epochs], {"eucledian": ed_acc, "cosine": cod_acc, "pure": [meta_data["accuracies"][i] for i in epochs]}
@@ -320,9 +319,9 @@ if __name__ == "__main__":
     #"cl_embed_simple_res_large_fashion_BEST",
     #"cl_embed_cosine_res_large_fashion_BEST",
     #"cl_embed_push_res_large_fashion_BEST",
+    #"cl_embed_push_res_large_cifar_100_BEST",
 
     input_folders = [
-        "cl_embed_push_res_large_cifar_100_BEST",
         "cl_embed_simple_res_large_cifar_100_BEST",
         "cl_pure_res_small_cifar_10_BEST",
         "cl_pure_res_med_cifar_10_BEST",
