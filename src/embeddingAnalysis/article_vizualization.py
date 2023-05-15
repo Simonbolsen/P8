@@ -92,27 +92,27 @@ def acc_by_dist_funcs(data_folder, save = False):
             center += i
         center = center / len(train_class_centers)
 
-        train_embeddings = np.array(train_embeddings)
+        val_embeddings = np.array(val_embeddings)
         train_class_centers = np.array(train_class_centers)
 
         count = 0
-        step = int(len(train_embeddings) / 1000)
-        for i in range(0, len(train_embeddings), step):
-            count += np.count_nonzero(np.argmin(np.sum((train_embeddings[i:i+step, np.newaxis, :] - train_class_centers[np.newaxis, :, :]) ** 2, axis=-1), axis=1)  == np.array(train_labels[i:i+step]))
+        step = int(len(val_embeddings) / 1000)
+        for i in range(0, len(val_embeddings), step):
+            count += np.count_nonzero(np.argmin(np.sum((val_embeddings[i:i+step, np.newaxis, :] - train_class_centers[np.newaxis, :, :]) ** 2, axis=-1), axis=1)  == np.array(val_labels[i:i+step]))
 
-        ed_acc.append(count / len(train_embeddings)) 
+        ed_acc.append(count / len(val_embeddings)) 
 
         print(end=".")
-        normalized_train_embeddings = train_embeddings / np.linalg.norm(train_embeddings, axis=1)[:, np.newaxis]
+        normalized_val_embeddings = val_embeddings / np.linalg.norm(val_embeddings, axis=1)[:, np.newaxis]
         normalized_train_class_centers = train_class_centers / np.linalg.norm(train_class_centers, axis=1)[:, np.newaxis]
 
-        cod_acc.append(np.count_nonzero(np.argmax(np.dot(normalized_train_embeddings, np.transpose(normalized_train_class_centers)), axis=1) == np.array(train_labels)) / len(train_embeddings))
+        cod_acc.append(np.count_nonzero(np.argmax(np.dot(normalized_val_embeddings, np.transpose(normalized_train_class_centers)), axis=1) == np.array(val_labels)) / len(val_embeddings))
 
         print(end=".")
         if not is_pure(meta_data):
             normalized_class_embeddings = np.array(class_embeddings)
             normalized_class_embeddings = normalized_class_embeddings / np.linalg.norm(normalized_class_embeddings, axis=1)[:, np.newaxis]
-            ce_cod_acc.append(np.count_nonzero(np.argmax(np.dot(normalized_train_embeddings, np.transpose(normalized_class_embeddings)), axis=1) == np.array(train_labels)) / len(train_embeddings))
+            ce_cod_acc.append(np.count_nonzero(np.argmax(np.dot(normalized_val_embeddings, np.transpose(normalized_class_embeddings)), axis=1) == np.array(val_labels)) / len(val_embeddings))
         
     if is_pure(meta_data):
         return [i for i in epochs], {"eucledian": ed_acc, "cosine": cod_acc, "pure": [meta_data["accuracies"][i] for i in epochs]}
@@ -243,70 +243,90 @@ def gather_data(input_folders, data_folder):
 
 def plot_data(data_folder, save_path = ""):
 
-    files = fu.read_all_json_files(data_folder)
-    xs_acc, ys_acc, ls_acc = [], [], []
-    xs_pca, ys_pca, ls_pca = [], [], []
-    xs_med_eu, ys_med_eu, ls_med_eu = [], [], []
-    xs_med_co, ys_med_co, ls_med_co = [], [], []
-    xs_cen_eu, ys_cen_eu, ls_cen_eu = [], [], []
-    xs_cen_co, ys_cen_co, ls_cen_co = [], [], []
+    all_files = fu.read_all_json_files(data_folder)
+    
+    classifiers = ['eucledian', 'cosine', 'eucledian_ce', 'cosine_ce', 'pure']
+    labels = ['Eucledian', 'Cosine', 'Eucledian Class Embeddings', 'Cosine Class Embeddings', 'Pure']
+    networks = ["resnet18", "resnet50", "resnet101"]
+    loss_functions = ["cross_entropy", "simple-dist", "class-push", "cosine-loss"]
 
-    acc_label_by_key = {'eucledian', 'cosine'} #'eucledian_ce', 'cosine_ce'
+    file_by_dataset = {}
 
-    for f, file in enumerate(files):
+    for file in all_files:
+        dataset = file["meta_data"]["config"]["dataset"]
+        if dataset in file_by_dataset:
+            file_by_dataset[dataset].append(file)
+        else:
+            file_by_dataset[dataset] = [file]
+            path = save_path + "/" + dataset
+            if not os.path.exists(path):
+                print(f"plot folder for {dataset} created")
+                os.mkdir(path)
 
-        x, y = file["acc"]
-        for key, item in y.items():
-            xs_acc.append(x)
-            ys_acc.append(item)
-            ls_acc.append(f'{file["name"]} {key}')
+    for dataset, files in file_by_dataset.items():
+        acc_by_l_n_c = [[[0 for _ in classifiers] for _ in networks] for _ in loss_functions]
+        xs_acc, ys_acc, ls_acc = [], [], []
+        xs_pca, ys_pca, ls_pca = [], [], []
+        xs_med_eu, ys_med_eu, ls_med_eu = [], [], []
+        xs_med_co, ys_med_co, ls_med_co = [], [], []
+        xs_cen_eu, ys_cen_eu, ls_cen_eu = [], [], []
+        xs_cen_co, ys_cen_co, ls_cen_co = [], [], []
 
-        x, y = file["pca"]
-        xs_pca.append(x)
-        ys_pca.append(y)
-        ls_pca.append(f'{file["name"]}')
-            
-        x, y = file["medians"]
-        for key, item in y.items():
-            if "cosine" in key:
-                xs_med_co.append(x)
-                ys_med_co.append(item)
-                ls_med_co.append(f'{file["name"]} {key}')
-            else:
-                xs_med_eu.append(x)
-                ys_med_eu.append(item)
-                ls_med_eu.append(f'{file["name"]} {key}')
 
-        x, y = file["center_dists"]
-        for key, item in y.items():
-            if "cosine" in key:
-                xs_cen_co.append(x)
-                ys_cen_co.append(item)
-                ls_cen_co.append(f'{file["name"]} {key}')
-            else:
-                xs_cen_eu.append(x)
-                ys_cen_eu.append(item)
-                ls_cen_eu.append(f'{file["name"]} {key}')
+        for f, file in enumerate(files):
 
-    plot.plot_line_series_2d(xs_acc, ys_acc, ls_acc, "Epoch ep", "Accuracy a", save_path=save_path+"/acc")
-    plot.plot_line_series_2d(xs_pca, ys_pca, ls_pca, "PCA Componments pc", "Score s", save_path=save_path+"/pca")
-    plot.plot_line_series_2d(xs_med_eu, ys_med_eu, ls_med_eu, "Epoch ep", "Median Eucledian Distance ed", save_path=save_path+"/med_euc")
-    plot.plot_line_series_2d(xs_med_co, ys_med_co, ls_med_co, "Epoch ep", "Median Cosine Similarity cs", save_path=save_path+"/med_cos")
-    plot.plot_line_series_2d(xs_cen_eu, ys_cen_eu, ls_cen_eu, "Epoch ep", "Center Eucledian Distance ed", save_path=save_path+"/cen_euc")
-    plot.plot_line_series_2d(xs_cen_co, ys_cen_co, ls_cen_co, "Epoch ep", "Center Cosine Similarity cs", save_path=save_path+"/cen_cos")
+            x, y = file["acc"]
+            config = file["meta_data"]["config"]
+            for key, item in y.items():
+                l, n, c = loss_functions.index(config["loss_func"]), networks.index(config["model_name"]), classifiers.index(key)
+                maximum = max(item)
+                if maximum > acc_by_l_n_c[l][n][c]:
+                    acc_by_l_n_c[l][n][c] = maximum
+                xs_acc.append(x)
+                ys_acc.append(item)
+                ls_acc.append(f'{file["name"]} {key}')
 
-    #plot.plot_line_2d(xs, 
-    #                  [scores], 
-    #                  ["PCA Scores"], lambda x:x, "PCA Components", "PCA Score", data_folder + "/pca_plot" if save else "" )
+            x, y = file["pca"]
+            for i, num in enumerate(y):
+                if num < 0:
+                    y = y[:i]
+                    x = x[:i]
+                    break
 
-    #plot.plot_line_2d([i for i in epochs], all_medians, [f"Class {i}" for i in range(10)], lambda x:x, 
-    #                  "Epochs", "Mediuan Distance to Class Center", save_path=data_folder + "/median_plot.png" if save else "")
-    #plot.plot_line_2d([i for i in epochs], all_cetc, [f"Class {i}" for i in range(10)], lambda x:x, 
-    #                  "Epochs", "Class Center Distance to Avg Class Center", data_folder + "/cetc_plot.png" if save else "")
+            xs_pca.append(x)
+            ys_pca.append(y)
+            ls_pca.append(f'{file["name"]}')
+                
+            x, y = file["medians"]
+            for key, item in y.items():
+                if "cosine" in key:
+                    xs_med_co.append(x)
+                    ys_med_co.append(item)
+                    ls_med_co.append(f'{file["name"]} {key}')
+                else:
+                    xs_med_eu.append(x)
+                    ys_med_eu.append(item)
+                    ls_med_eu.append(f'{file["name"]} {key}')
 
-    #plot.plot_line_2d([i for i in epochs], [ed_acc, cod_acc, [plot.round_scale(data["accuracies"][i]) for i in epochs]], 
-    #                 ["Euclidean", "Cosine avg Center", "Pure"], x_label = "Epoch", y_label = "Classification Accuracy",
-    #                  save_path= data_folder + "/acc_plot.png" if save else "") #Closest class center classification
+            x, y = file["center_dists"]
+            for key, item in y.items():
+                if "cosine" in key:
+                    xs_cen_co.append(x)
+                    ys_cen_co.append(item)
+                    ls_cen_co.append(f'{file["name"]} {key}')
+                else:
+                    xs_cen_eu.append(x)
+                    ys_cen_eu.append(item)
+                    ls_cen_eu.append(f'{file["name"]} {key}')
+
+        dataset_path = save_path+"/"+dataset
+        plot.plot_nested_bars(acc_by_l_n_c, loss_functions, labels, "Loss Functions", "Accuracy a")
+        plot.plot_line_series_2d(xs_acc, ys_acc, ls_acc, "Epoch ep", "Accuracy a", save_path=dataset_path+"/acc")
+        plot.plot_line_series_2d(xs_pca, ys_pca, ls_pca, "PCA Componments pc", "Score s", save_path=dataset_path+"/pca")
+        plot.plot_line_series_2d(xs_med_eu, ys_med_eu, ls_med_eu, "Epoch ep", "Median Eucledian Distance ed", save_path=dataset_path+"/med_euc")
+        plot.plot_line_series_2d(xs_med_co, ys_med_co, ls_med_co, "Epoch ep", "Median Cosine Similarity cs", save_path=dataset_path+"/med_cos")
+        plot.plot_line_series_2d(xs_cen_eu, ys_cen_eu, ls_cen_eu, "Epoch ep", "Center Eucledian Distance ed", save_path=dataset_path+"/cen_euc")
+        plot.plot_line_series_2d(xs_cen_co, ys_cen_co, ls_cen_co, "Epoch ep", "Center Cosine Similarity cs", save_path=dataset_path+"/cen_cos")
 
     print("Plotted")
 
@@ -342,7 +362,7 @@ if __name__ == "__main__":
         "cl_embed_cosine_res_small_fashion_BEST"]
     data_folder = "plots/plotData"
     plot_folder = "plots"
-    gather_data(input_folders, data_folder)
+    #gather_data(input_folders, data_folder)
     plot_data(data_folder, plot_folder) #Without a save path the plots are shown and not saved
 
     print("Done")
