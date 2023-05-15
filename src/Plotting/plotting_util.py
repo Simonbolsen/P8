@@ -33,11 +33,12 @@ def plot_line_2d(xs, y_series, labels, function = inv, x_label = "", y_label = "
         plt.savefig(os.path.dirname(__file__) + "/../../embeddingData/" + save_path)
         plt.close()
 
-def plot_line_series_2d(xs, ys, labels, x_label = "", y_label = "", save_path = ""):
+def plot_line_series_2d(xs, ys, labels, x_label = "", y_label = "", save_path = "", legend = False):
     axe = plt.axes()
     for i in range(len(ys)):
         axe.plot(xs[i], ys[i], label = labels[i])
-    plt.legend()
+    if legend:
+        plt.legend()
 
     axe.set_xlabel(x_label)
     axe.set_ylabel(y_label)
@@ -219,6 +220,53 @@ def plotPoints2d(xs:axis, ys:axis, legend = True, num_of_series = 1, series_labe
 
     # plt.show()
     return plt
+
+def plot_nested_bars(values, groups, labels, x_label = "", y_label = ""):
+    # Set up the figure and axes
+    fig, ax = plt.subplots()
+
+    # Set the width of each bar group
+    bar_width = 0.2
+
+    COLORS = get_colors(len(labels))
+    x = 0
+    x_ticks = []
+
+    # Loop over the groups and create the bar chart
+    for i, group in enumerate(groups):
+        # Calculate the x positions of the bars within the group
+        x_positions = []
+        x += bar_width
+        tick = 0
+        n = 0
+        for y in values[i][0]:
+            x_positions.append(x)
+            if y > 0:
+                n += 1
+                tick += x
+                x += bar_width
+        x_ticks.append(tick/n)
+        l = len(values[i])
+        for ii in range(len(values[i]) - 1, -1, -1):
+            ax.bar(x_positions, values[i][ii], (ii + 1) * bar_width / l, color = COLORS, label=labels, edgecolor = "black")
+        
+    # Set the x-axis labels and title
+    ax.set_xticks(x_ticks)
+    ax.set_xticklabels(groups)
+    ax.set_xlabel(x_label)
+
+    # Set the y-axis labels
+    ax.set_ylabel(y_label)
+
+    # Add a legend
+    handles, labels = plt.gca().get_legend_handles_labels()
+    by_label = dict(zip(labels, handles))
+    plt.legend(by_label.values(), by_label.keys(), loc='lower right')
+    plt.set_cmap("magma")
+
+    # Show the plot
+    plt.show()
+
 
 #Takes an array of dictionaries that contain keys label, marker, color, points, xs, ys zs, 
 # all keys are optional but the dictionaries should contain either points or both xs, ys, and zs
