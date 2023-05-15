@@ -76,3 +76,23 @@ def print_distances_from_center(embeddings):
     print()
     for i in embeddings:
         print(np.linalg.norm(center - i))
+
+
+def get_exp_report_name(meta_data):
+    if "meta_data" in meta_data: # If the entire json is sent
+        meta_data = meta_data["meta_data"] 
+
+    config = meta_data["config"]
+
+    model_name = dict()
+    model_name["resnet18"]  = "RN18"
+    model_name["resnet50"]  = "RN50"
+    model_name["resnet101"] = "RN101"
+
+    loss_name = dict()
+    loss_name["cross_entropy"] = "P"
+    loss_name["simple-dist"]   = "E"
+    loss_name["cosine-loss"]   = "C"
+    loss_name["class-push"]    = "CP"
+
+    return model_name[config["model_name"]] + "-" + loss_name[config["loss_func"]]
