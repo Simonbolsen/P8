@@ -4194,18 +4194,18 @@
 
 
                 
-                // "BEST : cl_embed_push_res_large_cifar_10",  
-                // "BEST : cl_embed_cosine_res_large_cifar_10",
-                // "BEST : cl_embed_simple_res_large_cifar_10",
-                // "BEST : cl_embed_push_res_med_cifar_10",    
-                // "BEST : cl_embed_cosine_res_med_cifar_10",  
-                // "BEST : cl_embed_simple_res_med_cifar_10",  
-                // "BEST : cl_embed_push_res_small_cifar_10",  
-                // "BEST : cl_embed_cosine_res_small_cifar_10",
-                // "BEST : cl_embed_simple_res_small_cifar_10", 
-                // "BEST : cl_pure_res_large_cifar_10",         
-                // "BEST : cl_pure_res_med_cifar_10",           
-                // "BEST : cl_pure_res_small_cifar_10",      
+                "BEST : cl_embed_push_res_large_cifar_10",  
+                "BEST : cl_embed_cosine_res_large_cifar_10",
+                "BEST : cl_embed_simple_res_large_cifar_10",
+                "BEST : cl_embed_push_res_med_cifar_10",    
+                "BEST : cl_embed_cosine_res_med_cifar_10",  
+                "BEST : cl_embed_simple_res_med_cifar_10",  
+                "BEST : cl_embed_push_res_small_cifar_10",  
+                "BEST : cl_embed_cosine_res_small_cifar_10",
+                "BEST : cl_embed_simple_res_small_cifar_10", 
+                "BEST : cl_pure_res_large_cifar_10",         
+                "BEST : cl_pure_res_med_cifar_10",           
+                "BEST : cl_pure_res_small_cifar_10",      
                 
                 // "BEST : cl_embed_simple_res_large_cifar_100",
                 // "BEST : cl_embed_push_res_large_cifar_100",  
@@ -4233,6 +4233,19 @@
                 // "CL: MNIST EMBED SIMPLE DIST ResNet Large", 
                 // "CL: MNIST EMBED COSINE DIST ResNet Large", 
                 // "CL: MNIST EMBED PUSH ResNet Large",   
+
+                // "BEST : cl_embed_push_res_large_mnist",
+                // "BEST : cl_embed_cosine_res_large_mnist",
+                // "BEST : cl_embed_simple_res_large_mnist",
+                // "BEST : cl_embed_push_res_med_mnist",
+                // "BEST : cl_embed_cosine_res_med_mnist",
+                // "BEST : cl_embed_simple_res_med_mnist",
+                // "BEST : cl_embed_push_res_small_mnist",
+                // "BEST : cl_embed_cosine_res_small_mnist",
+                // "BEST : cl_embed_simple_res_small_mnist",
+                // "BEST : cl_pure_res_large_mnist",
+                // "BEST : cl_pure_res_med_mnist",
+                // "BEST : cl_pure_res_small_mnist",
             ]
         }
     ]
