@@ -36,18 +36,31 @@ experiments = [
     # "cl_pure_res_med_cifar_10",
     # "cl_pure_res_small_cifar_10"
 
-    "cl_embed_simple_res_large_cifar_100",
-    "cl_embed_push_res_large_cifar_100",
-    "cl_embed_cosine_res_large_cifar_100",
-    "cl_embed_push_res_med_cifar_100",
-    "cl_embed_cosine_res_med_cifar_100",
-    "cl_embed_simple_res_med_cifar_100",
-    "cl_embed_push_res_small_cifar_100",
-    "cl_embed_cosine_res_small_cifar_100",
-    "cl_embed_simple_res_small_cifar_100",
-    "cl_pure_res_large_cifar_100",
-    "cl_pure_res_med_cifar_100",
-    "cl_pure_res_small_cifar_100"
+    # "cl_embed_simple_res_large_cifar_100",
+    # "cl_embed_push_res_large_cifar_100",
+    # "cl_embed_cosine_res_large_cifar_100",
+    # "cl_embed_push_res_med_cifar_100",
+    # "cl_embed_cosine_res_med_cifar_100",
+    # "cl_embed_simple_res_med_cifar_100",
+    # "cl_embed_push_res_small_cifar_100",
+    # "cl_embed_cosine_res_small_cifar_100",
+    # "cl_embed_simple_res_small_cifar_100",
+    # "cl_pure_res_large_cifar_100",
+    # "cl_pure_res_med_cifar_100",
+    # "cl_pure_res_small_cifar_100"
+
+    "cl_embed_push_res_large_mnist",
+    "cl_embed_cosine_res_large_mnist",
+    "cl_embed_simple_res_large_mnist",
+    "cl_embed_push_res_med_mnist",
+    "cl_embed_cosine_res_med_mnist",
+    "cl_embed_simple_res_med_mnist",
+    "cl_embed_push_res_small_mnist",
+    "cl_embed_cosine_res_small_mnist",
+    "cl_embed_simple_res_small_mnist",
+    "cl_pure_res_large_mnist",
+    "cl_pure_res_med_mnist",
+    "cl_pure_res_small_mnist",
 ]
 
 config_to_param = {
@@ -65,6 +78,7 @@ config_to_param = {
 
 dataset_to_transform = {
     "fashion": "cheap_mnist_resnet",
+    "mnist": "cheap_mnist_resnet",
     "cifar10": "cifar10_resnet",
     "cifar100": "cifar100_resnet"
 }
