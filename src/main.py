@@ -192,9 +192,11 @@ def get_base_config(args):
             "p": hp.uniform("p", args.p[0], args.p[1])
         }
     elif loss_func is pnp_hyperparam:
-        printlc(f"==> using pnp loss function with q = {args.q}", bcolors.OKBLUE)
+        # printlc(f"==> using pnp loss function with q = {args.q}", bcolors.OKBLUE)
+        printlc("==> WARNING: USING PNP LOSS HARD CODED WITH q = 1", bcolors.WARNING)
         base_config |= {
-            "q": hp.uniform("q", args.q[0], args.q[1]),
+            # "q": hp.uniform("q", args.q[0], args.q[1]),
+            "q": 1
         }
     
     return base_config

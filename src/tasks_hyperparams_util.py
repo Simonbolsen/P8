@@ -114,7 +114,7 @@ print("\\begin{table}[]")
 print("\\begin{tabular}{lrrr}")
 print("Experiment ID & Learning Rate & d & $Prox_{mult}$ \\\\")
 for dataset_name in table_lines_pr_dataset:
-    print("\\\\"+ dataset_name + " & & & \\\\")
+    print("\\\\"+ dataset_name.upper() + " & & & \\\\")
     for row in table_lines_pr_dataset[dataset_name]:
         print(row)
 
