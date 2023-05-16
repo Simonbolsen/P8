@@ -21,6 +21,19 @@ with open(path_to_tasks_json, 'r') as f:
     
     for k, v in labels.items():
         print(f"{k}: {v}")
+    
+    if 'y' == input('Filter? y/[n]: '):
+        # split on space and remove / 
+        filter_term = input('/').lower()
+        
+        labels_copy = labels.copy()
+        for k in labels_copy:
+            if filter_term not in labels_copy[k].lower():
+                labels.pop(k)
+        
+        for k, v in labels.items():
+            print(f"{k}: {v}")
+
     print('\nSelect tasks (eg. 0 1 6 7. or 5-10. Default: All): ', end='')
 
     selected = []
@@ -31,7 +44,7 @@ with open(path_to_tasks_json, 'r') as f:
         ranges = cin.split('-')
         selected = range(int(ranges[0]), int(ranges[1]) + 1)
     else:
-        selected = input().split(sep=' ')
+        selected = cin.split(sep=' ')
     
     # DEFAULT
     if not selected[0]:
