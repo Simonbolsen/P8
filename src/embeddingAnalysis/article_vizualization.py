@@ -396,7 +396,7 @@ if __name__ == "__main__":
         "cl_embed_cosine_res_small_fashion_BEST"]
     data_folder = "plots/plotData"
     plot_folder = "plots"
-    #gather_data(input_folders, data_folder)
+    gather_data(input_folders, data_folder)
     plot_data(data_folder, plot_folder) #Without a save path the plots are shown and not saved
 
     print("Done")
