@@ -88,13 +88,18 @@ with open(path_to_tasks_json, 'r') as f:
         dims = '-'
         prox_mult = '-'
         dataset = args[args.index('--dataset') + 1]
+        q = '-'
         
-        if loss_func == 'simple-dist' or loss_func == 'cosine-loss':
+        if loss_func != 'cross_entropy':
+        
+            if loss_func == 'class-push':
+                prox_mult = args[args.index('--prox-mult') + 1]
+            # todo: add pnp to latex rows
+            elif loss_func == 'pnp-loss':
+                q = 1
+            
             dims = args[args.index('--dims') + 1]
-        elif loss_func == 'class-push':
-            prox_mult = args[args.index('--prox-mult') + 1]
-            dims = args[args.index('--dims') + 1]
-        # todo: add pnp
+            
         
         meta_data = {'config':{'model_name': model, 'loss_func': loss_func}}
         
