@@ -21,9 +21,17 @@ with open(path_to_tasks_json, 'r') as f:
     
     for k, v in labels.items():
         print(f"{k}: {v}")
-    print('\nSelect tasks (eg. 0 1 6 7. Default: All): ', end='')
+    print('\nSelect tasks (eg. 0 1 6 7. or 5-10. Default: All): ', end='')
 
-    selected = input().split(sep=' ')
+    selected = []
+
+    cin = input()
+
+    if '-' in cin:
+        ranges = cin.split('-')
+        selected = range(int(ranges[0]), int(ranges[1]) + 1)
+    else:
+        selected = input().split(sep=' ')
     
     # DEFAULT
     if not selected[0]:
