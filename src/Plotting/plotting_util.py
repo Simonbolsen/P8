@@ -54,18 +54,24 @@ def plot_points_2d(xs, ys):
     plt.legend()
     plt.show()
 
-def plot_points_series_2d(xs, ys, x_title, y_title, labels, marker = "o", size = 5):
+def plot_points_series_2d(xs, ys, x_title, y_title, labels, marker = "o", size = 5, save_path = ""):
 
     axe = plt.axes()
 
     for i in range(len(xs)):
         plt.scatter(xs[i], ys[i], marker=marker, s = [size for _ in range(len(xs[i]))], label= labels[i])
+        #plt.annotate(labels[i], (xs[i][0], ys[i][0]), textcoords="offset points", xytext=(5, 5), ha='left')
 
     axe.set_xlabel(x_title)
     axe.set_ylabel(y_title)
 
     plt.legend()
-    plt.show()
+    #plt.legend(labels, scatterpoints = 1)
+    if save_path == "":
+        plt.show()
+    else:
+        plt.savefig(os.path.dirname(__file__) + "/../../" + save_path)
+        plt.close()
 
 def get_colors(num):
     return cm.rainbow(np.linspace(0, 1, num))
