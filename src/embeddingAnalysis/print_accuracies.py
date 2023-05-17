@@ -53,10 +53,10 @@ if __name__ == '__main__':
 
 
     print("\\begin{table}[]")
-    print("\\begin{tabular}{lrrrr}")
-    print("Experiment ID & cos_acc & cos_cd_acc & euc_acc & euc_ce_acc & pure\\\\")
+    print("\\begin{tabular}{lrrrrr}")
+    print("Experiment ID & cos\_acc & cos\_cd\_acc & euc\_acc & euc\_ce\_acc & pure\\\\")
     for dataset_name, dataset in data_per_dataset.items():
-        print(dataset_name + " \\\\")
+        print(dataset_name + " & & & & & \\\\")
         for data in dataset:
             print_accuracies(data)
 

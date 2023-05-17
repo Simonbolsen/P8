@@ -71,20 +71,21 @@ def cosine(c,v):
     vnp = np.array(v)
     return vnp.dot(cnp) / (np.linalg.norm(vnp) * np.linalg.norm(cnp))
 
-def acc_by_dist_funcs(data_folder, save = False): 
+def acc_by_dist_funcs(data_folder, save = False, meta_data=None):
     ed_acc = []
     cod_acc = []
     ce_cod_acc = []
 
-    meta_data = load_meta_data(data_folder)
+    if not meta_data:
+        meta_data = load_meta_data(data_folder)
     epochs = range(0, meta_data["config"]["max_epochs"])
-    for epoch in epochs:
+    def iter(epoch, loaded_data):
         print(f"\n{epoch + 1} / {meta_data['config']['max_epochs']}.", end="")
         euclidean_misclassified = 0
         cosine_origo_misclassified = 0
         class_embedding_cosine_misclassified = 0
         
-        train_embeddings, train_labels, val_embeddings, val_labels, _, train_class_centers, class_embeddings = load_data(epoch, data_folder)
+        train_embeddings, train_labels, val_embeddings, val_labels, _, train_class_centers, class_embeddings = loaded_data #load_data(epoch, data_folder)
         #val_predictions = data["val_predictions"]
 
         print(end=".")
@@ -114,15 +115,19 @@ def acc_by_dist_funcs(data_folder, save = False):
             normalized_class_embeddings = np.array(class_embeddings)
             normalized_class_embeddings = normalized_class_embeddings / np.linalg.norm(normalized_class_embeddings, axis=1)[:, np.newaxis]
             ce_cod_acc.append(np.count_nonzero(np.argmax(np.dot(normalized_val_embeddings, np.transpose(normalized_class_embeddings)), axis=1) == np.array(val_labels)) / len(val_embeddings))
-        
-    if is_pure(meta_data):
-        return [i for i in epochs], {"eucledian": ed_acc, "cosine": cod_acc, "pure": [meta_data["accuracies"][i] for i in epochs]}
-    else:
-        return [i for i in epochs], {"eucledian": ed_acc, "cosine": cod_acc, "eucledian_ce": [meta_data["accuracies"][i] for i in epochs], "cosine_ce": ce_cod_acc}
+    
+    def result():
+        if is_pure(meta_data):
+            return [i for i in epochs], {"eucledian": ed_acc, "cosine": cod_acc, "pure": [meta_data["accuracies"][i] for i in epochs]}
+        else:
+            return [i for i in epochs], {"eucledian": ed_acc, "cosine": cod_acc, "eucledian_ce": [meta_data["accuracies"][i] for i in epochs], "cosine_ce": ce_cod_acc}
+    
+    return iter, result
       
-def pca_scores(data_folder, save = False):
-    meta_data = load_meta_data(data_folder)
-    i = meta_data["config"]["max_epochs"] - 1
+def pca_scores(data_folder, epoch, save = False, meta_data=None):
+    if not meta_data:
+        meta_data = load_meta_data(data_folder)
+    i = epoch
     train_embeddings, _, val_embeddings, _, _, _, _ = load_data(i, data_folder)
 
     scores = []
@@ -157,17 +162,18 @@ def get_eucledian_and_cosine_dists(embeddings, labels, class_embeddings):
 def median(l):
     return l[int(len(l) / 2)]
 
-def median_dists(data_folder):
+def median_dists(data_folder, meta_data=None):
     median_to_class_centers_eucledian = []
     median_to_class_centers_cosine = []
     median_to_class_embeddings_eucledian = []
     median_to_class_embeddings_cosine = []
 
-    meta_data = load_meta_data(data_folder)
+    if not meta_data:
+        meta_data = load_meta_data(data_folder)
     epochs = range(0, meta_data["config"]["max_epochs"])
-    for epoch in epochs:
+    def iter(epoch, loaded_data):
         print(f"Median Dists {epoch}")
-        train_embeddings, train_labels, val_embeddings, val_labels, val_class_centers, train_class_centers, class_embedings = load_data(epoch, data_folder)        
+        train_embeddings, train_labels, val_embeddings, val_labels, val_class_centers, train_class_centers, class_embedings = loaded_data# load_data(epoch, data_folder)        
         val_eucledian_dists, val_cosine_dist = get_eucledian_and_cosine_dists(val_embeddings, val_labels, train_class_centers)
 
         val_eucledian_dists.sort()
@@ -183,14 +189,16 @@ def median_dists(data_folder):
             median_to_class_embeddings_eucledian.append(median(val_eucledian_dists))
             median_to_class_embeddings_cosine.append(median(val_cosine_dist))
 
-    if is_pure(meta_data):
-        return [i for i in epochs], {"median_to_class_centers_eucledian": median_to_class_centers_eucledian, 
-                                     "median_to_class_centers_cosine": median_to_class_centers_cosine}
-    else:
-        return [i for i in epochs], {"median_to_class_centers_eucledian": median_to_class_centers_eucledian, 
-                                     "median_to_class_centers_cosine": median_to_class_centers_cosine,
-                                     "median_to_class_embeddings_eucledian": median_to_class_embeddings_eucledian,
-                                     "median_to_class_embeddings_cosine": median_to_class_embeddings_cosine}
+    def result():
+        if is_pure(meta_data):
+            return [i for i in epochs], {"median_to_class_centers_eucledian": median_to_class_centers_eucledian, 
+                                        "median_to_class_centers_cosine": median_to_class_centers_cosine}
+        else:
+            return [i for i in epochs], {"median_to_class_centers_eucledian": median_to_class_centers_eucledian, 
+                                        "median_to_class_centers_cosine": median_to_class_centers_cosine,
+                                        "median_to_class_embeddings_eucledian": median_to_class_embeddings_eucledian,
+                                        "median_to_class_embeddings_cosine": median_to_class_embeddings_cosine}
+    return iter, result
 
 def get_avg_dist_to_avg_center(embeddings):
     center = np.zeros(len(embeddings[0]))
@@ -206,17 +214,19 @@ def get_avg_dist_to_avg_center(embeddings):
         avg_cosine += cosine(c, center)
     return avg_dist / len(embeddings), avg_cosine / len(embeddings)
 
-def center_dists(data_folder):
+def center_dists(data_folder, meta_data=None):
     class_centers_to_avg_center_eucledian = []
     class_centers_to_avg_center_cosine = []
     class_embeddings_to_avg_center_eucledian = []
     class_embeddings_to_avg_center_cosine = []
 
-    meta_data = load_meta_data(data_folder)
+    if not meta_data:
+        meta_data = load_meta_data(data_folder)
+
     epochs = range(0, meta_data["config"]["max_epochs"])
-    for epoch in epochs:
+    def iter(epoch, loaded_data):
         print(f"Center Dists: {epoch}")
-        _, _, _, _, _, train_class_centers, class_embeddings = load_data(epoch, data_folder)        
+        _, _, _, _, _, train_class_centers, class_embeddings = loaded_data #load_data(epoch, data_folder)        
         
         eucledian, cosine = get_avg_dist_to_avg_center(train_class_centers)
         class_centers_to_avg_center_eucledian.append(eucledian)
@@ -227,29 +237,54 @@ def center_dists(data_folder):
             class_embeddings_to_avg_center_cosine.append(cosine)
         
 
-    if is_pure(meta_data):
-        return [i for i in epochs], {"class_centers_to_avg_center_eucledian": class_centers_to_avg_center_eucledian, 
-                                     "class_centers_to_avg_center_cosine": class_centers_to_avg_center_cosine}
-    else:
-        return [i for i in epochs], {"class_centers_to_avg_center_eucledian": class_centers_to_avg_center_eucledian, 
-                                     "class_centers_to_avg_center_cosine": class_centers_to_avg_center_cosine,
-                                     "class_embeddings_to_avg_center_eucledian": class_embeddings_to_avg_center_eucledian,
-                                     "class_embeddings_to_avg_center_cosine": class_embeddings_to_avg_center_cosine}
+    def result():
+        if is_pure(meta_data):
+            return [i for i in epochs], {"class_centers_to_avg_center_eucledian": class_centers_to_avg_center_eucledian, 
+                                        "class_centers_to_avg_center_cosine": class_centers_to_avg_center_cosine}
+        else:
+            return [i for i in epochs], {"class_centers_to_avg_center_eucledian": class_centers_to_avg_center_eucledian, 
+                                        "class_centers_to_avg_center_cosine": class_centers_to_avg_center_cosine,
+                                        "class_embeddings_to_avg_center_eucledian": class_embeddings_to_avg_center_eucledian,
+                                        "class_embeddings_to_avg_center_cosine": class_embeddings_to_avg_center_cosine}
+    
+    return iter, result
 
 def gather_data(input_folders, data_folder):
     for folder in input_folders:
-        plot_data = {"name": folder, "meta_data": load_meta_data(folder), "acc": acc_by_dist_funcs(folder), 
-                    "pca": pca_scores(folder), "medians": median_dists(folder), "center_dists": center_dists(folder)}
-        fu.save_to_json(data_folder, folder + ".json", plot_data)
+        gather_folder_data(folder, data_folder)
+
+def gather_folder_data(folder, data_folder):
+    meta_data = load_meta_data(folder)
+
+    acc_itr, acc_res = acc_by_dist_funcs(folder, meta_data=meta_data)
+    medians_itr, medians_res = median_dists(folder, meta_data=meta_data)
+    center_dists_itr, center_dists_res = center_dists(folder, meta_data=meta_data)
+
+    epochs = range(0, meta_data["config"]["max_epochs"])
+    for epoch in epochs:
+        loaded_data = load_data(epoch, folder)
+        acc_itr(epoch, loaded_data)
+        medians_itr(epoch, loaded_data)
+        center_dists_itr(epoch, loaded_data)
+
+
+    accuracies = acc_res()[1]["eucledian_ce"] if "eucledian_ce" in acc_res()[1] else acc_res()[1]["pure"] 
+    best_acc_epoch = np.argmax(accuracies)
+
+    pca = pca_scores(folder, epoch=best_acc_epoch, meta_data=meta_data)
+
+    plot_data = {"name": folder, "meta_data": meta_data, "acc": acc_res(), "pca": pca, "medians": medians_res(), "center_dists": center_dists_res()}
+    fu.save_to_json(data_folder, folder + ".json", plot_data)
 
 def plot_data(data_folder, save_path = ""):
 
     all_files = fu.read_all_json_files(data_folder)
     
     classifiers = ['eucledian', 'cosine', 'eucledian_ce', 'cosine_ce', 'pure']
-    labels = ['Eucledian', 'Cosine', 'Eucledian Class Embeddings', 'Cosine Class Embeddings', 'Pure']
+    labels = ['Euclidean Class Center', 'Cosine Class Center', 'Euclidean Class Embeddings', 'Cosine Class Embeddings', 'Pure']
     networks = ["resnet18", "resnet50", "resnet101"]
     loss_functions = ["cross_entropy", "simple-dist", "class-push", "cosine-loss"]
+    loss_func_labels = ["Cross Entropy Loss", "Euclidean Loss", "Proximity Loss", "Cosine Loss"]
 
     file_by_dataset = {}
 
@@ -327,16 +362,15 @@ def plot_data(data_folder, save_path = ""):
                     ls_cen_eu.append(f'{file["name"]} {key}')
 
         dataset_path = save_path+"/"+dataset
-        plot.plot_nested_bars(acc_by_l_n_c, loss_functions, labels, "Loss Functions", "Accuracy a")
-        plot.plot_line_series_2d(xs_acc, ys_acc, ls_acc, "Epoch ep", "Accuracy a", save_path=dataset_path+"/acc")
-        plot.plot_line_series_2d(xs_pca, ys_pca, ls_pca, "PCA Componments pc", "Score s")
-
         plot.plotPoints(ys_med_eu, ys_cen_eu, acc_simple, ["Log Mediann Distance", "Log Center Distance", "Accuracy"], False, len(acc_simple), function= lambda x:x, marker= "-")
         #plot.plot_line_series_2d(ys_med_eu[:6], ys_cen_eu[:6], ls_med_eu[:6], "Log Mediann Distance", "Log Center Distance", legend = True)
         #plot.plot_line_series_2d(ys_med_eu[6:12], ys_cen_eu[6:12], ls_med_eu[6:12], "Log Mediann Distance", "Log Center Distance", legend = True)
         #plot.plot_line_series_2d(ys_med_eu[12:18], ys_cen_eu[12:18], ls_med_eu[12:18], "Log Mediann Distance", "Log Center Distance", legend = True)
         #plot.plot_line_series_2d(ys_med_eu[18:], ys_cen_eu[18:], ls_med_eu[18:], "Log Mediann Distance", "Log Center Distance", legend = True)
         
+        if len(files) == 12: plot.plot_nested_bars(acc_by_l_n_c, loss_func_labels, labels, "Loss Functions", "Accuracy a",save_path=dataset_path+"/acc")
+        plot.plot_line_series_2d(xs_acc, ys_acc, ls_acc, "Epoch ep", "Accuracy a", save_path=dataset_path+"/acc_hist")
+        plot.plot_line_series_2d(xs_pca, ys_pca, ls_pca, "PCA Componments pc", "Score s", save_path=dataset_path+"/pca")
         plot.plot_line_series_2d(xs_med_eu, ys_med_eu, ls_med_eu, "Epoch ep", "Median Eucledian Distance ed", save_path=dataset_path+"/med_euc")
         plot.plot_line_series_2d(xs_med_co, ys_med_co, ls_med_co, "Epoch ep", "Median Cosine Similarity cs", save_path=dataset_path+"/med_cos")
         plot.plot_line_series_2d(xs_cen_eu, ys_cen_eu, ls_cen_eu, "Epoch ep", "Center Eucledian Distance ed", save_path=dataset_path+"/cen_euc")
