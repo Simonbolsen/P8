@@ -1657,6 +1657,46 @@
 
 
         {
+            "label": "CL: FASHION MNIST EMBED PUSH BIG PROX MULT ResNet Small",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "fashion",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "--train-layers", "0", "10",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet18",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "class-push",
+                "--exp-name", "cl_embed_push_PROX_BIG_res_small_fashion",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "100",
+                "--plot",
+                "--prox-mult", "1000", "1000000"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+
+
+
+
+        {
             "label": "CL: FASHION MNIST EMBED PNP ResNet Medium",
             "command": "${command:python.interpreterPath}",
             "type": "shell",
