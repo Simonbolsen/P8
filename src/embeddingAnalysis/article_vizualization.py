@@ -13,6 +13,7 @@ import analysis_util as au
 import file_util as fu
 import embedding_visualization as ev
 import analysis_util as au
+import math
 from collections import Counter
 
 def get_class_centers(embeddings, labels):
@@ -280,9 +281,10 @@ def plot_data(data_folder, save_path = ""):
     all_files = fu.read_all_json_files(data_folder)
     
     classifiers = ['eucledian', 'cosine', 'eucledian_ce', 'cosine_ce', 'pure']
-    labels = ['Eucledian', 'Cosine', 'Eucledian Class Embeddings', 'Cosine Class Embeddings', 'Pure']
+    labels = ['Euclidean Class Center', 'Cosine Class Center', 'Euclidean Class Embeddings', 'Cosine Class Embeddings', 'Pure']
     networks = ["resnet18", "resnet50", "resnet101"]
     loss_functions = ["cross_entropy", "simple-dist", "class-push", "cosine-loss"]
+    loss_func_labels = ["Cross Entropy Loss", "Euclidean Loss", "Proximity Loss", "Cosine Loss"]
 
     file_by_dataset = {}
 
@@ -299,6 +301,7 @@ def plot_data(data_folder, save_path = ""):
 
     for dataset, files in file_by_dataset.items():
         acc_by_l_n_c = [[[0 for _ in classifiers] for _ in networks] for _ in loss_functions]
+        acc_simple = []
         xs_acc, ys_acc, ls_acc = [], [], []
         xs_pca, ys_pca, ls_pca = [], [], []
         xs_med_eu, ys_med_eu, ls_med_eu = [], [], []
@@ -318,11 +321,16 @@ def plot_data(data_folder, save_path = ""):
                     acc_by_l_n_c[l][n][c] = maximum
                 xs_acc.append(x)
                 ys_acc.append(item)
+                if key == classifiers[2] or key == classifiers[4]:
+                    acc_simple.append(item)
                 ls_acc.append(f'{file["name"]} {key}')
 
             x, y = file["pca"]
+            unfit = y[0] < 0
             for i, num in enumerate(y):
-                if num < 0:
+                if num > 0:
+                    unfit = False
+                if (not unfit) and num < 0:
                     y = y[:i]
                     x = x[:i]
                     break
@@ -339,8 +347,8 @@ def plot_data(data_folder, save_path = ""):
                     ls_med_co.append(f'{file["name"]} {key}')
                 else:
                     xs_med_eu.append(x)
-                    ys_med_eu.append(item)
-                    ls_med_eu.append(f'{file["name"]} {key}')
+                    ys_med_eu.append([math.log(v) for v in item])
+                    ls_med_eu.append(f'{file["meta_data"]["config"]["loss_func"]} {key}')
 
             x, y = file["center_dists"]
             for key, item in y.items():
@@ -350,12 +358,18 @@ def plot_data(data_folder, save_path = ""):
                     ls_cen_co.append(f'{file["name"]} {key}')
                 else:
                     xs_cen_eu.append(x)
-                    ys_cen_eu.append(item)
+                    ys_cen_eu.append([math.log(v) for v in item])
                     ls_cen_eu.append(f'{file["name"]} {key}')
 
         dataset_path = save_path+"/"+dataset
-        plot.plot_nested_bars(acc_by_l_n_c, loss_functions, labels, "Loss Functions", "Accuracy a")
-        plot.plot_line_series_2d(xs_acc, ys_acc, ls_acc, "Epoch ep", "Accuracy a", save_path=dataset_path+"/acc")
+        plot.plotPoints(ys_med_eu, ys_cen_eu, acc_simple, ["Log Mediann Distance", "Log Center Distance", "Accuracy"], False, len(acc_simple), function= lambda x:x, marker= "-")
+        #plot.plot_line_series_2d(ys_med_eu[:6], ys_cen_eu[:6], ls_med_eu[:6], "Log Mediann Distance", "Log Center Distance", legend = True)
+        #plot.plot_line_series_2d(ys_med_eu[6:12], ys_cen_eu[6:12], ls_med_eu[6:12], "Log Mediann Distance", "Log Center Distance", legend = True)
+        #plot.plot_line_series_2d(ys_med_eu[12:18], ys_cen_eu[12:18], ls_med_eu[12:18], "Log Mediann Distance", "Log Center Distance", legend = True)
+        #plot.plot_line_series_2d(ys_med_eu[18:], ys_cen_eu[18:], ls_med_eu[18:], "Log Mediann Distance", "Log Center Distance", legend = True)
+        
+        if len(files) == 12: plot.plot_nested_bars(acc_by_l_n_c, loss_func_labels, labels, "Loss Functions", "Accuracy a",save_path=dataset_path+"/acc")
+        plot.plot_line_series_2d(xs_acc, ys_acc, ls_acc, "Epoch ep", "Accuracy a", save_path=dataset_path+"/acc_hist")
         plot.plot_line_series_2d(xs_pca, ys_pca, ls_pca, "PCA Componments pc", "Score s", save_path=dataset_path+"/pca")
         plot.plot_line_series_2d(xs_med_eu, ys_med_eu, ls_med_eu, "Epoch ep", "Median Eucledian Distance ed", save_path=dataset_path+"/med_euc")
         plot.plot_line_series_2d(xs_med_co, ys_med_co, ls_med_co, "Epoch ep", "Median Cosine Similarity cs", save_path=dataset_path+"/med_cos")
@@ -396,7 +410,7 @@ if __name__ == "__main__":
         "cl_embed_cosine_res_small_fashion_BEST"]
     data_folder = "plots/plotData"
     plot_folder = "plots"
-    gather_data(input_folders, data_folder)
+    #gather_data(input_folders, data_folder)
     plot_data(data_folder, plot_folder) #Without a save path the plots are shown and not saved
 
     print("Done")
