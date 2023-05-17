@@ -49,18 +49,20 @@ experiments = [
     # "cl_pure_res_med_cifar_100",
     # "cl_pure_res_small_cifar_100"
 
-    "cl_embed_push_res_large_mnist",
-    "cl_embed_cosine_res_large_mnist",
-    "cl_embed_simple_res_large_mnist",
-    "cl_embed_push_res_med_mnist",
-    "cl_embed_cosine_res_med_mnist",
-    "cl_embed_simple_res_med_mnist",
-    "cl_embed_push_res_small_mnist",
-    "cl_embed_cosine_res_small_mnist",
-    "cl_embed_simple_res_small_mnist",
-    "cl_pure_res_large_mnist",
-    "cl_pure_res_med_mnist",
-    "cl_pure_res_small_mnist",
+    # "cl_embed_push_res_large_mnist",
+    # "cl_embed_cosine_res_large_mnist",
+    # "cl_embed_simple_res_large_mnist",
+    # "cl_embed_push_res_med_mnist",
+    # "cl_embed_cosine_res_med_mnist",
+    # "cl_embed_simple_res_med_mnist",
+    # "cl_embed_push_res_small_mnist",
+    # "cl_embed_cosine_res_small_mnist",
+    # "cl_embed_simple_res_small_mnist",
+    # "cl_pure_res_large_mnist",
+    # "cl_pure_res_med_mnist",
+    # "cl_pure_res_small_mnist",
+
+    "cl_embed_pnp_res_small_cifar_10"
 ]
 
 config_to_param = {
@@ -121,7 +123,7 @@ for exp in experiments:
     }
 
     for param, value in best['config'].items():
-        if param == 'max_epochs' or param == 'train_layers' or param == 'feature_extract' or param == 'save_embeds':
+        if param == 'max_epochs' or param == 'train_layers' or param == 'feature_extract' or param == 'save_embeds' or param == 'q':
             continue
 
         arg_name = config_to_param[param]

@@ -3421,6 +3421,52 @@
         //
         // ----------------------------------------------------------------------------------
         
+
+        {
+            "label": "BEST : cl_embed_pnp_res_small_cifar_10",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir",
+                "'./data'",
+                "--epochs",
+                "30",
+                "--batch",
+                "100",
+                "--dims",
+                "1824",
+                "1825",
+                "--dataset",
+                "cifar10",
+                "--exp-name",
+                "cl_embed_pnp_res_small_cifar_10_BEST",
+                "--loss-func",
+                "pnp-loss",
+                "--lr",
+                "0.0005205250944217239",
+                "1",
+                "--model",
+                "resnet18",
+                "--train_transforms",
+                "cifar10_resnet",
+                "--test_transforms",
+                "cifar10_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+
         {
             "label": "BEST : cl_embed_push_res_large_cifar_10",
             "command": "${command:python.interpreterPath}",
@@ -4659,18 +4705,18 @@
 
 
                 
-                "BEST : cl_embed_push_res_large_cifar_10",  
-                "BEST : cl_embed_cosine_res_large_cifar_10",
-                "BEST : cl_embed_simple_res_large_cifar_10",
-                "BEST : cl_embed_push_res_med_cifar_10",    
-                "BEST : cl_embed_cosine_res_med_cifar_10",  
-                "BEST : cl_embed_simple_res_med_cifar_10",  
-                "BEST : cl_embed_push_res_small_cifar_10",  
-                "BEST : cl_embed_cosine_res_small_cifar_10",
-                "BEST : cl_embed_simple_res_small_cifar_10", 
-                "BEST : cl_pure_res_large_cifar_10",         
-                "BEST : cl_pure_res_med_cifar_10",           
-                "BEST : cl_pure_res_small_cifar_10",      
+                // "BEST : cl_embed_push_res_large_cifar_10",  
+                // "BEST : cl_embed_cosine_res_large_cifar_10",
+                // "BEST : cl_embed_simple_res_large_cifar_10",
+                // "BEST : cl_embed_push_res_med_cifar_10",    
+                // "BEST : cl_embed_cosine_res_med_cifar_10",  
+                // "BEST : cl_embed_simple_res_med_cifar_10",  
+                // "BEST : cl_embed_push_res_small_cifar_10",  
+                // "BEST : cl_embed_cosine_res_small_cifar_10",
+                // "BEST : cl_embed_simple_res_small_cifar_10", 
+                // "BEST : cl_pure_res_large_cifar_10",         
+                // "BEST : cl_pure_res_med_cifar_10",           
+                // "BEST : cl_pure_res_small_cifar_10",      
                 
                 // "BEST : cl_embed_simple_res_large_cifar_100",
                 // "BEST : cl_embed_push_res_large_cifar_100",  
@@ -4712,18 +4758,20 @@
                 // "BEST : cl_pure_res_med_mnist",
                 // "BEST : cl_pure_res_small_mnist",
 
-                // "CL: CIFAR10 EMBED PNP ResNet Small",
-                // "CL: CIFAR10 EMBED PNP ResNet Medium",
-                // "CL: CIFAR10 EMBED PNP ResNet Large",
-                // "CL: CIFAR100 EMBED PNP ResNet Small",
-                // "CL: CIFAR100 EMBED PNP ResNet Medium",
-                // "CL: CIFAR100 EMBED PNP ResNet Large",
-                // "CL: FASHION MNIST EMBED PNP ResNet Small",
-                // "CL: FASHION MNIST EMBED PNP ResNet Medium",
-                // "CL: FASHION MNIST EMBED PNP ResNet Large",
-                // "CL: MNIST EMBED PNP ResNet Small",
-                // "CL: MNIST EMBED PNP ResNet Medium",
-                // "CL: MNIST EMBED PNP ResNet Large",
+                "CL: CIFAR10 EMBED PNP ResNet Small",
+                "CL: CIFAR10 EMBED PNP ResNet Medium",
+                "CL: CIFAR10 EMBED PNP ResNet Large",
+                "CL: CIFAR100 EMBED PNP ResNet Small",
+                "CL: CIFAR100 EMBED PNP ResNet Medium",
+                "CL: CIFAR100 EMBED PNP ResNet Large",
+                "CL: FASHION MNIST EMBED PNP ResNet Small",
+                "CL: FASHION MNIST EMBED PNP ResNet Medium",
+                "CL: FASHION MNIST EMBED PNP ResNet Large",
+                "CL: MNIST EMBED PNP ResNet Small",
+                "CL: MNIST EMBED PNP ResNet Medium",
+                "CL: MNIST EMBED PNP ResNet Large",
+
+                // BEST : cl_embed_pnp_res_small_cifar_10
             ]
         }
     ]
