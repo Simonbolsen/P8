@@ -185,7 +185,7 @@ def comparison_dist_loss(output_embeddings, class_embeddings, targets, device):
         diff = output_embedding.unsqueeze(0) - other_embeddings
         squared_distances = torch.sum(diff**2, dim=1)
         losses = [
-            torch.exp(squared_dist_actual / (distance + squared_dist_actual))
+            squared_dist_actual / (distance + squared_dist_actual)
             for distance in squared_distances.flatten()
         ]
         loss = loss + sum(losses)
