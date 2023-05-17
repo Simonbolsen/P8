@@ -196,7 +196,7 @@ def get_base_config(args):
         printlc("==> WARNING: USING PNP LOSS HARD CODED WITH q = 1", bcolors.WARNING)
         base_config |= {
             # "q": hp.uniform("q", args.q[0], args.q[1]),
-            "q": 1
+            "q": 0.95
         }
     
     return base_config

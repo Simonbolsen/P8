@@ -109,8 +109,9 @@ def push_n_pull_loss(q, output_embds, class_embeds, targets, device):
     class_embed_diffs = output_embds - actual_embeds
     avg_center_diffs = output_embds - avg_center
 
-    ce_loss =  torch.sum(class_embed_diffs**2, dim = [0,1])
-    ac_loss = torch.sum(avg_center_diffs**2, dim = [0,1])
+    # ce_loss =  torch.sum(class_embed_diffs**2, dim = [0,1])
+    ce_loss =  torch.mean(class_embed_diffs**2)
+    ac_loss = torch.mean(avg_center_diffs**2)
     acc_loss = ce_loss - q * ac_loss
 
     return acc_loss, None
