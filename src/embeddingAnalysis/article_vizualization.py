@@ -280,9 +280,10 @@ def plot_data(data_folder, save_path = ""):
     all_files = fu.read_all_json_files(data_folder)
     
     classifiers = ['eucledian', 'cosine', 'eucledian_ce', 'cosine_ce', 'pure']
-    labels = ['Eucledian', 'Cosine', 'Eucledian Class Embeddings', 'Cosine Class Embeddings', 'Pure']
+    labels = ['Euclidean Class Center', 'Cosine Class Center', 'Euclidean Class Embeddings', 'Cosine Class Embeddings', 'Pure']
     networks = ["resnet18", "resnet50", "resnet101"]
     loss_functions = ["cross_entropy", "simple-dist", "class-push", "cosine-loss"]
+    loss_func_labels = ["Cross Entropy Loss", "Euclidean Loss", "Proximity Loss", "Cosine Loss"]
 
     file_by_dataset = {}
 
@@ -354,8 +355,8 @@ def plot_data(data_folder, save_path = ""):
                     ls_cen_eu.append(f'{file["name"]} {key}')
 
         dataset_path = save_path+"/"+dataset
-        plot.plot_nested_bars(acc_by_l_n_c, loss_functions, labels, "Loss Functions", "Accuracy a")
-        plot.plot_line_series_2d(xs_acc, ys_acc, ls_acc, "Epoch ep", "Accuracy a", save_path=dataset_path+"/acc")
+        if len(files) == 12: plot.plot_nested_bars(acc_by_l_n_c, loss_func_labels, labels, "Loss Functions", "Accuracy a",save_path=dataset_path+"/acc")
+        plot.plot_line_series_2d(xs_acc, ys_acc, ls_acc, "Epoch ep", "Accuracy a", save_path=dataset_path+"/acc_hist")
         plot.plot_line_series_2d(xs_pca, ys_pca, ls_pca, "PCA Componments pc", "Score s", save_path=dataset_path+"/pca")
         plot.plot_line_series_2d(xs_med_eu, ys_med_eu, ls_med_eu, "Epoch ep", "Median Eucledian Distance ed", save_path=dataset_path+"/med_euc")
         plot.plot_line_series_2d(xs_med_co, ys_med_co, ls_med_co, "Epoch ep", "Median Cosine Similarity cs", save_path=dataset_path+"/med_cos")
@@ -396,7 +397,7 @@ if __name__ == "__main__":
         "cl_embed_cosine_res_small_fashion_BEST"]
     data_folder = "plots/plotData"
     plot_folder = "plots"
-    gather_data(input_folders, data_folder)
+    #gather_data(input_folders, data_folder)
     plot_data(data_folder, plot_folder) #Without a save path the plots are shown and not saved
 
     print("Done")
