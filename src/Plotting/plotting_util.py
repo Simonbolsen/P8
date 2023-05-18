@@ -54,18 +54,24 @@ def plot_points_2d(xs, ys):
     plt.legend()
     plt.show()
 
-def plot_points_series_2d(xs, ys, x_title, y_title, labels, marker = "o", size = 5):
+def plot_points_series_2d(xs, ys, x_title, y_title, labels, marker = "o", size = 5, save_path = ""):
 
     axe = plt.axes()
 
     for i in range(len(xs)):
         plt.scatter(xs[i], ys[i], marker=marker, s = [size for _ in range(len(xs[i]))], label= labels[i])
+        #plt.annotate(labels[i], (xs[i][0], ys[i][0]), textcoords="offset points", xytext=(5, 5), ha='left')
 
     axe.set_xlabel(x_title)
     axe.set_ylabel(y_title)
 
     plt.legend()
-    plt.show()
+    #plt.legend(labels, scatterpoints = 1)
+    if save_path == "":
+        plt.show()
+    else:
+        plt.savefig(os.path.dirname(__file__) + "/../../" + save_path)
+        plt.close()
 
 def get_colors(num):
     return cm.rainbow(np.linspace(0, 1, num))
@@ -221,38 +227,44 @@ def plotPoints2d(xs:axis, ys:axis, legend = True, num_of_series = 1, series_labe
     # plt.show()
     return plt
 
-def plot_nested_bars(values, groups, labels, x_label = "", y_label = ""):
+def plot_nested_bars(values, groups, labels, x_label = "", y_label = "", save_path = ""):
     # Set up the figure and axes
     fig, ax = plt.subplots()
-
+    fig.set_figwidth(10)
     # Set the width of each bar group
     bar_width = 0.2
 
     COLORS = get_colors(len(labels))
     x = 0
     x_ticks = []
+    values = np.array(values)
+    maximum = np.max(values)
+    minimum = round((np.where(values > 0, values, np.inf).min() - 0.05) * 100) / 100
 
     # Loop over the groups and create the bar chart
     for i, group in enumerate(groups):
         # Calculate the x positions of the bars within the group
         x_positions = []
-        x += bar_width
         tick = 0
         n = 0
         for y in values[i][0]:
-            x_positions.append(x)
             if y > 0:
                 n += 1
-                tick += x
                 x += bar_width
+                tick += x
+            x_positions.append(x)
         x_ticks.append(tick/n)
         l = len(values[i])
-        for ii in range(len(values[i]) - 1, -1, -1):
-            ax.bar(x_positions, values[i][ii], (ii + 1) * bar_width / l, color = COLORS, label=labels, edgecolor = "black")
+        x += bar_width
+        for ii in range(l - 1, -1, -1):
+            cscale = (l - ii / 2) / l
+            ax.bar(x_positions, [max(v - minimum, 0) for v in values[i][ii]], (ii + 1) * bar_width / l, color = [[v * cscale for v in values[:3]] + [1] for values in COLORS], bottom = minimum,label=labels, edgecolor = "black")
         
     # Set the x-axis labels and title
     ax.set_xticks(x_ticks)
     ax.set_xticklabels(groups)
+    step = np.round((maximum - minimum) * 10) / 100
+    ax.set_yticks(np.arange(minimum, maximum + step, step))
     ax.set_xlabel(x_label)
 
     # Set the y-axis labels
@@ -261,11 +273,14 @@ def plot_nested_bars(values, groups, labels, x_label = "", y_label = ""):
     # Add a legend
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = dict(zip(labels, handles))
-    plt.legend(by_label.values(), by_label.keys(), loc='lower right')
+    plt.legend(by_label.values(), by_label.keys(), loc='lower left')
     plt.set_cmap("magma")
 
-    # Show the plot
-    plt.show()
+    if save_path == "":
+        plt.show()
+    else:
+        plt.savefig(os.path.dirname(__file__) + "/../../" + save_path)
+        plt.close()
 
 
 #Takes an array of dictionaries that contain keys label, marker, color, points, xs, ys zs, 
