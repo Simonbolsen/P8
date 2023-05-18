@@ -2,7 +2,7 @@ import json
 import os
 import matplotlib
 import numpy
-from analysis_util import get_exp_report_name
+from analysis_util import get_exp_report_name, experiment_sorter
 
 def get_acc_of_func(func_results):
     return max(func_results)
@@ -34,16 +34,6 @@ def get_all_data(data_path):
                 data[entry.name] = json.loads(json.load(json_file))
 
     return data
-
-def group_by(list, predicate):
-    groups = dict()
-    for x in list:
-        pred = predicate(x)
-        if not pred in groups:
-            groups[pred] = []
-
-        groups[pred].append(x)
-    return groups
 
 
 def accuracy_formatter(acc):
@@ -91,8 +81,8 @@ def get_acc_range_in_dataset(dataset):
 if __name__ == '__main__':
     all_data = get_all_data("./src/plotting/plotData")
 
-
-    data_per_dataset = group_by(all_data.values(), lambda x: x["meta_data"]["config"]["dataset"])
+    sorter = experiment_sorter()
+    data_per_dataset = sorter.group_by_dataset(all_data)
 
     colormap = lambda x: matplotlib.colormaps["magma"](x/3 + 2/3)
     colormap_text = matplotlib.colormaps["magma_r"]
@@ -102,7 +92,7 @@ if __name__ == '__main__':
     for dataset_name, dataset in data_per_dataset.items():
         print("\\textbf{" + dataset_name + "} & cos & $\mathrm{cos}_{cd}$ & euc & $\mathrm{euc}_{ce}$ & pure \\\\")
         dataset_accuracy_range = get_acc_range_in_dataset(dataset)
-        for data in dataset:
+        for data in sorter.sort(dataset):
             print_accuracies(data, formatter=accuracy_formatter_coloured(colormap, colormap_text, dataset_accuracy_range))
         print("\\\\")
 
