@@ -323,7 +323,7 @@
                 "-t",
                 "--samples", "50", //
                 "--plot",
-                "--prox-mult", "10", "1000" //
+                "--prox-mult", "1000", "1000000" //
             ],
             "presentation": {
                 "reveal": "always",
@@ -465,7 +465,7 @@
                 "-t",
                 "--samples", "50", //
                 "--plot",
-                "--prox-mult", "10", "1000" //
+                "--prox-mult", "1000", "1000000" //
             ],
             "presentation": {
                 "reveal": "always",
@@ -609,7 +609,7 @@
                 "-t",
                 "--samples", "50", //
                 "--plot",
-                "--prox-mult", "10", "1000" //
+                "--prox-mult", "1000", "1000000" //
             ],
             "presentation": {
                 "reveal": "always",
@@ -863,7 +863,7 @@
                 "-t",
                 "--samples", "50", //
                 "--plot",
-                "--prox-mult", "10", "1000" //
+                "--prox-mult", "1000", "1000000" //
             ],
             "presentation": {
                 "reveal": "always",
@@ -1007,7 +1007,7 @@
                 "-t",
                 "--samples", "50", //
                 "--plot",
-                "--prox-mult", "10", "1000" //
+                "--prox-mult", "1000", "1000000" //
             ],
             "presentation": {
                 "reveal": "always",
@@ -1149,7 +1149,7 @@
                 "-t",
                 "--samples", "50", //
                 "--plot",
-                "--prox-mult", "10", "1000" //
+                "--prox-mult", "1000", "1000000" //
             ],
             "presentation": {
                 "reveal": "always",
@@ -1644,7 +1644,8 @@
                 "--test_transforms", "cheap_mnist_resnet",
                 "-t",
                 "--samples", "50",
-                "--plot"
+                "--plot",
+                "--prox-mult", "1000", "1000000"
             ],
             "presentation": {
                 "reveal": "always",
@@ -1834,7 +1835,8 @@
                 "--test_transforms", "cheap_mnist_resnet",
                 "-t",
                 "--samples", "50",
-                "--plot"
+                "--plot",
+                "--prox-mult", "1000","1000000"
             ],
             "presentation": {
                 "reveal": "always",
@@ -1874,7 +1876,7 @@
                 "--test_transforms", "cheap_mnist_resnet",
                 "-t",
                 "--samples", "50",
-                "--plot"
+                "--plot",
             ],
             "presentation": {
                 "reveal": "always",
@@ -1984,7 +1986,8 @@
                 "--test_transforms", "cheap_mnist_resnet",
                 "-t",
                 "--samples", "50",
-                "--plot"
+                "--plot",
+                "--prox-mult", "1000", "1000000"
             ],
             "presentation": {
                 "reveal": "always",
@@ -2243,7 +2246,7 @@
                 "-t",
                 "--samples", "50",
                 "--plot",
-                "--prox-mult", "10", "1000" //
+                "--prox-mult", "1000", "1000000" //
             ],
             "presentation": {
                 "reveal": "always",
@@ -2386,7 +2389,7 @@
                 "-t",
                 "--samples", "50",
                 "--plot",
-                "--prox-mult", "10", "1000"
+                "--prox-mult", "1000", "1000000"
             ],
             "presentation": {
                 "reveal": "always",
@@ -2530,7 +2533,7 @@
                 "-t",
                 "--samples", "50",
                 "--plot",
-                "--prox-mult", "10", "1000"
+                "--prox-mult", "1000", "1000000"
             ],
             "presentation": {
                 "reveal": "always",
@@ -2748,7 +2751,7 @@
                 "-t",
                 "--samples", "50",
                 "--plot",
-                "--prox-mult", "10", "1000" //
+                "--prox-mult", "1000", "1000000" //
             ],
             "presentation": {
                 "reveal": "always",
@@ -2857,7 +2860,7 @@
                 "-t",
                 "--samples", "50",
                 "--plot",
-                "--prox-mult", "10", "1000"
+                "--prox-mult", "1000", "1000000"
             ],
             "presentation": {
                 "reveal": "always",
@@ -2966,7 +2969,7 @@
                 "-t",
                 "--samples", "50",
                 "--plot",
-                "--prox-mult", "10", "1000"
+                "--prox-mult", "1000", "1000000"
             ],
             "presentation": {
                 "reveal": "always",
