@@ -4,6 +4,18 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "Hibernate Host",
+            "command": "shutdown",
+            "type": "shell",
+            "group": {
+                "kind": "none",
+                "isDefault": true
+            },
+            "args": [
+                "-h"
+            ]
+        },
+        {
             "label": "CIFAR CLASSIFICATION PNP",
             "command": "${command:python.interpreterPath}",
             "type": "shell",
@@ -323,7 +335,7 @@
                 "-t",
                 "--samples", "50", //
                 "--plot",
-                "--prox-mult", "10", "1000" //
+                "--prox-mult", "1000", "1000000" //
             ],
             "presentation": {
                 "reveal": "always",
@@ -465,7 +477,7 @@
                 "-t",
                 "--samples", "50", //
                 "--plot",
-                "--prox-mult", "10", "1000" //
+                "--prox-mult", "1000", "1000000" //
             ],
             "presentation": {
                 "reveal": "always",
@@ -609,7 +621,7 @@
                 "-t",
                 "--samples", "50", //
                 "--plot",
-                "--prox-mult", "10", "1000" //
+                "--prox-mult", "1000", "1000000" //
             ],
             "presentation": {
                 "reveal": "always",
@@ -863,7 +875,7 @@
                 "-t",
                 "--samples", "50", //
                 "--plot",
-                "--prox-mult", "10", "1000" //
+                "--prox-mult", "1000", "1000000" //
             ],
             "presentation": {
                 "reveal": "always",
@@ -1007,7 +1019,7 @@
                 "-t",
                 "--samples", "50", //
                 "--plot",
-                "--prox-mult", "10", "1000" //
+                "--prox-mult", "1000", "1000000" //
             ],
             "presentation": {
                 "reveal": "always",
@@ -1149,7 +1161,7 @@
                 "-t",
                 "--samples", "50", //
                 "--plot",
-                "--prox-mult", "10", "1000" //
+                "--prox-mult", "1000", "1000000" //
             ],
             "presentation": {
                 "reveal": "always",
@@ -1644,7 +1656,48 @@
                 "--test_transforms", "cheap_mnist_resnet",
                 "-t",
                 "--samples", "50",
-                "--plot"
+                "--plot",
+                "--prox-mult", "1000", "1000000"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+
+
+
+
+        {
+            "label": "CL: FASHION MNIST EMBED PUSH BIG PROX MULT ResNet Small",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "fashion",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "--train-layers", "0", "10",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet18",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "class-push",
+                "--exp-name", "cl_embed_push_PROX_BIG_res_small_fashion",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "100",
+                "--plot",
+                "--prox-mult", "1000", "1000000"
             ],
             "presentation": {
                 "reveal": "always",
@@ -1794,7 +1847,8 @@
                 "--test_transforms", "cheap_mnist_resnet",
                 "-t",
                 "--samples", "50",
-                "--plot"
+                "--plot",
+                "--prox-mult", "1000","1000000"
             ],
             "presentation": {
                 "reveal": "always",
@@ -1834,7 +1888,7 @@
                 "--test_transforms", "cheap_mnist_resnet",
                 "-t",
                 "--samples", "50",
-                "--plot"
+                "--plot",
             ],
             "presentation": {
                 "reveal": "always",
@@ -1944,7 +1998,8 @@
                 "--test_transforms", "cheap_mnist_resnet",
                 "-t",
                 "--samples", "50",
-                "--plot"
+                "--plot",
+                "--prox-mult", "1000", "1000000"
             ],
             "presentation": {
                 "reveal": "always",
@@ -2203,7 +2258,7 @@
                 "-t",
                 "--samples", "50",
                 "--plot",
-                "--prox-mult", "10", "1000" //
+                "--prox-mult", "1000", "1000000" //
             ],
             "presentation": {
                 "reveal": "always",
@@ -2346,7 +2401,7 @@
                 "-t",
                 "--samples", "50",
                 "--plot",
-                "--prox-mult", "10", "1000"
+                "--prox-mult", "1000", "1000000"
             ],
             "presentation": {
                 "reveal": "always",
@@ -2490,7 +2545,7 @@
                 "-t",
                 "--samples", "50",
                 "--plot",
-                "--prox-mult", "10", "1000"
+                "--prox-mult", "1000", "1000000"
             ],
             "presentation": {
                 "reveal": "always",
@@ -2708,7 +2763,7 @@
                 "-t",
                 "--samples", "50",
                 "--plot",
-                "--prox-mult", "10", "1000" //
+                "--prox-mult", "1000", "1000000" //
             ],
             "presentation": {
                 "reveal": "always",
@@ -2817,7 +2872,7 @@
                 "-t",
                 "--samples", "50",
                 "--plot",
-                "--prox-mult", "10", "1000"
+                "--prox-mult", "1000", "1000000"
             ],
             "presentation": {
                 "reveal": "always",
@@ -2926,7 +2981,7 @@
                 "-t",
                 "--samples", "50",
                 "--plot",
-                "--prox-mult", "10", "1000"
+                "--prox-mult", "1000", "1000000"
             ],
             "presentation": {
                 "reveal": "always",
@@ -2939,98 +2994,6 @@
 
 
 
-
-
-
-
-
-        {
-            "label": "CL: BEST CIFAR10 EMBED SIMPLE DIST ResNet Small",
-            "command": "${command:python.interpreterPath}",
-            "type": "shell",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "args": [
-                "./src/main.py",
-                "--dataset", "cifar10",
-                "--datadir", "'./data'",
-                "--epochs", "30",
-                "--batch","100",
-                "--lr","0.000098870915384571391", "0.001",
-                "-pt",
-                "--model", "resnet18",
-                "--dims", "1769", "1770",
-                "--loss-func", "simple-dist",
-                "--exp-name", "cl_embed_simple_res_small_cifar_10_embeddings",
-                "--train_transforms", "resnet",
-                "--test_transforms", "resnet"
-            ],
-            "presentation": {
-                "reveal": "always",
-                "panel": "new",
-                "focus": true
-            }
-        },
-        {
-            "label": "CL: BEST CIFAR10 EMBED SIMPLE DIST ResNet Medium",
-            "command": "${command:python.interpreterPath}",
-            "type": "shell",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "args": [
-                "./src/main.py",
-                "--dataset", "cifar10",
-                "--datadir", "'./data'",
-                "--epochs", "30",
-                "--batch","100",
-                "--lr","0.00046783693257866204", "0.001",
-                "-pt",
-                "--model", "resnet50",
-                "--dims", "1766", "1770",
-                "--loss-func", "simple-dist",
-                "--exp-name", "cl_embed_simple_res_med_cifar_10_embeddings",
-                "--train_transforms", "resnet",
-                "--test_transforms", "resnet"
-            ],
-            "presentation": {
-                "reveal": "always",
-                "panel": "new",
-                "focus": true
-            }
-        },
-        {
-            "label": "CL: BEST CIFAR10 EMBED SIMPLE DIST ResNet Large",
-            "command": "${command:python.interpreterPath}",
-            "type": "shell",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "args": [
-                "./src/main.py",
-                "--dataset", "cifar10",
-                "--datadir", "'./data'",
-                "--epochs", "30",
-                "--batch","100",
-                "--lr","0.00032667922727799045", "0.001",
-                "-pt",
-                "--model", "resnet101",
-                "--dims", "1577", "1770",
-                "--loss-func", "simple-dist",
-                "--exp-name", "cl_embed_simple_res_large_cifar_10_embeddings",
-                "--train_transforms", "resnet",
-                "--test_transforms", "resnet"
-            ],
-            "presentation": {
-                "reveal": "always",
-                "panel": "new",
-                "focus": true
-            }
-        },
         
 
          // ----------------------------------------------------------------------------------
@@ -3421,6 +3384,52 @@
         //
         // ----------------------------------------------------------------------------------
         
+
+        {
+            "label": "BEST : cl_embed_pnp_res_small_cifar_10",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir",
+                "'./data'",
+                "--epochs",
+                "30",
+                "--batch",
+                "100",
+                "--dims",
+                "1824",
+                "1825",
+                "--dataset",
+                "cifar10",
+                "--exp-name",
+                "cl_embed_pnp_res_small_cifar_10_BEST",
+                "--loss-func",
+                "pnp-loss",
+                "--lr",
+                "0.0005205250944217239",
+                "1",
+                "--model",
+                "resnet18",
+                "--train_transforms",
+                "cifar10_resnet",
+                "--test_transforms",
+                "cifar10_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+
         {
             "label": "BEST : cl_embed_push_res_large_cifar_10",
             "command": "${command:python.interpreterPath}",
@@ -5035,18 +5044,18 @@
 
 
                 
-                "BEST : cl_embed_push_res_large_cifar_10",  
-                "BEST : cl_embed_cosine_res_large_cifar_10",
-                "BEST : cl_embed_simple_res_large_cifar_10",
-                "BEST : cl_embed_push_res_med_cifar_10",    
-                "BEST : cl_embed_cosine_res_med_cifar_10",  
-                "BEST : cl_embed_simple_res_med_cifar_10",  
-                "BEST : cl_embed_push_res_small_cifar_10",  
-                "BEST : cl_embed_cosine_res_small_cifar_10",
-                "BEST : cl_embed_simple_res_small_cifar_10", 
-                "BEST : cl_pure_res_large_cifar_10",         
-                "BEST : cl_pure_res_med_cifar_10",           
-                "BEST : cl_pure_res_small_cifar_10",      
+                // "BEST : cl_embed_push_res_large_cifar_10",  
+                // "BEST : cl_embed_cosine_res_large_cifar_10",
+                // "BEST : cl_embed_simple_res_large_cifar_10",
+                // "BEST : cl_embed_push_res_med_cifar_10",    
+                // "BEST : cl_embed_cosine_res_med_cifar_10",  
+                // "BEST : cl_embed_simple_res_med_cifar_10",  
+                // "BEST : cl_embed_push_res_small_cifar_10",  
+                // "BEST : cl_embed_cosine_res_small_cifar_10",
+                // "BEST : cl_embed_simple_res_small_cifar_10", 
+                // "BEST : cl_pure_res_large_cifar_10",         
+                // "BEST : cl_pure_res_med_cifar_10",           
+                // "BEST : cl_pure_res_small_cifar_10",      
                 
                 // "BEST : cl_embed_simple_res_large_cifar_100",
                 // "BEST : cl_embed_push_res_large_cifar_100",  
@@ -5088,18 +5097,23 @@
                 // "BEST : cl_pure_res_med_mnist",
                 // "BEST : cl_pure_res_small_mnist",
 
-                // "CL: CIFAR10 EMBED PNP ResNet Small",
-                // "CL: CIFAR10 EMBED PNP ResNet Medium",
-                // "CL: CIFAR10 EMBED PNP ResNet Large",
-                // "CL: CIFAR100 EMBED PNP ResNet Small",
-                // "CL: CIFAR100 EMBED PNP ResNet Medium",
-                // "CL: CIFAR100 EMBED PNP ResNet Large",
-                // "CL: FASHION MNIST EMBED PNP ResNet Small",
-                // "CL: FASHION MNIST EMBED PNP ResNet Medium",
-                // "CL: FASHION MNIST EMBED PNP ResNet Large",
-                // "CL: MNIST EMBED PNP ResNet Small",
-                // "CL: MNIST EMBED PNP ResNet Medium",
-                // "CL: MNIST EMBED PNP ResNet Large",
+                "CL: CIFAR10 EMBED PNP ResNet Small",
+                "CL: CIFAR10 EMBED PNP ResNet Medium",
+                "CL: CIFAR10 EMBED PNP ResNet Large",
+                "CL: CIFAR100 EMBED PNP ResNet Small",
+                "CL: CIFAR100 EMBED PNP ResNet Medium",
+                "CL: CIFAR100 EMBED PNP ResNet Large",
+                "CL: FASHION MNIST EMBED PNP ResNet Small",
+                "CL: FASHION MNIST EMBED PNP ResNet Medium",
+                "CL: FASHION MNIST EMBED PNP ResNet Large",
+                "CL: MNIST EMBED PNP ResNet Small",
+                "CL: MNIST EMBED PNP ResNet Medium",
+                "CL: MNIST EMBED PNP ResNet Large",
+
+                // BEST : cl_embed_pnp_res_small_cifar_10
+
+
+                // "Hibernate Host"
             ]
         }
     ]

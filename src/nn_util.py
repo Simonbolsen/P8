@@ -79,7 +79,6 @@ def simple_dist_loss(output_embds, class_embeds, targets, device):
     diffs = output_embds - actual_embeds
     squared_dists = torch.norm(diffs, dim=1, p=2) ** 2
     # #squared_dist_divs = diffs
-    
     acc_loss = squared_dists.sum()
 
     # for i, output_embedding in enumerate(output_embds):
@@ -186,7 +185,7 @@ def comparison_dist_loss(output_embeddings, class_embeddings, targets, device):
         diff = output_embedding.unsqueeze(0) - other_embeddings
         squared_distances = torch.sum(diff**2, dim=1)
         losses = [
-            torch.exp(squared_dist_actual / (distance + squared_dist_actual))
+            squared_dist_actual / (distance + squared_dist_actual)
             for distance in squared_distances.flatten()
         ]
         loss = loss + sum(losses)
@@ -229,27 +228,32 @@ def _move_away_from_other_near_classes_class_loss(
         ]
 
         distances = torch.cdist(self_embedding.unsqueeze(0), other_embeddings)
-        transformed_distances = torch.tensor(
-            [proximity(distance) for distance in distances.flatten()], device=device
-        )
+        transformed_distances = proximity(distances.flatten())
+        # transformed_distances = torch.tensor(
+        #     [proximity(distance) for distance in distances.flatten()], device=device, requires_grad=True
+        # )
         push_amount = transformed_distances.sum()
 
         return push_amount
 
     target_labels = torch.tensor(target_labels)
     unique_labels = torch.unique(target_labels)
-    push_from_other_classes = {}
+    # todo: set to the maximum number of classes we allow
+    # currently at 1000
+    push_from_other_classes = torch.zeros(1000, device=device)
     loss = torch.tensor(0.0, requires_grad=True, device=device)
 
     for label in unique_labels:
-        label = label.item()
+        # label = label.item()
         push_from_other_classes[label] = get_push_from_other_classes(label)
 
     target_embeds = class_embeddings[target_labels]
     diffs = predicted_embeddings - target_embeds
     dists = torch.norm(diffs, dim=1, p=2) ** 2
-    pushes_from_classes_sum = torch.tensor([push_from_other_classes[label.item()] for label in target_labels]).sum()
-    loss = dists.sum() + pushes_from_classes_sum
+    pushes_from_classes_sum = push_from_other_classes[target_labels].sum()
+    distance_sum = dists.sum()
+    loss = distance_sum + pushes_from_classes_sum
+    # print( f"dist sum: {distance_sum}, prox: {pushes_from_classes_sum.item()} \r" , end="")
 
     # for predicted_embedding, target_label in zip(predicted_embeddings, target_labels):
     #     dist = torch.linalg.norm(

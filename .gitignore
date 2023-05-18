@@ -139,3 +139,4 @@ embeddingData_s
 .vscode/settings.json
 /src/Plotting/loss_plots
 plots/*
+plots_old
