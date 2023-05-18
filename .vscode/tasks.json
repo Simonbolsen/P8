@@ -4,6 +4,18 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "Hibernate Host",
+            "command": "shutdown",
+            "type": "shell",
+            "group": {
+                "kind": "none",
+                "isDefault": true
+            },
+            "args": [
+                "-h"
+            ]
+        },
+        {
             "label": "CIFAR CLASSIFICATION PNP",
             "command": "${command:python.interpreterPath}",
             "type": "shell",
@@ -4812,6 +4824,9 @@
                 "CL: MNIST EMBED PNP ResNet Large",
 
                 // BEST : cl_embed_pnp_res_small_cifar_10
+
+
+                // "Hibernate Host"
             ]
         }
     ]
