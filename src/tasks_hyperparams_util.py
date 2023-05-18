@@ -96,7 +96,7 @@ with open(path_to_tasks_json, 'r') as f:
                 prox_mult = args[args.index('--prox-mult') + 1]
             # todo: add pnp to latex rows
             elif loss_func == 'pnp-loss':
-                q = 1
+                q = 0.95
             
             dims = args[args.index('--dims') + 1]
             
