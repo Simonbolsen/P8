@@ -133,6 +133,7 @@ data
 tasks_ignored.json
 EmbeddingData
 embeddingData
+embeddingData_s
 
 *.secret
 .vscode/settings.json
