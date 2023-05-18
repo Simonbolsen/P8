@@ -1,3 +1,4 @@
+from math import ceil, log2
 import numpy as np
 
 def argmin(iterable):
@@ -96,3 +97,53 @@ def get_exp_report_name(meta_data):
     loss_name["class-push"]    = "CP"
 
     return model_name[config["model_name"]] + "-" + loss_name[config["loss_func"]]
+
+
+
+def group_by(list, predicate):
+    groups = dict()
+    for x in list:
+        pred = predicate(x)
+        if not pred in groups:
+            groups[pred] = []
+
+        groups[pred].append(x)
+    return groups
+
+def bit_length(num:int) -> int:
+    return int(ceil(log2(num)))
+
+class experiment_sorter():
+    def __init__(self) -> None:
+        self.sortings_dataset = [ "cifar100", "cifar10", "fashion", "mnist" ]
+        self.loss_func        = [ "cosine-loss", "class-push", "simple-dist", "cross_entropy"]
+        self.sortings_model   = [ "resnet101", "resnet50", "resnet18" ]
+
+    def sort(self, experiments:list) -> list:
+        experiments.sort(key=self.key)
+        return experiments
+    
+    def key(self, meta_data):
+        if "meta_data" in meta_data: # If the entire json is sent
+            meta_data = meta_data["meta_data"] 
+
+        config = meta_data["config"]
+
+        order_id = 0
+        
+        # Dataset
+        order_id += self.sortings_dataset.index(config["dataset"])
+        order_id <<= bit_length(len(self.sortings_dataset))
+
+        # Loss func
+        order_id += self.loss_func.index(config["loss_func"])
+        order_id <<= bit_length(len(self.loss_func))
+        
+        # Model
+        order_id += self.sortings_model.index(config["model_name"])
+        order_id <<= bit_length(len(self.sortings_model))
+
+        return order_id
+
+    def group_by_dataset(self, data:dict) -> dict[dict]:
+        return group_by(data.values(), lambda x: x["meta_data"]["config"]["dataset"])

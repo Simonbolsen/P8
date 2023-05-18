@@ -82,7 +82,8 @@ dataset_to_transform = {
     "fashion": "cheap_mnist_resnet",
     "mnist": "cheap_mnist_resnet",
     "cifar10": "cifar10_resnet",
-    "cifar100": "cifar100_resnet"
+    "cifar100": "cifar100_resnet",
+    "kmnist": "cheap_mnist_resnet"
 }
 
 exp_jsons = []
