@@ -1,8 +1,9 @@
 import json
 import os
+from typing import Any, OrderedDict, Tuple
 import matplotlib
 import numpy
-from analysis_util import get_exp_report_name
+from analysis_util import get_exp_report_name, experiment_sorter, dataset_model_loss
 
 def get_acc_of_func(func_results):
     return max(func_results)
@@ -34,16 +35,6 @@ def get_all_data(data_path):
                 data[entry.name] = json.loads(json.load(json_file))
 
     return data
-
-def group_by(list, predicate):
-    groups = dict()
-    for x in list:
-        pred = predicate(x)
-        if not pred in groups:
-            groups[pred] = []
-
-        groups[pred].append(x)
-    return groups
 
 
 def accuracy_formatter(acc):
@@ -77,22 +68,32 @@ def accuracy_formatter_coloured(colormap, colormap_text, acc_range):
     
     return formatter
 
-def get_acc_range_in_dataset(dataset):
+def get_acc_range_in_dataset(dataset:OrderedDict[str, OrderedDict[str, list[Any]]]) -> Tuple[float, float]:
     lowest = numpy.inf
     highest = -numpy.inf
 
-    for row in dataset:
-        for funcresults in row["acc"][1].values():
-            lowest = min(lowest, get_acc_of_func(funcresults))
-            highest = max(highest, get_acc_of_func(funcresults))
+    for model in dataset.values():
+        for loss_funcs in model.values():
+            for loss_func in loss_funcs:
+                all_accuracies = [get_acc_of_func(accs) for accs in loss_func["acc"][1].values()]
+
+                lowest = min(lowest, min(all_accuracies))
+                highest = max(highest, max(all_accuracies))
 
     return (lowest, highest)
 
 if __name__ == '__main__':
     all_data = get_all_data("./src/plotting/plotData")
 
+    sorter = experiment_sorter()
+    def parser(x) -> dataset_model_loss: 
+        return {
+            "dataset": x["meta_data"]["config"]["dataset"],
+            "model_name": x["meta_data"]["config"]["model_name"],
+            "loss_func": x["meta_data"]["config"]["loss_func"],
+        }
 
-    data_per_dataset = group_by(all_data.values(), lambda x: x["meta_data"]["config"]["dataset"])
+    data_per_dataset = sorter.group_by_dataset_loss_model(list(all_data.values()), parser)
 
     colormap = lambda x: matplotlib.colormaps["magma"](x/3 + 2/3)
     colormap_text = matplotlib.colormaps["magma_r"]
@@ -100,10 +101,14 @@ if __name__ == '__main__':
     print("\\begin{table}[]")
     print("\\begin{tabular}{lccccc}")
     for dataset_name, dataset in data_per_dataset.items():
-        print("\\textbf{" + dataset_name + "} & cos & $\mathrm{cos}_{cd}$ & euc & $\mathrm{euc}_{ce}$ & pure \\\\")
         dataset_accuracy_range = get_acc_range_in_dataset(dataset)
-        for data in dataset:
-            print_accuracies(data, formatter=accuracy_formatter_coloured(colormap, colormap_text, dataset_accuracy_range))
+        print("\\textbf{" + dataset_name + "} & cos & $\mathrm{cos}_{ce}$ & euc & $\mathrm{euc}_{ce}$ & pure \\\\")
+        for model_name, model in dataset.items():
+            print("\\hline")
+            for loss_func_name, loss_funcs in model.items():
+                for loss_func in loss_funcs:
+                    print_accuracies(loss_func, formatter=accuracy_formatter_coloured(colormap, colormap_text, dataset_accuracy_range))
+        print("\\hline")
         print("\\\\")
 
     print("\\end{tabular}")

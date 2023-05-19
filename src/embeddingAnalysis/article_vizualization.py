@@ -15,6 +15,7 @@ import embedding_visualization as ev
 import analysis_util as au
 import math
 from collections import Counter
+import matplotlib.scale as mpl_scale
 
 def get_class_centers(embeddings, labels):
     num_of_classes = len(set(labels))
@@ -283,8 +284,9 @@ def plot_data(data_folder, save_path = ""):
     classifiers = ['eucledian', 'cosine', 'eucledian_ce', 'cosine_ce', 'pure']
     labels = ['Euclidean Class Center', 'Cosine Class Center', 'Euclidean Class Embeddings', 'Cosine Class Embeddings', 'Pure']
     networks = ["resnet18", "resnet50", "resnet101"]
-    loss_functions = ["cross_entropy", "simple-dist", "class-push", "cosine-loss"]
-    loss_func_labels = ["Cross Entropy Loss", "Euclidean Loss", "Proximity Loss", "Cosine Loss"]
+    loss_functions = ["cross_entropy", "simple-dist", "class-push", "cosine-loss"] #"pnp-loss"
+    loss_func_labels = ["Cross Entropy Loss", "Euclidean Loss", "Proximity Loss", "Cosine Loss"] #"Push n' Pull Loss"
+    default_classifier_by_loss = [4, 2, 2, 3]
     label_by_loss = {l:loss_func_labels[i] for i, l in enumerate(loss_functions)}
 
     file_by_dataset = {}
@@ -310,19 +312,21 @@ def plot_data(data_folder, save_path = ""):
         xs_cen_eu, ys_cen_eu, ls_cen_eu = [], [], []
         xs_cen_co, ys_cen_co, ls_cen_co = [], [], []
 
-
         for f, file in enumerate(files):
 
             x, y = file["acc"]
             config = file["meta_data"]["config"]
+            label = label_by_loss[config["loss_func"]]
             for key, item in y.items():
                 l, n, c = loss_functions.index(config["loss_func"]), networks.index(config["model_name"]), classifiers.index(key)
                 maximum = max(item)
                 if maximum > acc_by_l_n_c[l][n][c]:
                     acc_by_l_n_c[l][n][c] = maximum
-                xs_acc.append(x)
-                ys_acc.append(item)
-                ls_acc.append(f'{file["name"]} {key}')
+                
+                if n == 0 and c == default_classifier_by_loss[l]:
+                    xs_acc.append(x)
+                    ys_acc.append(item)
+                    ls_acc.append(label)
 
             x, y = file["pca"]
             unfit = y[0] < 0
@@ -340,27 +344,27 @@ def plot_data(data_folder, save_path = ""):
                 
             x, y = file["medians"]
             for key, item in y.items():
-                if "class_centers" in key: #file["meta_data"]["config"]["model_name"] == "resnet18" and
+                if "class_centers" in key: # and config["model_name"] == "resnet18":#
                     if "cosine" in key:
                         xs_med_co.append(x)
                         ys_med_co.append(item)
-                        ls_med_co.append(label_by_loss[file["meta_data"]["config"]["loss_func"]])
+                        ls_med_co.append(label)
                     else:
                         xs_med_eu.append(x)
-                        ys_med_eu.append([math.log(v) for v in item])
-                        ls_med_eu.append(f'{label_by_loss[file["meta_data"]["config"]["loss_func"]]} {file["meta_data"]["config"]["model_name"]}')
+                        ys_med_eu.append(item)
+                        ls_med_eu.append(label)
 
             x, y = file["center_dists"]
             for key, item in y.items():
-                if "class_centers" in key: #file["meta_data"]["config"]["model_name"] == "resnet18" and 
+                if "class_centers" in key: # and config["model_name"] == "resnet18":#
                     if "cosine" in key:
                         xs_cen_co.append(x)
                         ys_cen_co.append(item)
                         ls_cen_co.append(f'{file["name"]} {key}')
                     else:
                         xs_cen_eu.append(x)
-                        ys_cen_eu.append([math.log(v) for v in item])
-                        ls_cen_eu.append(f'{label_by_loss[file["meta_data"]["config"]["loss_func"]]} {file["meta_data"]["config"]["model_name"]}')
+                        ys_cen_eu.append(item)
+                        ls_cen_eu.append(label)
                         if "pure" in file["acc"][1]:
                             acc_simple.append(file["acc"][1]["pure"])
                         else:
@@ -369,20 +373,30 @@ def plot_data(data_folder, save_path = ""):
         dataset_path = save_path+"/"+dataset
         
         best_epochs = [np.array(a).argmax() for a in acc_simple]
-        best_med_eu = [[m[best_epochs[i]]] for i, m in enumerate(ys_med_eu)] + [[2]]
-        best_cen_eu = [[c[best_epochs[i]]] for i, c in enumerate(ys_cen_eu)] + [[2]]
+        best_med_eu = [[m[best_epochs[i + 2]], m[best_epochs[i + 1]], m[best_epochs[i]]] for i, m in enumerate(ys_med_eu) if i % 3 == 0] + [[np.array(ys_med_eu)[:,0].mean()]]
+        best_cen_eu = [[c[best_epochs[i + 2]], c[best_epochs[i + 1]], c[best_epochs[i]]] for i, c in enumerate(ys_cen_eu) if i % 3 == 0] + [[np.array(ys_cen_eu)[:,0].mean()]]
+
+        ys_med_eu = [m for i, m in enumerate(ys_med_eu) if i % 3 == 0]
+        ys_cen_eu = [m for i, m in enumerate(ys_cen_eu) if i % 3 == 0]
+        ls_cen_eu = [m for i, m in enumerate(ls_cen_eu) if i % 3 == 0]
+        ls_med_co = [m for i, m in enumerate(ls_med_co) if i % 3 == 0]
+        ls_med_eu = [m for i, m in enumerate(ls_med_eu) if i % 3 == 0]
+        ys_med_co = [m for i, m in enumerate(ys_med_co) if i % 3 == 0]
+
+        log_scale = mpl_scale.LogScale(None)
 
         print(dataset)
-        plot.plot_points_series_2d(best_med_eu, best_cen_eu, "Log Median Euclidean Distance ln(ed)", "Log Center Euclidean Distance ln(ed)", ls_med_eu + ["Origin"], size=100,save_path=dataset_path+"/med_cen_euc")
+        plot.plot_big_points(best_med_eu, best_cen_eu, "Log Median Euclidean Distance ln(med)", "Log Center Euclidean Distance ln(ced)", 
+                                   ls_cen_eu + ["Reference Point"], size=100,save_path=dataset_path+"/med_cen_euc", legend = True)
         #plot.plotPoints(ys_med_eu, ys_cen_eu, acc_simple, ["Log Mediann Distance", "Log Center Distance", "Accuracy"], True, len(acc_simple), series_labels= ls_med_eu, function= lambda x:x, marker= "-", )
         
         plot.plot_nested_bars(acc_by_l_n_c, loss_func_labels, labels, "Loss Functions", "Accuracy a",save_path=dataset_path+"/acc")
-        plot.plot_line_series_2d(xs_acc, ys_acc, ls_acc, "Epoch ep", "Accuracy a", save_path=dataset_path+"/acc_hist")
+        plot.plot_line_series_2d(xs_acc, ys_acc, ls_acc, "Epoch ep", "Accuracy a", save_path=dataset_path+"/acc_hist", legend = True)
         plot.plot_line_series_2d(xs_pca, ys_pca, ls_pca, "PCA Componments pc", "Score s", save_path=dataset_path+"/pca")
-        plot.plot_line_series_2d(xs_med_eu, ys_med_eu, ls_med_eu, "Epoch ep", "Log Median Euclidean Distance ln(ed)", save_path=dataset_path+"/med_euc", legend= True)
+        plot.plot_line_series_2d(xs_med_eu, ys_med_eu, ls_med_eu, "Epoch ep", "Median Euclidean Distance - med", save_path=dataset_path+"/med_euc", legend= True, y_scale=log_scale)
         plot.plot_line_series_2d(xs_med_co, ys_med_co, ls_med_co, "Epoch ep", "Median Cosine Similarity ln(cs)", save_path=dataset_path+"/med_cos", legend= True)
-        plot.plot_line_series_2d(xs_cen_eu, ys_cen_eu, ls_cen_eu, "Epoch ep", "Log Center Euclidean Distance ln(ed)", save_path=dataset_path+"/cen_euc", legend= True)
-        #plot.plot_line_series_2d(xs_cen_co, ys_cen_co, ls_cen_co, "Epoch ep", "Center Cosine Similarity cs", save_path=dataset_path+"/cen_cos")
+        plot.plot_line_series_2d(xs_cen_eu, ys_cen_eu, ls_cen_eu, "Epoch ep", "Center Euclidean Distance - ced", save_path=dataset_path+"/cen_euc", legend= True, y_scale=log_scale)
+        #plot.plot_line_series_2d(xs_cen_co, ys_cen_co, ls_cen_co, "Epoch ep", "Center Cosine Similarity cs", save_path=dataset_path+"/cen_cos", y_scale=log_scale)
 
     print("Plotted")
 
@@ -397,25 +411,7 @@ if __name__ == "__main__":
     #"cl_embed_push_res_large_fashion_BEST",
     #"cl_embed_push_res_large_cifar_100_BEST",
 
-    input_folders = [
-        "cl_embed_simple_res_large_cifar_100_BEST",
-        "cl_pure_res_small_cifar_10_BEST",
-        "cl_pure_res_med_cifar_10_BEST",
-        "cl_pure_res_large_cifar_10_BEST",
-        "cl_embed_simple_res_small_cifar_10_BEST",
-        "cl_embed_simple_res_large_cifar_10_BEST",
-        "cl_embed_cosine_res_large_cifar_10_BEST",
-        "cl_embed_push_res_large_cifar_10_BEST",
-        "cl_embed_cosine_res_small_cifar_10_BEST",
-        "cl_embed_push_res_small_cifar_10_BEST",
-        "cl_embed_simple_res_med_cifar_10_BEST",
-        "cl_embed_cosine_res_med_cifar_10_BEST",
-        "cl_embed_push_res_med_cifar_10_BEST",
-        "cl_pure_res_small_fashion_mnist_BEST",
-        "cl_pure_res_med_fashion_mnist_BEST",
-        "cl_pure_res_large_fashion_mnist_BEST",
-        "cl_embed_simple_res_small_fashion_BEST",
-        "cl_embed_cosine_res_small_fashion_BEST"]
+    input_folders = ["cl_embed_pnp_res_small_cifar_10_BEST"]
     data_folder = "plots/plotData"
     plot_folder = "plots"
     #gather_data(input_folders, data_folder)
