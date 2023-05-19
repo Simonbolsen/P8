@@ -104,9 +104,11 @@ if __name__ == '__main__':
         dataset_accuracy_range = get_acc_range_in_dataset(dataset)
         print("\\textbf{" + dataset_name + "} & cos & $\mathrm{cos}_{cd}$ & euc & $\mathrm{euc}_{ce}$ & pure \\\\")
         for model_name, model in dataset.items():
+            print("\\hline")
             for loss_func_name, loss_funcs in model.items():
                 for loss_func in loss_funcs:
                     print_accuracies(loss_func, formatter=accuracy_formatter_coloured(colormap, colormap_text, dataset_accuracy_range))
+        print("\\hline")
         print("\\\\")
 
     print("\\end{tabular}")
