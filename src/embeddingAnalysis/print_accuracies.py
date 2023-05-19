@@ -102,7 +102,7 @@ if __name__ == '__main__':
     print("\\begin{tabular}{lccccc}")
     for dataset_name, dataset in data_per_dataset.items():
         dataset_accuracy_range = get_acc_range_in_dataset(dataset)
-        print("\\textbf{" + dataset_name + "} & cos & $\mathrm{cos}_{cd}$ & euc & $\mathrm{euc}_{ce}$ & pure \\\\")
+        print("\\textbf{" + dataset_name + "} & cos & $\mathrm{cos}_{ce}$ & euc & $\mathrm{euc}_{ce}$ & pure \\\\")
         for model_name, model in dataset.items():
             print("\\hline")
             for loss_func_name, loss_funcs in model.items():
