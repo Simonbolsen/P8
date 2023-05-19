@@ -136,7 +136,7 @@ class dataset_model_loss(TypedDict):
 
 class experiment_sorter():
     def __init__(self) -> None:
-        self.sortings_dataset = [ "cifar100", "cifar10", "fashion", "mnist" ]
+        self.sortings_dataset = [ "cifar100", "cifar10", "fashion", "mnist", "kmnist" ]
         self.loss_func        = [ "cosine-loss", "class-push", "simple-dist", "cross_entropy"]
         self.sortings_model   = [ "resnet101", "resnet50", "resnet18" ]
 
