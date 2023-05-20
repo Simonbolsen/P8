@@ -30,7 +30,10 @@ with open(path_to_tasks_json, 'r') as f:
         for k in labels_copy:
             if filter_term not in labels_copy[k].lower():
                 labels.pop(k)
-        
+
+        new_labels = {i: item for i, item in enumerate(labels.values())}
+        labels = new_labels
+
         for k, v in labels.items():
             print(f"{k}: {v}")
 
