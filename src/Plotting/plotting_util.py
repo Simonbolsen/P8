@@ -33,12 +33,15 @@ def plot_line_2d(xs, y_series, labels, function = inv, x_label = "", y_label = "
         plt.savefig(os.path.dirname(__file__) + "/../../embeddingData/" + save_path)
         plt.close()
 
-def plot_line_series_2d(xs, ys, labels, x_label = "", y_label = "", save_path = "", legend = False):
+def plot_line_series_2d(xs, ys, labels, x_label = "", y_label = "", save_path = "", legend = False, y_scale:Optional[mpl_scale.ScaleBase]=None):
     axe = plt.axes()
     for i in range(len(ys)):
         axe.plot(xs[i], ys[i], label = labels[i])
     if legend:
         plt.legend()
+
+    if y_scale:
+        axe.set_yscale(y_scale)
 
     axe.set_xlabel(x_label)
     axe.set_ylabel(y_label)
@@ -54,18 +57,36 @@ def plot_points_2d(xs, ys):
     plt.legend()
     plt.show()
 
-def plot_points_series_2d(xs, ys, x_title, y_title, labels, marker = "o", size = 5, save_path = ""):
+def plot_big_points(xs, ys, x_title, y_title, labels, marker = "o", size = 5, save_path = "", legend = True):
 
     axe = plt.axes()
 
+    COLORS = get_colors(len(xs))
+    #COLORS = [[[v * (1 - (i) / 4) for v in values[:3]] + [1] for i in range(3)] for values in COLORS]
+
     for i in range(len(xs)):
-        plt.scatter(xs[i], ys[i], marker=marker, s = [size for _ in range(len(xs[i]))], label= labels[i])
-        #plt.annotate(labels[i], (xs[i][0], ys[i][0]), textcoords="offset points", xytext=(5, 5), ha='left')
+        plt.scatter(xs[i], ys[i], marker=marker if i < len(xs) -1 else "+", s = [100 + i * 60 for i in range(len(xs[i]))], 
+                    color = COLORS[i], label= labels[i])
+
+    ylim = plt.gca().get_ylim()
+    xlim = plt.gca().get_xlim()
+
+    start_x = max(ylim[0], xlim[0])
+    start_y = max(ylim[0], xlim[0])
+
+    end_x = min(ylim[1], xlim[1])
+    end_y = min(ylim[1], xlim[1])
+
+    plt.plot([start_x, end_x], [start_y, end_y], color = [0.5, 0.5, 0.5, 0.5], label = "ln(ced) = ln(med)")
+
+    axe.set_xbound(xlim[0], xlim[1])
+    axe.set_ybound(ylim[0], ylim[1])
 
     axe.set_xlabel(x_title)
     axe.set_ylabel(y_title)
 
-    plt.legend()
+    if legend:
+        plt.legend()
     #plt.legend(labels, scatterpoints = 1)
     if save_path == "":
         plt.show()
