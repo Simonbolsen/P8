@@ -62,7 +62,11 @@ experiments = [
     # "cl_pure_res_med_mnist",
     # "cl_pure_res_small_mnist",
 
-    "cl_embed_pnp_res_small_cifar_10"
+    "cl_embed_push_res_large_cifar_10",
+    "cl_embed_push_res_large_cifar_100",
+    "cl_embed_push_res_large_fashion",
+    "cl_embed_push_res_large_kmnist",
+    "cl_embed_push_res_large_mnist"
 ]
 
 config_to_param = {
