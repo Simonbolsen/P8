@@ -3001,6 +3001,188 @@
         //                                !FASHION BEST
         //
         // ----------------------------------------------------------------------------------
+        
+        {
+            "label": "BEST : cl_embed_pnp_res_large_fashion",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir",
+                "'./data'",
+                "--epochs",
+                "30",
+                "--batch",
+                "100",
+                "--dims",
+                "458",
+                "459",
+                "--dataset",
+                "fashion",
+                "--exp-name",
+                "cl_embed_pnp_res_large_fashion_BEST",
+                "--loss-func",
+                "pnp-loss",
+                "--lr",
+                "0.0012810514680973138",
+                "1",
+                "--model",
+                "resnet101",
+                "--train_transforms",
+                "cheap_mnist_resnet",
+                "--test_transforms",
+                "cheap_mnist_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_pnp_res_med_fashion",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir",
+                "'./data'",
+                "--epochs",
+                "30",
+                "--batch",
+                "100",
+                "--dims",
+                "897",
+                "898",
+                "--dataset",
+                "fashion",
+                "--exp-name",
+                "cl_embed_pnp_res_med_fashion_BEST",
+                "--loss-func",
+                "pnp-loss",
+                "--lr",
+                "0.0005305126416251104",
+                "1",
+                "--model",
+                "resnet50",
+                "--train_transforms",
+                "cheap_mnist_resnet",
+                "--test_transforms",
+                "cheap_mnist_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_pnp_res_small_fashion",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir",
+                "'./data'",
+                "--epochs",
+                "30",
+                "--batch",
+                "100",
+                "--dims",
+                "1285",
+                "1286",
+                "--dataset",
+                "fashion",
+                "--exp-name",
+                "cl_embed_pnp_res_small_fashion_BEST",
+                "--loss-func",
+                "pnp-loss",
+                "--lr",
+                "0.00046592478201817157",
+                "1",
+                "--model",
+                "resnet18",
+                "--train_transforms",
+                "cheap_mnist_resnet",
+                "--test_transforms",
+                "cheap_mnist_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+
+
+        {
+            "label": "BEST : cl_embed_push_PROX_BIG_res_small_fashion",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir",
+                "'./data'",
+                "--epochs",
+                "30",
+                "--batch",
+                "100",
+                "--dims",
+                "987",
+                "988",
+                "--dataset",
+                "fashion",
+                "--exp-name",
+                "cl_embed_push_PROX_BIG_res_small_fashion_BEST",
+                "--loss-func",
+                "class-push",
+                "--lr",
+                "0.0006060242695869448",
+                "1",
+                "--model",
+                "resnet18",
+                "--prox-mult",
+                "185385",
+                "185386",
+                "--train_transforms",
+                "cheap_mnist_resnet",
+                "--test_transforms",
+                "cheap_mnist_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
 
         {
             "label": "BEST : cl_embed_push_res_large_fashion",
@@ -3399,6 +3581,98 @@
         //
         // ----------------------------------------------------------------------------------
         
+
+        
+    {
+        "label": "BEST : cl_embed_pnp_res_large_cifar_10",
+        "command": "${command:python.interpreterPath}",
+        "type": "shell",
+        "group": {
+            "kind": "build",
+            "isDefault": true
+        },
+        "args": [
+            "./src/main.py",
+            "-test",
+            "-se",
+            "-pt",
+            "--datadir",
+            "'./data'",
+            "--epochs",
+            "30",
+            "--batch",
+            "100",
+            "--dims",
+            "539",
+            "540",
+            "--dataset",
+            "cifar10",
+            "--exp-name",
+            "cl_embed_pnp_res_large_cifar_10_BEST",
+            "--loss-func",
+            "pnp-loss",
+            "--lr",
+            "0.00029260392373701977",
+            "1",
+            "--model",
+            "resnet101",
+            "--train_transforms",
+            "cifar10_resnet",
+            "--test_transforms",
+            "cifar10_resnet"
+        ],
+        "presentation": {
+            "reveal": "always",
+            "panel": "new",
+            "focus": true
+        }
+    },
+    {
+        "label": "BEST : cl_embed_pnp_res_med_cifar_10",
+        "command": "${command:python.interpreterPath}",
+        "type": "shell",
+        "group": {
+            "kind": "build",
+            "isDefault": true
+        },
+        "args": [
+            "./src/main.py",
+            "-test",
+            "-se",
+            "-pt",
+            "--datadir",
+            "'./data'",
+            "--epochs",
+            "30",
+            "--batch",
+            "100",
+            "--dims",
+            "532",
+            "533",
+            "--dataset",
+            "cifar10",
+            "--exp-name",
+            "cl_embed_pnp_res_med_cifar_10_BEST",
+            "--loss-func",
+            "pnp-loss",
+            "--lr",
+            "0.00025151878276249577",
+            "1",
+            "--model",
+            "resnet50",
+            "--train_transforms",
+            "cifar10_resnet",
+            "--test_transforms",
+            "cifar10_resnet"
+        ],
+        "presentation": {
+            "reveal": "always",
+            "panel": "new",
+            "focus": true
+        }
+    },
+
+       
 
         {
             "label": "BEST : cl_embed_pnp_res_small_cifar_10",
@@ -3844,6 +4118,138 @@
         //
         // ---------------------------------------------------------------------------------------------------------------------------
 
+        {
+            "label": "BEST : cl_embed_pnp_res_large_cifar_100",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir",
+                "'./data'",
+                "--epochs",
+                "30",
+                "--batch",
+                "100",
+                "--dims",
+                "829",
+                "830",
+                "--dataset",
+                "cifar100",
+                "--exp-name",
+                "cl_embed_pnp_res_large_cifar_100_BEST",
+                "--loss-func",
+                "pnp-loss",
+                "--lr",
+                "0.00019825093460432267",
+                "1",
+                "--model",
+                "resnet101",
+                "--train_transforms",
+                "cifar100_resnet",
+                "--test_transforms",
+                "cifar100_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_pnp_res_med_cifar_100",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir",
+                "'./data'",
+                "--epochs",
+                "30",
+                "--batch",
+                "100",
+                "--dims",
+                "333",
+                "334",
+                "--dataset",
+                "cifar100",
+                "--exp-name",
+                "cl_embed_pnp_res_med_cifar_100_BEST",
+                "--loss-func",
+                "pnp-loss",
+                "--lr",
+                "0.0002436376840094755",
+                "1",
+                "--model",
+                "resnet50",
+                "--train_transforms",
+                "cifar100_resnet",
+                "--test_transforms",
+                "cifar100_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_pnp_res_small_cifar_100",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir",
+                "'./data'",
+                "--epochs",
+                "30",
+                "--batch",
+                "100",
+                "--dims",
+                "203",
+                "204",
+                "--dataset",
+                "cifar100",
+                "--exp-name",
+                "cl_embed_pnp_res_small_cifar_100_BEST",
+                "--loss-func",
+                "pnp-loss",
+                "--lr",
+                "0.00019251955586894936",
+                "1",
+                "--model",
+                "resnet18",
+                "--train_transforms",
+                "cifar100_resnet",
+                "--test_transforms",
+                "cifar100_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
 
         {
             "label": "BEST : cl_embed_simple_res_large_cifar_100",
@@ -4242,7 +4648,138 @@
         //                                        !MNIST BEST
         //
         // ---------------------------------------------------------------------------------------------------------------------------
-
+        {
+            "label": "BEST : cl_embed_pnp_res_med_mnist",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir",
+                "'./data'",
+                "--epochs",
+                "30",
+                "--batch",
+                "100",
+                "--dims",
+                "614",
+                "615",
+                "--dataset",
+                "mnist",
+                "--exp-name",
+                "cl_embed_pnp_res_med_mnist_BEST",
+                "--loss-func",
+                "pnp-loss",
+                "--lr",
+                "0.0005256892638735972",
+                "1",
+                "--model",
+                "resnet50",
+                "--train_transforms",
+                "cheap_mnist_resnet",
+                "--test_transforms",
+                "cheap_mnist_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_pnp_res_small_mnist",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir",
+                "'./data'",
+                "--epochs",
+                "30",
+                "--batch",
+                "100",
+                "--dims",
+                "420",
+                "421",
+                "--dataset",
+                "mnist",
+                "--exp-name",
+                "cl_embed_pnp_res_small_mnist_BEST",
+                "--loss-func",
+                "pnp-loss",
+                "--lr",
+                "0.00046627040654240317",
+                "1",
+                "--model",
+                "resnet18",
+                "--train_transforms",
+                "cheap_mnist_resnet",
+                "--test_transforms",
+                "cheap_mnist_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_pnp_res_large_mnist",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir",
+                "'./data'",
+                "--epochs",
+                "30",
+                "--batch",
+                "100",
+                "--dims",
+                "1244",
+                "1245",
+                "--dataset",
+                "mnist",
+                "--exp-name",
+                "cl_embed_pnp_res_large_mnist_BEST",
+                "--loss-func",
+                "pnp-loss",
+                "--lr",
+                "0.0020668760850653524",
+                "1",
+                "--model",
+                "resnet101",
+                "--train_transforms",
+                "cheap_mnist_resnet",
+                "--test_transforms",
+                "cheap_mnist_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
 
 
         {
@@ -5205,20 +5742,23 @@
                 // "BEST : cl_pure_res_med_mnist",
                 // "BEST : cl_pure_res_small_mnist",
 
-                //"CL: CIFAR10 EMBED PNP ResNet Small",
-                //"CL: CIFAR10 EMBED PNP ResNet Medium",
-                //"CL: CIFAR10 EMBED PNP ResNet Large",
-                //"CL: CIFAR100 EMBED PNP ResNet Small",
-                //"CL: CIFAR100 EMBED PNP ResNet Medium",
-                //"CL: CIFAR100 EMBED PNP ResNet Large",
-                //"CL: FASHION MNIST EMBED PNP ResNet Small",
-                //"CL: FASHION MNIST EMBED PNP ResNet Medium",
-                //"CL: FASHION MNIST EMBED PNP ResNet Large",
-                //"CL: MNIST EMBED PNP ResNet Small",
-                //"CL: MNIST EMBED PNP ResNet Medium",
-                //"CL: MNIST EMBED PNP ResNet Large",
+                // "CL: CIFAR10 EMBED PNP ResNet Small",
+                // "CL: CIFAR100 EMBED PNP ResNet Small",
+                // "CL: FASHION MNIST EMBED PNP ResNet Small",
+                // "CL: MNIST EMBED PNP ResNet Small",
+                
+                // "CL: CIFAR10 EMBED PNP ResNet Medium",
+                // "CL: CIFAR100 EMBED PNP ResNet Medium",
+                // "CL: FASHION MNIST EMBED PNP ResNet Medium",
+                // "CL: MNIST EMBED PNP ResNet Medium",
+
+                // "CL: CIFAR10 EMBED PNP ResNet Large",
+                // "CL: CIFAR100 EMBED PNP ResNet Large",
+                // "CL: FASHION MNIST EMBED PNP ResNet Large",
+                // "CL: MNIST EMBED PNP ResNet Large",
 
                 // BEST : cl_embed_pnp_res_small_cifar_10
+                // "BEST : cl_embed_push_PROX_BIG_res_small_fashion"
 
 
                 "Hibernate Host"

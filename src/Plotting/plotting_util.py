@@ -33,12 +33,15 @@ def plot_line_2d(xs, y_series, labels, function = inv, x_label = "", y_label = "
         plt.savefig(os.path.dirname(__file__) + "/../../embeddingData/" + save_path)
         plt.close()
 
-def plot_line_series_2d(xs, ys, labels, x_label = "", y_label = "", save_path = "", legend = False):
+def plot_line_series_2d(xs, ys, labels, x_label = "", y_label = "", save_path = "", legend = False, y_scale:Optional[mpl_scale.ScaleBase]=None):
     axe = plt.axes()
     for i in range(len(ys)):
         axe.plot(xs[i], ys[i], label = labels[i])
     if legend:
         plt.legend()
+
+    if y_scale:
+        axe.set_yscale(y_scale)
 
     axe.set_xlabel(x_label)
     axe.set_ylabel(y_label)

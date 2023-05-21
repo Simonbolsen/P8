@@ -1,7 +1,7 @@
 
 import os
 import jstyleson
-from embeddingAnalysis.analysis_util import get_exp_report_name
+from embeddingAnalysis.analysis_util import get_exp_report_name, experiment_sorter
 from num2tex import num2tex
 from decimal import Decimal
 
@@ -69,6 +69,7 @@ print('==> tasks: ', path_to_tasks_json)
 
 print('==> loading json')
 
+sorter = experiment_sorter()
 table_lines_pr_dataset = {}
 with open(path_to_tasks_json, 'r') as f:
     tasks = jstyleson.load(f)
@@ -110,17 +111,18 @@ with open(path_to_tasks_json, 'r') as f:
         if dataset not in table_lines_pr_dataset.keys():
            table_lines_pr_dataset[dataset] = []
         
-        table_lines_pr_dataset[dataset].append(row) 
+        table_lines_pr_dataset[dataset].append((sorter.key(meta_data), row))
     
     for k in table_lines_pr_dataset:
-        table_lines_pr_dataset[k].sort()
+        table_lines_pr_dataset[k].sort(key=lambda x: x[0])
         
 print("\\begin{table}[]")
 print("\\begin{tabular}{lrrr}")
-print("Experiment ID & Learning Rate & d & $Prox_{mult}$ \\\\")
+# print("Experiment ID & Learning Rate & d & $Prox_{mult}$ \\\\")
 for dataset_name in table_lines_pr_dataset:
-    print("\\\\"+ dataset_name.upper() + " & & & \\\\")
-    for row in table_lines_pr_dataset[dataset_name]:
+    # print("\\\\"+ dataset_name.upper() + " & & & \\\\")
+    print("\\\\ \\textbf{" + dataset_name.upper() + "} & Learning Rate & d & $\mathrm{Prox_{mult}}$ \\\\")
+    for (sort_key, row) in table_lines_pr_dataset[dataset_name]:
         print(row)
 
 print("\\end{tabular}")
