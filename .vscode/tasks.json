@@ -2665,6 +2665,43 @@
                 "focus": true
             }
         },
+
+        {
+            "label": "CL: KMNIST EMBED PNP ResNet Small",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "kmnist",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet18",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "pnp-loss",
+                "--exp-name", "cl_embed_PNP_res_small_kmnist",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+
+
         {
             "label": "CL: KMNIST EMBED SIMPLE DIST ResNet Small",
             "command": "${command:python.interpreterPath}",
@@ -2776,7 +2813,40 @@
 
 
 
-
+        {
+            "label": "CL: KMNIST EMBED PNP ResNet Medium",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "kmnist",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet50",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "pnp-loss",
+                "--exp-name", "cl_embed_PNP_res_med_kmnist",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
         {
             "label": "CL: KMNIST EMBED SIMPLE DIST ResNet Medium",
             "command": "${command:python.interpreterPath}",
@@ -2882,7 +2952,40 @@
         },
 
 
-
+        {
+            "label": "CL: KMNIST EMBED PNP ResNet Large",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "--dataset", "kmnist",
+                "--datadir", "'./data'",
+                "--epochs", "30",
+                "--batch", "100",
+                "--lr", "0.00001", "0.01",
+                "-pt",
+                "--dims", "200", "2000",
+                "--model", "resnet101",
+                "--gpu", "0.25",
+                "--cpu", "4",
+                "--loss-func", "pnp-loss",
+                "--exp-name", "cl_embed_pnp_res_large_kmnist",
+                "--train_transforms", "cheap_mnist_resnet",
+                "--test_transforms", "cheap_mnist_resnet",
+                "-t",
+                "--samples", "50",
+                "--plot"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
         {
             "label": "CL: KMNIST EMBED SIMPLE DIST ResNet Large",
             "command": "${command:python.interpreterPath}",
@@ -5652,7 +5755,25 @@
 
                 // BEST : cl_embed_pnp_res_small_cifar_10
                 // "BEST : cl_embed_push_PROX_BIG_res_small_fashion"
+                // "BEST : cl_embed_pnp_res_large_fashion",
+                // "BEST : cl_embed_pnp_res_med_fashion",
+                // "BEST : cl_embed_pnp_res_small_fashion",
 
+                // "BEST : cl_embed_pnp_res_large_cifar_10",
+                // "BEST : cl_embed_pnp_res_med_cifar_10",
+                // "BEST : cl_embed_pnp_res_small_cifar_10",
+
+                // "BEST : cl_embed_pnp_res_large_cifar_100",
+                // "BEST : cl_embed_pnp_res_med_cifar_100",
+                // "BEST : cl_embed_pnp_res_small_cifar_100",
+
+                // "BEST : cl_embed_pnp_res_med_mnist",
+                // "BEST : cl_embed_pnp_res_small_mnist",
+                // "BEST : cl_embed_pnp_res_large_mnist",
+
+                // "CL: KMNIST EMBED PNP ResNet Small",
+                // "CL: KMNIST EMBED PNP ResNet Medium",
+                // "CL: KMNIST EMBED PNP ResNet Large",
 
                 // "Hibernate Host"
             ]
