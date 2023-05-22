@@ -216,7 +216,9 @@ def get_non_tune_base_config(args):
     base_config["batch_size"] = args.batch_size[0]
     base_config["prox_mult"] = args.prox_mult[0]
     base_config["p"] = args.p[0]
-    base_config["q"] = args.q[0]
+    # base_config["q"] = args.q[0]
+    base_config["q"] = 0.95
+    printlc(f"==> WARNING: USING HARDCODED q = {base_config['q']}", bcolors.WARNING)
     base_config["train_layers"] = args.train_layers[0]
 
     return base_config
