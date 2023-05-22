@@ -387,16 +387,16 @@ def plot_data(data_folder, save_path = ""):
 
         print(dataset)
         plot.plot_big_points(best_med_eu, best_cen_eu, "Log Median Euclidean Distance ln(med)", "Log Center Euclidean Distance ln(ced)", 
-                                   ls_cen_eu + ["Reference Point"], size=100,save_path=dataset_path+"/med_cen_euc", legend = True)
+                                   ls_cen_eu + ["Reference Point"], size=100,save_path=dataset_path+"/"+dataset+"_med_cen_euc", legend = True)
         #plot.plotPoints(ys_med_eu, ys_cen_eu, acc_simple, ["Log Mediann Distance", "Log Center Distance", "Accuracy"], True, len(acc_simple), series_labels= ls_med_eu, function= lambda x:x, marker= "-", )
         
-        plot.plot_nested_bars(acc_by_l_n_c, loss_func_labels, labels, "Loss Functions", "Accuracy a",save_path=dataset_path+"/acc")
-        plot.plot_line_series_2d(xs_acc, ys_acc, ls_acc, "Epoch ep", "Accuracy a", save_path=dataset_path+"/acc_hist", legend = True)
-        plot.plot_line_series_2d(xs_pca, ys_pca, ls_pca, "PCA Componments pc", "Score s", save_path=dataset_path+"/pca")
-        plot.plot_line_series_2d(xs_med_eu, ys_med_eu, ls_med_eu, "Epoch ep", "Median Euclidean Distance - med", save_path=dataset_path+"/med_euc", legend= True, y_scale=log_scale)
-        plot.plot_line_series_2d(xs_med_co, ys_med_co, ls_med_co, "Epoch ep", "Median Cosine Similarity ln(cs)", save_path=dataset_path+"/med_cos", legend= True)
-        plot.plot_line_series_2d(xs_cen_eu, ys_cen_eu, ls_cen_eu, "Epoch ep", "Center Euclidean Distance - ced", save_path=dataset_path+"/cen_euc", legend= True, y_scale=log_scale)
-        #plot.plot_line_series_2d(xs_cen_co, ys_cen_co, ls_cen_co, "Epoch ep", "Center Cosine Similarity cs", save_path=dataset_path+"/cen_cos", y_scale=log_scale)
+        plot.plot_nested_bars(acc_by_l_n_c, loss_func_labels, labels, "Loss Functions", "Accuracy a",save_path=dataset_path+"/"+dataset+"_acc")
+        plot.plot_line_series_2d(xs_acc, ys_acc, ls_acc, "Epoch ep", "Accuracy a", save_path=dataset_path+"/"+dataset+"_acc_hist", legend = True)
+        plot.plot_line_series_2d(xs_pca, ys_pca, ls_pca, "PCA Componments pc", "Score s", save_path=dataset_path+"/"+dataset+"_pca")
+        plot.plot_line_series_2d(xs_med_eu, ys_med_eu, ls_med_eu, "Epoch ep", "Median Euclidean Distance - med", save_path=dataset_path+"/"+dataset+"_med_euc", legend= True, y_scale=log_scale)
+        plot.plot_line_series_2d(xs_med_co, ys_med_co, ls_med_co, "Epoch ep", "Median Cosine Similarity - cs", save_path=dataset_path+"/"+dataset+"_med_cos", legend= True)
+        plot.plot_line_series_2d(xs_cen_eu, ys_cen_eu, ls_cen_eu, "Epoch ep", "Center Euclidean Distance - ced", save_path=dataset_path+"/"+dataset+"_cen_euc", legend= True, y_scale=log_scale)
+        #plot.plot_line_series_2d(xs_cen_co, ys_cen_co, ls_cen_co, "Epoch ep", "Center Cosine Similarity cs", save_path=dataset_path+"/cen_cos")
 
     print("Plotted")
 

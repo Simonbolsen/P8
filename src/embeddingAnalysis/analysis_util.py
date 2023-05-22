@@ -97,9 +97,18 @@ def get_exp_report_name(meta_data):
     loss_name["simple-dist"]   = "E"
     loss_name["cosine-loss"]   = "C"
     loss_name["class-push"]    = "CP"
+    loss_name["pnp-loss"]      = "PP"
 
     return model_name[config["model_name"]] + "-" + loss_name[config["loss_func"]]
 
+def get_dataset_report_name(dataset_name):
+    return {
+        "mnist":    "MNIST",
+        "fashion":  "F-MNIST",
+        "kmnist":   "K-MNIST",
+        "cifar10":  "CIFAR10",
+        "cifar100": "CIFAR100"
+    }[dataset_name]
 
 
 T1 = TypeVar("T1")
@@ -136,9 +145,9 @@ class dataset_model_loss(TypedDict):
 
 class experiment_sorter():
     def __init__(self) -> None:
-        self.sortings_dataset = [ "cifar100", "cifar10", "fashion", "mnist", "kmnist" ]
-        self.loss_func        = [ "cosine-loss", "class-push", "simple-dist", "cross_entropy"]
-        self.sortings_model   = [ "resnet101", "resnet50", "resnet18" ]
+        self.sortings_dataset = [ "mnist", "fashion", "kmnist", "cifar10", "cifar100" ]
+        self.loss_func        = [ "cosine-loss", "class-push", "simple-dist", "pnp-loss", "cross_entropy"]
+        self.sortings_model   = [ "resnet18", "resnet50", "resnet101" ]
 
     def sort(self, experiments:list) -> list:
         experiments.sort(key=self.key)
