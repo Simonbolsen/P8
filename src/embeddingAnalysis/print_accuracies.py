@@ -3,7 +3,7 @@ import os
 from typing import Any, OrderedDict, Tuple
 import matplotlib
 import numpy
-from analysis_util import get_exp_report_name, experiment_sorter, dataset_model_loss
+from analysis_util import get_exp_report_name, experiment_sorter, dataset_model_loss, get_dataset_report_name
 
 def get_acc_of_func(func_results):
     return max(func_results)
@@ -60,7 +60,7 @@ def accuracy_formatter_coloured(colormap, colormap_text, acc_range):
         if acc == None:
             return "-"
         
-        acc_text = str(round(acc * 100, 1)) + "\%"
+        acc_text = f"{(acc*100):.2f}\\%"
         if acc == acc_range[1]: # if highest acc, make bold
             acc_text = "\\textbf{" + acc_text + "}"
         
@@ -83,7 +83,7 @@ def get_acc_range_in_dataset(dataset:OrderedDict[str, OrderedDict[str, list[Any]
     return (lowest, highest)
 
 if __name__ == '__main__':
-    all_data = get_all_data("./src/plotting/plotData")
+    all_data = get_all_data("./plots/plotData")
 
     sorter = experiment_sorter()
     def parser(x) -> dataset_model_loss: 
@@ -102,7 +102,7 @@ if __name__ == '__main__':
     print("\\begin{tabular}{lccccc}")
     for dataset_name, dataset in data_per_dataset.items():
         dataset_accuracy_range = get_acc_range_in_dataset(dataset)
-        print("\\textbf{" + dataset_name + "} & cos & $\mathrm{cos}_{ce}$ & euc & $\mathrm{euc}_{ce}$ & pure \\\\")
+        print("\\textbf{" + get_dataset_report_name(dataset_name) + "} & cos & $\mathrm{cos}_{ce}$ & euc & $\mathrm{euc}_{ce}$ & pure \\\\")
         for model_name, model in dataset.items():
             print("\\hline")
             for loss_func_name, loss_funcs in model.items():
