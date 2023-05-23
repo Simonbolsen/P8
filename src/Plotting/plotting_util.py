@@ -67,7 +67,7 @@ def plot_points_2d(xs, ys):
     plt.legend()
     plt.show()
 
-def plot_big_points(xs, ys, x_title, y_title, labels, marker = "o", size = 5, save_path = "", legend = True):
+def plot_big_points(xs, ys, x_title, y_title, labels, marker = "o", size = 5, save_path = "", legend = True, scale = None):
 
     axe = plt.axes()
 
@@ -87,7 +87,11 @@ def plot_big_points(xs, ys, x_title, y_title, labels, marker = "o", size = 5, sa
     end_x = min(ylim[1], xlim[1])
     end_y = min(ylim[1], xlim[1])
 
-    plt.plot([start_x, end_x], [start_y, end_y], color = [0.5, 0.5, 0.5, 0.5], label = "ln(ced) = ln(med)")
+    plt.plot([start_x, end_x], [start_y, end_y], color = [0.5, 0.5, 0.5, 0.5], label = "\u03c3 = \u03c1")
+
+    if scale:
+        axe.set_yscale(scale)
+        axe.set_xscale(scale)
 
     axe.set_xbound(xlim[0], xlim[1])
     axe.set_ybound(ylim[0], ylim[1])
@@ -304,7 +308,7 @@ def plot_nested_bars(values, groups, labels, x_label = "", y_label = "", save_pa
     # Add a legend
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = dict(zip(labels, handles))
-    plt.legend(by_label.values(), by_label.keys(), loc='lower left')
+    plt.legend(by_label.values(), by_label.keys(), loc='lower right')
     plt.set_cmap("magma")
 
     if save_path == "":

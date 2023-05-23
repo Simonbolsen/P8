@@ -284,9 +284,9 @@ def plot_data(data_folder, save_path = ""):
     classifiers = ['eucledian', 'cosine', 'eucledian_ce', 'cosine_ce', 'pure']
     labels = ['Euclidean Class Center', 'Cosine Class Center', 'Euclidean Class Embeddings', 'Cosine Class Embeddings', 'Pure']
     networks = ["resnet18", "resnet50", "resnet101"]
-    loss_functions = ["cross_entropy", "simple-dist", "class-push", "cosine-loss","pnp-loss"] #
-    loss_func_labels = ["Cross Entropy Loss", "Euclidean Loss", "Proximity Loss", "Cosine Loss","Push and Pull Loss"] #
-    default_classifier_by_loss = [4, 2, 2, 3, 2]
+    loss_functions = ["simple-dist", "cosine-loss", "class-push", "pnp-loss", "cross_entropy"] #
+    loss_func_labels = ["Euclidean Loss", "Cosine Loss", "Proximity Loss", "Push and Pull Loss", "Cross Entropy Loss"] #
+    default_classifier_by_loss = [2, 3, 2, 2, 4]
     label_by_loss = {l:loss_func_labels[i] for i, l in enumerate(loss_functions)}
 
     file_by_dataset = {}
@@ -388,7 +388,7 @@ def plot_data(data_folder, save_path = ""):
 
         print(dataset)
         plot.plot_big_points(best_med_eu, best_cen_eu, "Cluster size \u03c3", "Center Distance \u03c1", 
-                                   ls_cen_eu + ["Reference Point"], size=100,save_path=dataset_path+"/"+dataset+"_med_cen_euc", legend = True)
+                                   ls_cen_eu + ["Reference Point"], size=100,save_path=dataset_path+"/"+dataset+"_med_cen_euc", legend = True, scale = log_scale)
         #plot.plotPoints(ys_med_eu, ys_cen_eu, acc_simple, ["Log Mediann Distance", "Log Center Distance", "Accuracy"], True, len(acc_simple), series_labels= ls_med_eu, function= lambda x:x, marker= "-", )
         
         plot.plot_nested_bars(acc_by_l_n_c, loss_func_labels, labels, "Loss Functions", "Accuracy a",save_path=dataset_path+"/"+dataset+"_acc")
