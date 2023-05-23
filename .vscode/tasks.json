@@ -2810,6 +2810,138 @@
         },
 
 
+        {
+            "label": "BEST : cl_embed_pnp_res_large_kmnist",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir",
+                "'./data'",
+                "--epochs",
+                "30",
+                "--batch",
+                "100",
+                "--dims",
+                "455",
+                "456",
+                "--dataset",
+                "kmnist",
+                "--exp-name",
+                "cl_embed_pnp_res_large_kmnist_BEST",
+                "--loss-func",
+                "pnp-loss",
+                "--lr",
+                "0.00032730859380629483",
+                "1",
+                "--model",
+                "resnet101",
+                "--train_transforms",
+                "cheap_mnist_resnet",
+                "--test_transforms",
+                "cheap_mnist_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_PNP_res_med_kmnist",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir",
+                "'./data'",
+                "--epochs",
+                "30",
+                "--batch",
+                "100",
+                "--dims",
+                "1298",
+                "1299",
+                "--dataset",
+                "kmnist",
+                "--exp-name",
+                "cl_embed_PNP_res_med_kmnist_BEST",
+                "--loss-func",
+                "pnp-loss",
+                "--lr",
+                "0.0007090482612383728",
+                "1",
+                "--model",
+                "resnet50",
+                "--train_transforms",
+                "cheap_mnist_resnet",
+                "--test_transforms",
+                "cheap_mnist_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_PNP_res_small_kmnist",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir",
+                "'./data'",
+                "--epochs",
+                "30",
+                "--batch",
+                "100",
+                "--dims",
+                "1502",
+                "1503",
+                "--dataset",
+                "kmnist",
+                "--exp-name",
+                "cl_embed_PNP_res_small_kmnist_BEST",
+                "--loss-func",
+                "pnp-loss",
+                "--lr",
+                "0.0034605083948731317",
+                "1",
+                "--model",
+                "resnet18",
+                "--train_transforms",
+                "cheap_mnist_resnet",
+                "--test_transforms",
+                "cheap_mnist_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
 
 
 
@@ -5283,8 +5415,94 @@
         //                                        !K-MNIST BEST
         //
         // ---------------------------------------------------------------------------------------------------------------------------
-
-
+        {
+            "label": "BEST : cl_embed_cosine_res_large_kmnist",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir",
+                "'./data'",
+                "--epochs",
+                "30",
+                "--batch",
+                "100",
+                "--dims",
+                "1393",
+                "1394",
+                "--dataset",
+                "kmnist",
+                "--exp-name",
+                "cl_embed_cosine_res_large_kmnist_BEST",
+                "--loss-func",
+                "cosine-loss",
+                "--lr",
+                "0.0009399527453002132",
+                "1",
+                "--model",
+                "resnet101",
+                "--train_transforms",
+                "cheap_mnist_resnet",
+                "--test_transforms",
+                "cheap_mnist_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
+        {
+            "label": "BEST : cl_embed_simple_res_large_kmnist",
+            "command": "${command:python.interpreterPath}",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [
+                "./src/main.py",
+                "-test",
+                "-se",
+                "-pt",
+                "--datadir",
+                "'./data'",
+                "--epochs",
+                "30",
+                "--batch",
+                "100",
+                "--dims",
+                "662",
+                "663",
+                "--dataset",
+                "kmnist",
+                "--exp-name",
+                "cl_embed_simple_res_large_kmnist_BEST",
+                "--loss-func",
+                "simple-dist",
+                "--lr",
+                "0.0013602388544065142",
+                "1",
+                "--model",
+                "resnet101",
+                "--train_transforms",
+                "cheap_mnist_resnet",
+                "--test_transforms",
+                "cheap_mnist_resnet"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        },
         {
             "label": "BEST : cl_embed_push_res_large_kmnist",
             "command": "${command:python.interpreterPath}",
@@ -5727,7 +5945,7 @@
 
                 // "CL: FASHION MNIST EMBED SIMPLE DIST ResNet Large",
                 // "CL: FASHION MNIST EMBED COSINE DIST ResNet Large",
-                "CL: FASHION MNIST EMBED PUSH ResNet Large",
+                // "CL: FASHION MNIST EMBED PUSH ResNet Large",
                 // "CL: CIFAR10 Pure ResNet Small",
                 // "CL: CIFAR10 Pure ResNet Medium",
                 // "CL: CIFAR10 Pure ResNet Large",
@@ -5742,7 +5960,7 @@
 
                 // "CL: CIFAR10 EMBED SIMPLE DIST ResNet Large",
                 // "CL: CIFAR10 EMBED COSINE DIST ResNet Large",
-                "CL: CIFAR10 EMBED PUSH ResNet Large",
+                // "CL: CIFAR10 EMBED PUSH ResNet Large",
                 // "CL: CIFAR100 Pure ResNet Small",
                 // "CL: CIFAR100 Pure ResNet Medium",
                 // "CL: CIFAR100 Pure ResNet Large",
@@ -5757,7 +5975,7 @@
 
                 // "CL: CIFAR100 EMBED SIMPLE DIST ResNet Large",
                 // "CL: CIFAR100 EMBED COSINE DIST ResNet Large",
-                "CL: CIFAR100 EMBED PUSH ResNet Large",
+                // "CL: CIFAR100 EMBED PUSH ResNet Large",
 
                 // "CL: KMNIST Pure ResNet Small",
                 // "CL: KMNIST Pure ResNet Medium",
@@ -5774,9 +5992,8 @@
                 // !!!!
                 // "CL: KMNIST EMBED SIMPLE DIST ResNet Large",
                 // "CL: KMNIST EMBED COSINE DIST ResNet Large", X
-                "CL: KMNIST EMBED PUSH ResNet Large",        
+                // "CL: KMNIST EMBED PUSH ResNet Large",        
 
-                // "BEST : cl_embed_push_res_large_fashion",
                 // "BEST : cl_embed_cosine_res_large_fashion",
                 // "BEST : cl_embed_simple_res_large_fashion",
                 // "BEST : cl_embed_push_res_med_fashion",
@@ -5806,7 +6023,7 @@
                 // "BEST : cl_pure_res_small_cifar_10",      
                 
                 // "BEST : cl_embed_simple_res_large_cifar_100",
-                // "BEST : cl_embed_push_res_large_cifar_100",  
+                
                 // "BEST : cl_embed_cosine_res_large_cifar_100", 
                 // "BEST : cl_embed_push_res_med_cifar_100",  
                 // "BEST : cl_embed_cosine_res_med_cifar_100",
@@ -5830,9 +6047,8 @@
                 // "CL: MNIST EMBED PUSH ResNet Medium",       
                 // "CL: MNIST EMBED SIMPLE DIST ResNet Large", 
                 // "CL: MNIST EMBED COSINE DIST ResNet Large", 
-                "CL: MNIST EMBED PUSH ResNet Large",   
+                // "CL: MNIST EMBED PUSH ResNet Large",   
 
-                // "BEST : cl_embed_push_res_large_mnist",
                 // "BEST : cl_embed_cosine_res_large_mnist",
                 // "BEST : cl_embed_simple_res_large_mnist",
                 // "BEST : cl_embed_push_res_med_mnist",
@@ -5868,7 +6084,7 @@
 
                 // "BEST : cl_embed_pnp_res_large_cifar_10",
                 // "BEST : cl_embed_pnp_res_med_cifar_10",
-                // "BEST : cl_embed_pnp_res_small_cifar_10",
+                "BEST : cl_embed_pnp_res_small_cifar_10",
 
                 // "BEST : cl_embed_pnp_res_large_cifar_100",
                 // "BEST : cl_embed_pnp_res_med_cifar_100",
@@ -5882,7 +6098,25 @@
                 // "CL: KMNIST EMBED PNP ResNet Medium",
                 // "CL: KMNIST EMBED PNP ResNet Large",
 
-                "Hibernate Host"
+                
+                // "CL: KMNIST EMBED COSINE DIST ResNet Large",
+
+
+                // RUN NEXT
+                // "BEST : cl_embed_push_res_large_fashion",
+                // "BEST : cl_embed_push_res_large_cifar_100",  
+                // "BEST : cl_embed_push_res_large_mnist",
+
+                // "BEST : cl_embed_simple_res_large_kmnist",
+                // "BEST : cl_embed_push_res_large_kmnist",
+                // "BEST : cl_embed_cosine_res_large_kmnist",
+                // "BEST : cl_embed_PNP_res_small_kmnist",
+                // "BEST : cl_embed_pnp_res_large_kmnist",
+                // "BEST : cl_embed_PNP_res_med_kmnist",
+
+
+
+                // "Hibernate Host"
             ]
         }
     ]
