@@ -286,7 +286,7 @@ def plot_data(data_folder, save_path = ""):
     networks = ["resnet18", "resnet50", "resnet101"]
     loss_functions = ["cross_entropy", "simple-dist", "class-push", "cosine-loss","pnp-loss"] #
     loss_func_labels = ["Cross Entropy Loss", "Euclidean Loss", "Proximity Loss", "Cosine Loss","Push and Pull Loss"] #
-    default_classifier_by_loss = [4, 2, 2, 3]
+    default_classifier_by_loss = [4, 2, 2, 3, 2]
     label_by_loss = {l:loss_func_labels[i] for i, l in enumerate(loss_functions)}
 
     file_by_dataset = {}
