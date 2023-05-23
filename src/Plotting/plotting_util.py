@@ -21,28 +21,38 @@ def plot_simple_line_2d(ys, function = inv):
     axe.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, pos: f"{function(x):.3f}"))
     plt.show()
 
-def plot_line_2d(xs, y_series, labels, function = inv, x_label = "", y_label = "", save_path = ""):
+def plot_line_2d(xs, y_series, labels, function = inv, x_label = "", y_label = "", save_path = "", y_scale:Optional[mpl_scale.ScaleBase]=None):
     axe = plt.axes()
     for index, ys in enumerate(y_series):
         axe.plot(xs, ys, label = labels[index])
-    axe.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, pos: f"{function(x):.3f}"))
+
+    if y_scale:
+        axe.set_yscale(y_scale)
+    else:
+        axe.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, pos: f"{function(x):.3f}"))
     plt.legend()
+
+    axe.set_xlabel(x_label)
+    axe.set_ylabel(y_label)
+
     if save_path == "":
         plt.show()
     else:
         plt.savefig(os.path.dirname(__file__) + "/../../embeddingData/" + save_path)
         plt.close()
 
-def plot_line_series_2d(xs, ys, labels, x_label = "", y_label = "", save_path = "", legend = False, y_scale:Optional[mpl_scale.ScaleBase]=None):
+def plot_line_series_2d(xs, ys, labels, x_label = "", y_label = "", save_path = "", legend = False, y_scale:Optional[mpl_scale.ScaleBase]=None, function = None):
     axe = plt.axes()
     for i in range(len(ys)):
         axe.plot(xs[i], ys[i], label = labels[i])
     if legend:
         plt.legend()
 
+    
     if y_scale:
         axe.set_yscale(y_scale)
-
+    elif function:
+        axe.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, pos: function(x)))
     axe.set_xlabel(x_label)
     axe.set_ylabel(y_label)
 
