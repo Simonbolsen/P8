@@ -284,8 +284,8 @@ def plot_data(data_folder, save_path = ""):
     classifiers = ['eucledian', 'cosine', 'eucledian_ce', 'cosine_ce', 'pure']
     labels = ['Euclidean Class Center', 'Cosine Class Center', 'Euclidean Class Embeddings', 'Cosine Class Embeddings', 'Pure']
     networks = ["resnet18", "resnet50", "resnet101"]
-    loss_functions = ["cross_entropy", "simple-dist", "class-push", "cosine-loss"] #"pnp-loss"
-    loss_func_labels = ["Cross Entropy Loss", "Euclidean Loss", "Proximity Loss", "Cosine Loss"] #"Push n' Pull Loss"
+    loss_functions = ["cross_entropy", "simple-dist", "class-push", "cosine-loss","pnp-loss"] #
+    loss_func_labels = ["Cross Entropy Loss", "Euclidean Loss", "Proximity Loss", "Cosine Loss","Push and Pull Loss"] #
     default_classifier_by_loss = [4, 2, 2, 3]
     label_by_loss = {l:loss_func_labels[i] for i, l in enumerate(loss_functions)}
 
@@ -306,7 +306,7 @@ def plot_data(data_folder, save_path = ""):
         acc_by_l_n_c = [[[0 for _ in classifiers] for _ in networks] for _ in loss_functions]
         acc_simple = []
         xs_acc, ys_acc, ls_acc = [], [], []
-        xs_pca, ys_pca, ls_pca = [], [], []
+        #xs_pca, ys_pca, ls_pca = [], [], []
         xs_med_eu, ys_med_eu, ls_med_eu = [], [], []
         xs_med_co, ys_med_co, ls_med_co = [], [], []
         xs_cen_eu, ys_cen_eu, ls_cen_eu = [], [], []
@@ -328,19 +328,19 @@ def plot_data(data_folder, save_path = ""):
                     ys_acc.append(item)
                     ls_acc.append(label)
 
-            x, y = file["pca"]
-            unfit = y[0] < 0
-            for i, num in enumerate(y):
-                if num > 0:
-                    unfit = False
-                if (not unfit) and num < 0:
-                    y = y[:i]
-                    x = x[:i]
-                    break
-
-            xs_pca.append(x)
-            ys_pca.append(y)
-            ls_pca.append(f'{file["name"]}')
+            #x, y = file["pca"]
+            #unfit = y[0] < 0
+            #for i, num in enumerate(y):
+            #    if num > 0:
+            #        unfit = False
+            #    if (not unfit) and num < 0:
+            #        y = y[:i]
+            #        x = x[:i]
+            #        break
+            #
+            #xs_pca.append(x)
+            #ys_pca.append(y)
+            #ls_pca.append(f'{file["name"]}')
                 
             x, y = file["medians"]
             for key, item in y.items():
@@ -384,18 +384,19 @@ def plot_data(data_folder, save_path = ""):
         ys_med_co = [m for i, m in enumerate(ys_med_co) if i % 3 == 0]
 
         log_scale = mpl_scale.LogScale(None)
+        log_func = lambda x:"10$^{" + f"{int(x)}" + "}$"
 
         print(dataset)
-        plot.plot_big_points(best_med_eu, best_cen_eu, "Log Median Euclidean Distance ln(med)", "Log Center Euclidean Distance ln(ced)", 
+        plot.plot_big_points(best_med_eu, best_cen_eu, "Cluster size \u03c3", "Center Distance \u03c1", 
                                    ls_cen_eu + ["Reference Point"], size=100,save_path=dataset_path+"/"+dataset+"_med_cen_euc", legend = True)
         #plot.plotPoints(ys_med_eu, ys_cen_eu, acc_simple, ["Log Mediann Distance", "Log Center Distance", "Accuracy"], True, len(acc_simple), series_labels= ls_med_eu, function= lambda x:x, marker= "-", )
         
         plot.plot_nested_bars(acc_by_l_n_c, loss_func_labels, labels, "Loss Functions", "Accuracy a",save_path=dataset_path+"/"+dataset+"_acc")
         plot.plot_line_series_2d(xs_acc, ys_acc, ls_acc, "Epoch ep", "Accuracy a", save_path=dataset_path+"/"+dataset+"_acc_hist", legend = True)
-        plot.plot_line_series_2d(xs_pca, ys_pca, ls_pca, "PCA Componments pc", "Score s", save_path=dataset_path+"/"+dataset+"_pca")
-        plot.plot_line_series_2d(xs_med_eu, ys_med_eu, ls_med_eu, "Epoch ep", "Median Euclidean Distance - med", save_path=dataset_path+"/"+dataset+"_med_euc", legend= True, y_scale=log_scale)
-        plot.plot_line_series_2d(xs_med_co, ys_med_co, ls_med_co, "Epoch ep", "Median Cosine Similarity - cs", save_path=dataset_path+"/"+dataset+"_med_cos", legend= True)
-        plot.plot_line_series_2d(xs_cen_eu, ys_cen_eu, ls_cen_eu, "Epoch ep", "Center Euclidean Distance - ced", save_path=dataset_path+"/"+dataset+"_cen_euc", legend= True, y_scale=log_scale)
+        #plot.plot_line_series_2d(xs_pca, ys_pca, ls_pca, "PCA Componments pc", "Score s", save_path=dataset_path+"/"+dataset+"_pca")
+        plot.plot_line_series_2d(xs_med_eu, ys_med_eu, ls_med_eu, "Epoch ep", "Cluster size \u03c3", save_path=dataset_path+"/"+dataset+"_med_euc", legend= True, y_scale=log_scale)
+        plot.plot_line_series_2d(xs_med_co, ys_med_co, ls_med_co, "Epoch ep", "Median Cosine Similarity cs", save_path=dataset_path+"/"+dataset+"_med_cos", legend= True)
+        plot.plot_line_series_2d(xs_cen_eu, ys_cen_eu, ls_cen_eu, "Epoch ep", "Centre Distance \u03c1", save_path=dataset_path+"/"+dataset+"_cen_euc", legend= True, y_scale=log_scale)
         #plot.plot_line_series_2d(xs_cen_co, ys_cen_co, ls_cen_co, "Epoch ep", "Center Cosine Similarity cs", save_path=dataset_path+"/cen_cos")
 
     print("Plotted")
