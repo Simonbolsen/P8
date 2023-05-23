@@ -1,7 +1,7 @@
 
 import os
 import jstyleson
-from embeddingAnalysis.analysis_util import get_exp_report_name, experiment_sorter
+from embeddingAnalysis.analysis_util import get_dataset_report_name, get_exp_report_name, experiment_sorter
 from num2tex import num2tex
 from decimal import Decimal
 
@@ -121,7 +121,7 @@ print("\\begin{tabular}{lrrr}")
 # print("Experiment ID & Learning Rate & d & $Prox_{mult}$ \\\\")
 for dataset_name in table_lines_pr_dataset:
     # print("\\\\"+ dataset_name.upper() + " & & & \\\\")
-    print("\\\\ \\textbf{" + dataset_name.upper() + "} & Learning Rate & d & $\mathrm{Prox_{mult}}$ \\\\")
+    print("\\\\ \\textbf{" + get_dataset_report_name(dataset_name) + "} & Learning Rate & d & $\mathrm{Prox_{mult}}$ \\\\")
     for (sort_key, row) in table_lines_pr_dataset[dataset_name]:
         print(row)
 
