@@ -31,6 +31,10 @@ def plot_line_2d(xs, y_series, labels, function = inv, x_label = "", y_label = "
     else:
         axe.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, pos: f"{function(x):.3f}"))
     plt.legend()
+
+    axe.set_xlabel(x_label)
+    axe.set_ylabel(y_label)
+
     if save_path == "":
         plt.show()
     else:
