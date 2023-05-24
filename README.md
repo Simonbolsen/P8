@@ -20,18 +20,18 @@ pip install -r requirements.txt
 You can try running the following test experiment
 
 ```shell
-python test experiment
+python ADD ARGS FOR TEST
 ```
 
 # Running experiments
 All experiments are located in `.\.vscode\tasks.json`. The experiments are categorised as follows:
 - CL: Ray experiments
-- BEST: Embeddings extracting
+- BEST: Embeddings extraction
 
 Running CL experiments will create a directory at `~\ray_results\` with results. When running tasks labelled as BEST, embeddings will be saved in the `.\embeddingData` directory. Be warned that embedding data may require ~30GB of space per run.
 
 # Extract data and plots
-1. Create the folder `.\plotData`
+1. Create the folder `.\plotData\`
 2. Add experiment folder name from `~\ray_results\` to the bottom of `.\src\embeddingAnalysis\article_vizualization.py`
 3. Run the script
 ```
