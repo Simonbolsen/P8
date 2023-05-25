@@ -1,5 +1,5 @@
 # P8 - Image Classification with Learned Class Embeddings
-Project description
+The Moving Targets Model uses class embeddings to represent classes as d-dimensional vectors. The vectors are learned during training, and a nearest neighbour classifier is used for classification. This repository contains experiments and data generation scripts for five loss functions over a total of 75 experiments.
 
 # Installation
 The project has been tested with Python 3.9.16 on both Windows 10/11 and Arch Linux.
