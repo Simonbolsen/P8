@@ -412,10 +412,10 @@ if __name__ == "__main__":
     #"cl_embed_push_res_large_fashion_BEST",
     #"cl_embed_push_res_large_cifar_100_BEST",
 
-    input_folders = ["cl_embed_pnp_res_small_cifar_10_BEST"]
+    input_folders = ["cl_pure_res_med_mnist_BEST"]
     data_folder = "plots/plotData"
     plot_folder = "plots"
-    #gather_data(input_folders, data_folder)
+    gather_data(input_folders, data_folder)
     plot_data(data_folder, plot_folder) #Without a save path the plots are shown and not saved
 
     print("Done")
