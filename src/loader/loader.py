@@ -10,7 +10,7 @@ import numpy as np
 import random
 import loader.cifarfs_splits as cifarfs_splits
 import loader.cifar10fs_splits as cifar10fs_splits
-from learn2learn.vision.datasets import FC100
+# from learn2learn.vision.datasets import FC100
 from loader.cub200_dataset import Cub200
 from loader.mnist_loader import FashionMNIST, MNIST
 from loader.kuzushuji import Kuzushiji
@@ -694,24 +694,25 @@ def get_cifar10_fs(config):
 
 
 def get_FC100(config):
-    try:
-        training_set = FC100(root=config.data_dir, mode='train', transform=transforms_dict[config.train_transforms], download=True)
-        validation_set = FC100(root=config.data_dir, mode='validation', transform=transforms_dict[config.train_transforms], download=True)
-        test_set = FC100(root=config.data_dir, mode='test', transform=transforms_dict[config.test_transforms], download=True)
-    except Exception:
-        training_set = FC100(root=config.data_dir, mode='train', transform=transforms_dict[config.train_transforms], download=True)
-        validation_set = FC100(root=config.data_dir, mode='validation', transform=transforms_dict[config.train_transforms], download=True)
-        test_set = FC100(root=config.data_dir, mode='test', transform=transforms_dict[config.test_transforms], download=True)
+    pass
+    # try:
+    #     training_set = FC100(root=config.data_dir, mode='train', transform=transforms_dict[config.train_transforms], download=True)
+    #     validation_set = FC100(root=config.data_dir, mode='validation', transform=transforms_dict[config.train_transforms], download=True)
+    #     test_set = FC100(root=config.data_dir, mode='test', transform=transforms_dict[config.test_transforms], download=True)
+    # except Exception:
+    #     training_set = FC100(root=config.data_dir, mode='train', transform=transforms_dict[config.train_transforms], download=True)
+    #     validation_set = FC100(root=config.data_dir, mode='validation', transform=transforms_dict[config.train_transforms], download=True)
+    #     test_set = FC100(root=config.data_dir, mode='test', transform=transforms_dict[config.test_transforms], download=True)
 
-    training_set.data = training_set.images
-    validation_set.data = validation_set.images
-    test_set.data = test_set.images
+    # training_set.data = training_set.images
+    # validation_set.data = validation_set.images
+    # test_set.data = test_set.images
 
-    training_set.targets = torch.from_numpy(np.array(training_set.labels))
-    validation_set.targets = torch.from_numpy(np.array(validation_set.labels))
-    test_set.targets = torch.from_numpy(np.array(test_set.labels))
+    # training_set.targets = torch.from_numpy(np.array(training_set.labels))
+    # validation_set.targets = torch.from_numpy(np.array(validation_set.labels))
+    # test_set.targets = torch.from_numpy(np.array(test_set.labels))
 
-    return training_set, validation_set, test_set
+    # return training_set, validation_set, test_set
 
 def get_CUB200_fs(config):
     pass
