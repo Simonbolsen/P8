@@ -21,7 +21,7 @@ All experiments are located in `.\.vscode\tasks.json`. The experiments are categ
 - CL: Ray experiments
 - BEST: Embeddings extraction
 
-Running CL experiments will create a directory at `~\ray_results\` with results. When running tasks labelled as BEST, embeddings will be saved in the `.\embeddingData\` directory. Be warned that embedding data may require ~30GB of space per run.
+Running CL experiments will create a directory at `~\ray_results\` with results. You may need to modify the requested CPU and GPU requirements for each experiment. When running tasks labelled as BEST, embeddings will be saved in the `.\embeddingData\` directory. Be warned that embedding data may require ~30GB of space per run.
 
 # Extract data and plots
 1. Create the folder `.\plots\plotData\`
