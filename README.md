@@ -1,4 +1,4 @@
-# P8 - Image Classification with Learned Class Embeddings
+# P8 - A Geometric Approach to Image Classification using Neural Networks with Class Embeddings
 The Moving Targets Model uses class embeddings to represent classes as d-dimensional vectors. The vectors are learned during training, and a nearest neighbour classifier is used for classification. This repository contains experiments and data generation scripts for five loss functions over a total of 75 experiments.
 
 # Installation
@@ -25,7 +25,7 @@ Running CL experiments will create a directory at `~\ray_results\` with results.
 
 # Extract data and plots
 1. Create the folder `.\plots\plotData\`
-2. Add experiment folder name `.\embeddingData\` directory to the bottom of `.\src\embeddingAnalysis\article_vizualization.py` inside `input_folders`
+2. Add experiment folder names from `.\embeddingData\` directory to the bottom of `.\src\embeddingAnalysis\article_vizualization.py` inside `input_folders`
 3. Run the script
 ```
 python .\src\embeddingAnalysis\article_vizualization.py
